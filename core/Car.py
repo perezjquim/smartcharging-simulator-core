@@ -4,6 +4,7 @@ class Car:
 
 	def __init__( self ):
 		self._batteryLevel = 0
+		#TODO
 
 	def getBatteryLevel( self ):
 		return self._batteryLevel

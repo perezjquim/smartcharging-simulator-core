@@ -1,4 +1,6 @@
 from . import *
+import time
+import importlib
 
 class Simulator:
 
@@ -6,23 +8,45 @@ class Simulator:
 		self._cars = []		
 		self._chargingAlgorithm = None
 		self._config = None
-		self._dataModels = []		
+		self._dataModels = []	
+		#TODO	
 
 	def onInit( self ):
-		self._config = ConfigurationHelper.readConfig( )
-		pass
+		self.fetchConfig( )
+		self.fetchDataModels( )
+
+		sim_default_algorithm = self._config[ 'sim_default_algorithm' ]
+		self.setChargingAlgorithm( sim_default_algorithm )
+
+		sim_sampling_rate = self._config[ 'sim_sampling_rate' ]
+
+		while True:
+			self.onStep( )
+			time.sleep( sim_sampling_rate )
 
 	def onStep( self ):
-		pass
+		print( "Step example!" )
+		#TODO
 
 	def fetchConfig( self ):
-		pass
+		print( "Fetching config..." )
+		
+		self._config = ConfigurationHelper.readConfig( )
+		print( self._config )	
+
+		print( "Fetching config... done!" )
 
 	def fetchDataModels( self ):
-		pass
+		print( "Fetching data models..." )
+
+		#TODO
+
+		print( "Fetching data models... done!" )
 
 	def getChargingAlgorithm( self ):
-		pass		
+		return self._chargingAlgorithm
 
-	def setChargingAlgorithm( self ):
-		pass
+	def setChargingAlgorithm( self, chargingAlgorithmName ):
+		module = __import__( "algorithms" )
+		chargingAlgorithm = getattr( module, chargingAlgorithmName ) 
+		self._chargingAlgorithm = chargingAlgorithm
