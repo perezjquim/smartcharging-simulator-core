@@ -4,11 +4,13 @@ import importlib
 
 class Simulator:
 
+	DEBUG_MODE = True
+
 	def __init__( self ):
 		self._cars = []		
 		self._chargingAlgorithm = None
 		self._config = None
-		self._dataModels = []	
+		self._dataModels = {}	
 		#TODO	
 
 	def onInit( self ):
@@ -32,14 +34,34 @@ class Simulator:
 		print( "Fetching config..." )
 		
 		self._config = ConfigurationHelper.readConfig( )
-		print( self._config )	
+
+		if Simulator.DEBUG_MODE == True:
+			print( '>>> Config' )
+			print( self._config )	
+			print( '<<< Config\n' )
 
 		print( "Fetching config... done!" )
 
 	def fetchDataModels( self ):
 		print( "Fetching data models..." )
 
-		#TODO
+		module = importlib.import_module( 'models' )
+		classes = module.__dict__.items( )
+
+		exclude_classes = [ 'IDataModel' ]
+		classes = dict( [ 
+			(name, c) for (name, c) in classes 
+				if not ( name.startswith( '__' ) ) 
+				and name not in exclude_classes 
+		] ).items( )
+
+		for name, c in classes:
+			self._dataModels[ name ] = c( )
+
+		if Simulator.DEBUG_MODE == True:
+			print( '>>> Data models' )
+			print( self._dataModels )
+			print( '<<< Data models\n' )		
 
 		print( "Fetching data models... done!" )
 
