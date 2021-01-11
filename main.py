@@ -4,10 +4,14 @@ from data import *
 from models import *
 from ui import *
 
-def main( ):
-	simulator = Simulator( )
-	simulator.onInit( )
-	print( "Great success" )
+from flask import Flask
 
-if __name__ == '__main__':
-	main( )
+oSimulator = Simulator( )
+oSimulator.onInit( )
+
+oDataServer = DataServer( oSimulator )
+
+oApp = Flask( __name__ )
+oApp.register_blueprint( oDataServer.getBlueprint() )		
+
+print( "Great success" )

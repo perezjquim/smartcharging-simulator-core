@@ -28,3 +28,6 @@ exec:
 	@echo '$(PATTERN_BEGIN) RUNNING...'
 	@docker run -d -ePORT=$(PORT) -p$(PORT):$(PORT) --name $(BUILDPACK_NAME) $(BUILDPACK_NAME)
 	@echo '$(PATTERN_END) RUN COMPLETE!'
+
+test:
+	@FLASK_APP=main python3 -m flask run --host=0.0.0.0 --port=$(PORT)

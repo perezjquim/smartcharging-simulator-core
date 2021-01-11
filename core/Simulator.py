@@ -1,6 +1,8 @@
 from . import *
+from data import *
 import time
 import importlib
+import threading
 
 class Simulator:
 
@@ -10,7 +12,7 @@ class Simulator:
 		self._cars = []		
 		self._chargingAlgorithm = None
 		self._config = None
-		self._dataModels = {}	
+		self._dataModels = {}
 		#TODO	
 
 	def onInit( self ):
@@ -20,11 +22,8 @@ class Simulator:
 		sim_default_algorithm = self._config[ 'sim_default_algorithm' ]
 		self.setChargingAlgorithm( sim_default_algorithm )
 
-		sim_sampling_rate = self._config[ 'sim_sampling_rate' ]
-
-		while True:
-			self.onStep( )
-			time.sleep( sim_sampling_rate )
+		self._oRunThread = threading.Thread( target = self._run )
+		self._oRunThread.start( )
 
 	def onStep( self ):
 		print( "Step example!" )
@@ -72,3 +71,10 @@ class Simulator:
 		module = __import__( "algorithms" )
 		chargingAlgorithm = getattr( module, chargingAlgorithmName ) 
 		self._chargingAlgorithm = chargingAlgorithm
+
+	def _run( self ):	
+		sim_sampling_rate = self._config[ 'sim_sampling_rate' ]		
+		
+		while True:
+			self.onStep( )
+			time.sleep( sim_sampling_rate )
