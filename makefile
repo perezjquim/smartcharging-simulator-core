@@ -1,3 +1,4 @@
+# > CONSTANTS
 PATTERN_BEGIN=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 PATTERN_END=<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -14,53 +15,50 @@ RABBIT_PASSWORD=guest
 RABBIT_PORT=5672
 RABBIT_MANAGEMENT_PORT=15672
 RABBIT_MANAGEMENT_PORTS=15673:15672
+# < CONSTANTS
 
-deploy: prep-pack build-pack run-docker
-
-test: setup run-nameko
+main: run-docker-rabbit run-docker-gateway
 
 # > RABBIT
-run-rabbit: stop-rabbit start-rabbit
+run-docker-rabbit: stop-docker-rabbit start-docker-rabbit
 
-start-rabbit:
-	@echo '$(PATTERN_BEGIN) RUNNING...'
+start-docker-rabbit:
+	@echo '$(PATTERN_BEGIN) STARTING RABBIT...'
 	@( docker network create $(RABBIT_NETWORK_NAME) || true )
 	@docker run -d --name $(RABBIT_CONTAINER_NAME) --network $(RABBIT_NETWORK_NAME) -e RABBITMQ_DEFAULT_USER=$(RABBIT_USER) -e RABBITMQ_DEFAULT_PASS=$(RABBIT_PASSWORD) -p $(RABBIT_MANAGEMENT_PORTS) $(RABBIT_IMAGE_NAME)
-	@echo '$(PATTERN_END) RUN COMPLETE!'	
+	@echo '$(PATTERN_END) RABBIT STARTED!'	
 
-stop-rabbit:
-	@echo '$(PATTERN_BEGIN) STOPPING...'
+stop-docker-rabbit:
+	@echo '$(PATTERN_BEGIN) STOPPING RABBIT...'
 	@( docker stop $(RABBIT_CONTAINER_NAME) && docker rm $(RABBIT_CONTAINER_NAME) ) || true
-	@echo '$(PATTERN_END) STOPPED!'	
+	@echo '$(PATTERN_END) RABBIT STOPPED!'	
 # < RABBIT
 
-# > PACK
-prep-pack:
-	@echo '$(PATTERN_BEGIN) PREPARING...'
+# > GATEWAY
+run-docker-gateway: stop-pack-gateway prep-pack-gateway build-pack-gateway start-pack-gateway
+
+prep-pack-gateway:
+	@echo '$(PATTERN_BEGIN) PREPARING GATEWAY PACK...'
 	@pipreqs ./ --force
 	@pack set-default-builder $(BUILDPACK_BUILDER)
-	@echo '$(PATTERN_END) PREPARED!'
+	@echo '$(PATTERN_END) GATEWAY PACK READY!'
 
-build-pack:
-	@echo '$(PATTERN_BEGIN) BUILDING...'
+build-pack-gateway:
+	@echo '$(PATTERN_BEGIN) BUILDING GATEWAY PACK...'
 	@pack build --network $(RABBIT_NETWORK_NAME) $(BUILDPACK_NAME)
-	@echo '$(PATTERN_END) BUILD COMPLETE!'
-# < PACK
+	@echo '$(PATTERN_END) GATEWAY PACK BUILT!'
 
-# > DOCKER
-run-docker: stop-docker start-docker
-
-start-docker:
-	@echo '$(PATTERN_BEGIN) RUNNING...'
+start-pack-gateway:
+	@echo '$(PATTERN_BEGIN) STARTING GATEWAY PACK...'
 	@( docker network create $(RABBIT_NETWORK_NAME) || true )
 	@docker run -d --name $(BUILDPACK_NAME) --network $(RABBIT_NETWORK_NAME) -e RABBIT_USER=$(RABBIT_USER) -e RABBIT_PASSWORD=$(RABBIT_PASSWORD) -e RABBIT_HOST=$(RABBIT_CONTAINER_NAME) -e RABBIT_MANAGEMENT_PORT=$(RABBIT_MANAGEMENT_PORT) -e RABBIT_PORT=$(RABBIT_PORT) -p $(GATEWAY_PORTS) $(BUILDPACK_NAME)
-	@echo '$(PATTERN_END) RUN COMPLETE!'
+	@echo '$(PATTERN_END) GATEWAY PACK STARTED!'
 
-stop-docker:
-	@echo '$(PATTERN_BEGIN) STOPPING...'
-	@( docker stop $(BUILDPACK_NAME) ; docker rm $(BUILDPACK_NAME) ) || true
-	@echo '$(PATTERN_END) STOPPED!'	
-# < DOCKER
+stop-pack-gateway:
+	@echo '$(PATTERN_BEGIN) STOPPING GATEWAY PACK...'
+	@( docker stop $(BUILDPACK_NAME) && docker rm $(BUILDPACK_NAME) ) || true
+	@echo '$(PATTERN_END) GATEWAY PACK STOPPED!'	
+# < GATEWAY
 
 # > NAMEKO
 run-nameko: prep-nameko start-nameko
