@@ -1,4 +1,1 @@
-nameko==3.0.0rc6
-Werkzeug==0.14.1
 Flask==0.12.2
-marshmallow==3.10.0

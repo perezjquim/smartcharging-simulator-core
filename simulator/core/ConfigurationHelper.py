@@ -1,7 +1,7 @@
 from . import *
 import json
 
-CONFIG_FILE_NAME = 'config.json'
+CONFIG_FILE_NAME = 'simulator/config.json'
 
 class ConfigurationHelper:
 

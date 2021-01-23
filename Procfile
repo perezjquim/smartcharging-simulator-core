@@ -1,1 +1,1 @@
-web: make run-nameko-gateway
+web: make run-simulator
