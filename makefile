@@ -4,7 +4,7 @@ PATTERN_END=««««««««««««««««««««««««««««««««««
 
 BUILDPACK_BUILDER=heroku/buildpacks:18
 
-GATEWAY_PACK_NAME=pack_gateway
+GATEWAY_PACK_NAME=pack_energysim_gateway
 GATEWAY_CONTAINER_NAME=cont_energysim_gateway
 GATEWAY_BACKDOOR=3000
 GATEWAY_PORTS=8003:8000
@@ -19,11 +19,9 @@ RABBIT_MANAGEMENT_PORT=15672
 RABBIT_MANAGEMENT_PORTS=15673:15672
 # < CONSTANTS
 
-main: run-docker-rabbit run-docker-gateway
+main: stop-docker-gateway stop-docker-rabbit start-docker-rabbit run-docker-gateway
 
 # > RABBIT
-run-docker-rabbit: stop-docker-rabbit start-docker-rabbit
-
 start-docker-rabbit:
 	@echo '$(PATTERN_BEGIN) STARTING RABBIT...'
 
@@ -48,7 +46,7 @@ stop-docker-rabbit:
 # < RABBIT
 
 # > GATEWAY
-run-docker-gateway: stop-pack-gateway build-pack-gateway start-pack-gateway
+run-docker-gateway: build-docker-gateway start-docker-gateway
 
 build-docker-gateway:
 	@echo '$(PATTERN_BEGIN) BUILDING GATEWAY PACK...'
@@ -84,15 +82,15 @@ stop-docker-gateway:
 # < GATEWAY
 
 # > NAMEKO
-run-nameko: prep-nameko start-nameko
+run-nameko-gateway: prep-nameko-gateway start-nameko-gateway
 
-prep-nameko:
+prep-nameko-gateway:
 	@until nc -z $(RABBIT_CONTAINER_NAME) $(RABBIT_PORT); do \
 	echo "$$(date) - waiting for rabbitmq..."; \
 	sleep 2; \
 	done
 
-start-nameko:
+start-nameko-gateway:
 	@nameko run gateway.service \
 	--config nameko-config.yml  \
 	--backdoor $(GATEWAY_BACKDOOR)

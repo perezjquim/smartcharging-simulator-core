@@ -1,1 +1,1 @@
-web: make run-nameko
+web: make run-nameko-gateway

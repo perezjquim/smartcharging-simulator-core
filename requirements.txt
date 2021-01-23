@@ -1,5 +1,4 @@
-marshmallow==3.10.0
+nameko==3.0.0rc6
 Werkzeug==0.14.1
 Flask==0.12.2
-nameko==3.0.0rc6
-asposestorage==1.0.2
+marshmallow==3.10.0
