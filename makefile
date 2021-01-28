@@ -22,9 +22,12 @@ run-docker-simulator: build-docker-simulator start-docker-simulator
 build-docker-simulator:
 	@echo '$(PATTERN_BEGIN) BUILDING SIMULATOR PACK...'
 
-	@pipreqs --savepath requirements.txt.tmp
-	@if cmp -s "requirements.txt.tmp" "requirements.txt"; then rm requirements.txt.tmp; \
-	else mv requirements.txt.tmp requirements.txt; fi
+	@pipreqs --force --savepath requirements.txt.tmp
+	@sort -r requirements.txt.tmp > requirements.txt.tmp.sorted
+	@if cmp -s requirements.txt.tmp.sorted requirements.txt; then :;\
+	else cp -f requirements.txt.tmp.sorted requirements.txt; fi
+	@rm -f requirements.txt.tmp
+	@rm -f requirements.txt.tmp.sorted
 	
 	@pack build $(SIMULATOR_PACK_NAME) \
 	--builder $(BUILDPACK_BUILDER)
