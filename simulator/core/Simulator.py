@@ -28,15 +28,12 @@ class Simulator:
 		self._run_thread.start( )
 
 	def fetchConfig( self ):
-		print( "Fetching config..." )
+		print( "========== Fetching config..." )
 		
 		self._config = ConfigurationHelper.readConfig( )
+		self._log( self._config )
 
-		self._log( '>>> Config' )
-		self._log( self._config )	
-		self._log( '<<< Config\n' )
-
-		print( "Fetching config... done!" )
+		print( "========== Fetching config... done!" )
 
 	def _log( self, message ):
 		if Simulator.DEBUG_MODE == True:
@@ -48,21 +45,21 @@ class Simulator:
 	def _run( self ):	
 		sim_sampling_rate = self._getConfig( 'sim_sampling_rate' )
 
-		print( 'Initializing cars...' )
+		print( '========== Initializing cars...' )
 		number_of_cars = self._getConfig( 'number_of_cars' )
 		for n in range( number_of_cars ):
 			self._cars.append( Car( ) )
-		print( 'Initializing cars... done!' )
+		print( '========== Initializing cars... done!' )
 
-		print( 'Simulating...' )
+		print( '========== Simulating...' )
 		number_of_steps = self._getConfig( 'number_of_steps' )
 		for n in range( number_of_steps ):
 			self.onStep( )
 			time.sleep( sim_sampling_rate / 1000 )	
-		print( 'Simulating... done!' )	
+		print( '========== Simulating... done!' )	
 
 	def onStep( self ):
-		print( "Simulation step..." )
+		print( "> Simulation step..." )
 
 		for c in self._cars:
 			affluence_url = "getAffluence/{}".format( self._current_hour_of_day )
@@ -92,9 +89,9 @@ class Simulator:
 			self._log( final_battery_level_res )
 
 		self._minutes_simulated = self._minutes_simulated + self._getConfig( 'minutes_per_sim_step' )
+		print( "( ( ( Minutes simulated so far: {} ) ) )".format( self._minutes_simulated ) )
 
-		print( 'Simulation step... done!' )
-		#TODO
+		print( '< Simulation step... done!' )
 
 	def _fetch_gateway( self, endpoint ):
 		response = requests.get( Simulator.GATEWAY_REQUEST_BASE.format( endpoint ) )
