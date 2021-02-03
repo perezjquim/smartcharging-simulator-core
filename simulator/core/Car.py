@@ -3,7 +3,7 @@ from . import *
 class Car:
 
 	def __init__( self ):
-		self._batteryLevel = 0
+		self._batteryLevel = 10
 		#TODO
 
 	def getBatteryLevel( self ):
