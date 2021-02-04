@@ -4,6 +4,7 @@ import time
 import importlib
 import threading
 import requests
+from datetime import date, datetime, timedelta
 
 class Simulator:
 
@@ -14,8 +15,7 @@ class Simulator:
 
 	_config = [ ]
 	_cars = [ ]
-	_current_hour_of_day = 0
-	_minutes_simulated = 0
+	_current_datetime = None
 
 	def __init__( self ):
 		pass
@@ -29,10 +29,8 @@ class Simulator:
 
 	def fetchConfig( self ):
 		print( "========== Fetching config..." )
-		
 		self._config = ConfigurationHelper.readConfig( )
 		self._log( self._config )
-
 		print( "========== Fetching config... done!" )
 
 	def _log( self, message ):
@@ -51,6 +49,15 @@ class Simulator:
 			self._cars.append( Car( ) )
 		print( '========== Initializing cars... done!' )
 
+		print( '========== Initializing date...' )
+		today_date = date.today( )
+		today_year = today_date.year
+		today_month = today_date.month
+		today_day = today_date.day
+		self._current_datetime = datetime( year = today_year, month = today_month, day = today_day )
+		print( 'Date initialized as: {}'.format( self._current_datetime ) )
+		print( '========== Initializing date... done!' )
+
 		print( '========== Simulating...' )
 		number_of_steps = self._getConfig( 'number_of_steps' )
 		for n in range( number_of_steps ):
@@ -61,8 +68,12 @@ class Simulator:
 	def onStep( self ):
 		print( "> Simulation step..." )
 
+		print( "( ( ( Date: {} ) ) )".format( self._current_datetime ) )
+
+		current_hour_of_day = self._current_datetime.hour
+
 		for c in self._cars:
-			affluence_url = "getAffluence/{}".format( self._current_hour_of_day )
+			affluence_url = "getAffluence/{}".format( current_hour_of_day )
 			affluence_res = self._fetch_gateway( affluence_url )
 			affluence = int( affluence_res[ 'affluence' ] )
 			self._log( affluence_res )
@@ -88,8 +99,8 @@ class Simulator:
 			final_battery_level = int( final_battery_level_res[ 'final_battery_level' ] )
 			self._log( final_battery_level_res )
 
-		self._minutes_simulated = self._minutes_simulated + self._getConfig( 'minutes_per_sim_step' )
-		print( "( ( ( Minutes simulated so far: {} ) ) )".format( self._minutes_simulated ) )
+		minutes_per_sim_step = self._getConfig( 'minutes_per_sim_step' )
+		self._current_datetime += timedelta( minutes = minutes_per_sim_step )
 
 		print( '< Simulation step... done!' )
 

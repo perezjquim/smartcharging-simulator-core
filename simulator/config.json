@@ -1,6 +1,6 @@
 {
 	"number_of_cars": 10,
-	"sim_sampling_rate": 4000,
-	"minutes_per_sim_step": 20,
-	"number_of_steps": 20
+	"sim_sampling_rate": 500,
+	"minutes_per_sim_step": 60,
+	"number_of_steps": 24
 }
