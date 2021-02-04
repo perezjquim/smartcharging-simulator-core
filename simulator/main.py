@@ -10,6 +10,4 @@ oSimulator.onInit( )
 oDataServer = DataServer( oSimulator )
 
 oApp = Flask( __name__ )
-oApp.register_blueprint( oDataServer.getBlueprint() )		
-
-print( "Great success" )
+oApp.register_blueprint( oDataServer.getBlueprint( ) )

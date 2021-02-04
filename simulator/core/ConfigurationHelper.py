@@ -5,7 +5,7 @@ CONFIG_FILE_NAME = 'simulator/config.json'
 
 class ConfigurationHelper:
 
-	def readConfig( ):
+	def read_config( ):
 		print( "Reading config..." );
 
 		with open( CONFIG_FILE_NAME ) as file:

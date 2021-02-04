@@ -8,11 +8,9 @@ from datetime import date, datetime, timedelta
 
 class Simulator:
 
-	DEBUG_MODE = True
 	GATEWAY_REQUEST_BASE = 'http://cont_energysim_gateway:8000/{}'
 
 	_run_thread = None	
-
 	_config = [ ]
 	_cars = [ ]
 	_current_datetime = None
@@ -22,33 +20,37 @@ class Simulator:
 		#TODO	
 
 	def onInit( self ):
-		self.fetchConfig( )
-
-		self._run_thread = threading.Thread( target = self._run )
+		self._fetch_config( )
+		self._run_thread = threading.Thread( target = self.run )
 		self._run_thread.start( )
 
-	def fetchConfig( self ):
+	def _fetch_config( self ):
 		print( "========== Fetching config..." )
-		self._config = ConfigurationHelper.readConfig( )
+		self._config = ConfigurationHelper.read_config( )
 		self._log( self._config )
 		print( "========== Fetching config... done!" )
 
 	def _log( self, message ):
-		if Simulator.DEBUG_MODE == True:
+		is_debug_enabled = self._getConfig( 'enable_debug_mode' )
+		if is_debug_enabled == True:
 			print( message )
 
 	def _getConfig( self, config_key ):
 		return self._config[ config_key ]
 
-	def _run( self ):	
-		sim_sampling_rate = self._getConfig( 'sim_sampling_rate' )
+	def run( self ):	
+		self._initialize_cars( )
+		self._initialize_date( )
+		self._begin_simulation( )
 
+	def _initialize_cars( self ):
 		print( '========== Initializing cars...' )
 		number_of_cars = self._getConfig( 'number_of_cars' )
 		for n in range( number_of_cars ):
 			self._cars.append( Car( ) )
 		print( '========== Initializing cars... done!' )
 
+	def _initialize_date( self ):
 		print( '========== Initializing date...' )
 		today_date = date.today( )
 		today_year = today_date.year
@@ -58,26 +60,27 @@ class Simulator:
 		print( 'Date initialized as: {}'.format( self._current_datetime ) )
 		print( '========== Initializing date... done!' )
 
+	def _begin_simulation( self ):
 		print( '========== Simulating...' )
+		sim_sampling_rate = self._getConfig( 'sim_sampling_rate' )		
 		number_of_steps = self._getConfig( 'number_of_steps' )
 		for n in range( number_of_steps ):
-			self.onStep( )
+			self.on_step( )
 			time.sleep( sim_sampling_rate / 1000 )	
 		print( '========== Simulating... done!' )	
 
-	def onStep( self ):
+	def on_step( self ):
 		print( "> Simulation step..." )
 
 		print( "( ( ( Date: {} ) ) )".format( self._current_datetime ) )
 
 		current_hour_of_day = self._current_datetime.hour
+		affluence_url = "getAffluence/{}".format( current_hour_of_day )
+		affluence_res = self._fetch_gateway( affluence_url )
+		affluence = int( affluence_res[ 'affluence' ] )
+		self._log( affluence_res )		
 
 		for c in self._cars:
-			affluence_url = "getAffluence/{}".format( current_hour_of_day )
-			affluence_res = self._fetch_gateway( affluence_url )
-			affluence = int( affluence_res[ 'affluence' ] )
-			self._log( affluence_res )
-
 			travel_distance_url = "getTravelDistance"
 			travel_distance_res = self._fetch_gateway( travel_distance_url )
 			travel_distance = float( travel_distance_res[ 'travel_distance' ] )
@@ -109,5 +112,3 @@ class Simulator:
 		response_json = response.json( )
 
 		return response_json
-
-
