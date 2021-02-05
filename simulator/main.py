@@ -5,7 +5,7 @@ from ui import *
 from flask import Flask
 
 oSimulator = Simulator( )
-oSimulator.onInit( )
+oSimulator.on_init( )
 
 oDataServer = DataServer( oSimulator )
 
