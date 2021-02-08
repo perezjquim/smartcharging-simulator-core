@@ -2,6 +2,6 @@
 	"number_of_cars": 1,
 	"sim_sampling_rate": 100,
 	"minutes_per_sim_step": 60,
-	"number_of_steps": 24,
+	"number_of_steps": 3,
 	"enable_debug_mode": true
 }

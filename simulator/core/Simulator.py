@@ -10,17 +10,18 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 	GATEWAY_REQUEST_BASE = 'http://cont_energysim_gateway:8000/{}'
 
-	TRAVEL_DURATION = 10 #TODO
+	TRAVEL_DURATION = 10 #TODO		
 
 	_main_thread = None	
-	_config = [ ]
+	_config = { }
 	_cars = [ ]
 
 	_current_datetime = None
-	_current_datetime_lock = None	
+	_affluence_counts = { }
 
 	def on_init( self ):
-		self._current_datetime_lock = threading.Lock( )		
+		self._current_datetime_lock = threading.Lock( )	
+		self._affluence_counts_lock = threading.Lock( )	
 		self._fetch_config( )
 		self._main_thread = threading.Thread( target = self.run )
 		self._main_thread.start( )
@@ -57,7 +58,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		today_year = today_date.year
 		today_month = today_date.month
 		today_day = today_date.day
-		self._current_datetime = datetime( year = today_year, month = today_month, day = today_day )
+		self.set_current_datetime( datetime( year = today_year, month = today_month, day = today_day ) )
 		print( 'Date initialized as: {}'.format( self._current_datetime ) )
 		print( '========== Initializing date... done!' )
 
@@ -65,9 +66,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 		with self._current_datetime_lock:
 			return self._current_datetime
 
-	def set_current_datetime( self, datetime ):
+	def set_current_datetime( self, new_datetime ):
 		with self._current_datetime_lock:
-			self._current_datetime = datetime
+			self._current_datetime = new_datetime
 
 	def _begin_simulation( self ):
 		print( '========== Simulating...' )
@@ -81,51 +82,56 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def on_step( self ):
 		print( "> Simulation step..." )
 
-		print( "( ( ( Date: {} ) ) )".format( self._current_datetime ) )
+		current_datetime = self.get_current_datetime( )
 
-		current_hour_of_day = self._current_datetime.hour
+		print( "( ( ( Date: {} ) ) )".format( current_datetime ) )
+
+		current_datetime_str = current_datetime.isoformat( )		
+
+		current_hour_of_day = current_datetime.hour
 		affluence_url = "getAffluence/{}".format( current_hour_of_day )
-		affluence_res = self._fetch_gateway( affluence_url )
+		affluence_res = self.fetch_gateway( affluence_url )
 		affluence = int( affluence_res[ 'affluence' ] )
-		self.log( affluence_res )
+		self._affluence_counts[ current_datetime_str ] = affluence			
+		self.log( affluence_res )		
 
 		for c in self._cars:
 			travel_distance_url = "getTravelDistance"
-			travel_distance_res = self._fetch_gateway( travel_distance_url )
+			travel_distance_res = self.fetch_gateway( travel_distance_url )
 			travel_distance = float( travel_distance_res[ 'travel_distance' ] )
 			self.log( travel_distance_res )			
 
-			initial_battery_level = 11	
+			initial_battery_level = c.get_battery_level( )	
 			final_battery_level_url = "getFinalBatteryLevel/{}/{}".format( initial_battery_level, travel_distance )
-			final_battery_level_res = self._fetch_gateway( final_battery_level_url )
+			final_battery_level_res = self.fetch_gateway( final_battery_level_url )
 			final_battery_level = int( final_battery_level_res[ 'final_battery_level' ] )
 			self.log( final_battery_level_res )
 
-			travel_start_datetime = self._current_datetime
+			travel_start_datetime = current_datetime
 			travel_end_datetime = travel_start_datetime + timedelta( minutes = Simulator.TRAVEL_DURATION ) #TODO
 			battery_consumption = initial_battery_level - final_battery_level
 			c.start_travel( travel_start_datetime, travel_end_datetime, travel_distance, battery_consumption )
 
 			charging_period_duration_url = "getChargingPeriodDuration"
-			charging_period_duration_res = self._fetch_gateway( charging_period_duration_url )
+			charging_period_duration_res = self.fetch_gateway( charging_period_duration_url )
 			charging_period_duration = int( charging_period_duration_res[ 'charging_period_duration' ] )
 			self.log( charging_period_duration_res )
 
 			charging_period_peak_url = "getChargingPeriodPeak"
-			charging_period_peak_res = self._fetch_gateway( charging_period_peak_url )
+			charging_period_peak_res = self.fetch_gateway( charging_period_peak_url )
 			charging_period_peak = float( charging_period_peak_res[ 'charging_period_peak' ] )
 			self.log( charging_period_peak_res )		
 
-			charging_period_start_datetime = self._current_datetime
+			charging_period_start_datetime = current_datetime
 			charging_period_end_datetime = charging_period_start_datetime + timedelta( minutes = charging_period_duration )
-			c.start_charging_period( charging_period_start_datetime, charging_period_end_datetime,charging_period_peak )				
+			c.start_charging_period( charging_period_start_datetime, charging_period_end_datetime,charging_period_peak )								
 
 		minutes_per_sim_step = self.get_config( 'minutes_per_sim_step' )
-		self.set_current_datetime( self.get_current_datetime( ) + timedelta( minutes = minutes_per_sim_step ) )
+		self.set_current_datetime( current_datetime + timedelta( minutes = minutes_per_sim_step ) )
 
 		print( '< Simulation step... done!' )
 
-	def _fetch_gateway( self, endpoint ):
+	def fetch_gateway( self, endpoint ):
 		response = requests.get( Simulator.GATEWAY_REQUEST_BASE.format( endpoint ) )
 		response_json = response.json( )
 

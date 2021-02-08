@@ -25,13 +25,10 @@ class Travel:
 		simulator = self._car.get_simulator( )
 		sim_sampling_rate = simulator.get_config( 'sim_sampling_rate' )
 		
-		while True:
-			current_datetime = simulator.get_current_datetime( )
-			if current_datetime >= self._end_datetime:	
-				self._car.end_travel( )
-				break
-
+		while simulator.get_current_datetime( ) <= self._end_datetime:
 			time.sleep( sim_sampling_rate / 1000 )
+
+		self._car.end_travel( )
 
 	def get_car( self ):
 		return self._car
