@@ -36,6 +36,14 @@ class Car:
 		with self._car_lock:
 			return self._is_charging
 
+	def set_charging_state( self, new_charging_state ):
+		with self._car_lock:
+			self._is_charging = new_charging_state
+
+	def set_traveling_state( self, new_traveling_state ):
+		with self._car_lock:
+			self._is_traveling = new_traveling_state			
+
 	def get_travels( self ):
 		with self._car_lock:
 			return self._travels
@@ -60,10 +68,12 @@ class Car:
 			new_travel = Travel( self, start_datetime, end_datetime, distance, battery_consumption )
 			self._travels.append( new_travel )
 			self._is_traveling = True
+			print( 'Travel started: designed to go from {} to {}'.format( start_datetime, end_datetime ) )
 
 	def end_travel( self ):
 		if self.is_traveling( ):
 			self._is_traveling = False
+			print( 'Travel ended!' )
 		else:
 			self._simulator.log( 'Car was not traveling, yet an attempt to end a travel was made (??)' )
 
@@ -74,9 +84,11 @@ class Car:
 			new_charging_period = ChargingPeriod( self, start_datetime, end_datetime, peak_value )
 			self._charging_periods.append( new_charging_period )
 			self._is_charging = True
+			print( 'Charging period started: designed to go from {} to {}'.format( start_datetime, end_datetime ) )
 
 	def end_charging_period( self ):
 		if self.is_charging( ):
 			self._is_charging = False
+			print( 'Charging period ended!' )
 		else:
 			self._simulator.log( 'Car was not charging, yet an attempt to end a charging period was made (??)' )
