@@ -1,9 +1,9 @@
-from . import *
 import json
+from .SingletonMetaClass import SingletonMetaClass
 
 CONFIG_FILE_NAME = 'simulator/config.json'
 
-class ConfigurationHelper:
+class ConfigurationHelper( metaclass = SingletonMetaClass ):
 
 	def read_config( ):
 		print( "Reading config..." );

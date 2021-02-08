@@ -1,22 +1,24 @@
 from flask import Blueprint
 
-oAPI = Blueprint( "DataServer", __name__ )
+api = Blueprint( "DataServer", __name__ )
 
 class DataServer:
 
-	def __init__( self, oSimulator ):
+	_simulator = None
+
+	def __init__( self, simulator ):
 		#TODO
-		self._oSimulator = oSimulator
+		self._simulator = simulator
 		pass
 
 	def run( self ):
 		#TODO
-		oDataServerAPI.run( )		
+		api.run( )		
 		pass
 
-	def getBlueprint( self ):
-		return oAPI
+	def get_blueprint( self ):
+		return api
 
-	@oAPI.route( '/' )
+	@api.route( '/' )
 	def root( ):
 		return "test root!"

@@ -1,4 +1,5 @@
-from . import *
+import threading
+import time
 
 class Travel:
 
@@ -8,12 +9,29 @@ class Travel:
 	_distance = 0
 	_battery_consumption = 0	
 
+	_travel_thread = None
+
 	def __init__( self, car, start_datetime, end_datetime, distance, battery_consumption ):
 		self._car = car
 		self._start_datetime = start_datetime
 		self._end_datetime = end_datetime
 		self._distance = distance
-		self._battery_consumption = battery_consumption		
+		self._battery_consumption = battery_consumption
+
+		self._travel_thread = threading.Thread( target = self.run )
+		self._travel_thread.start( )		
+
+	def run( self ):
+		simulator = self._car.get_simulator( )
+		sim_sampling_rate = simulator.get_config( 'sim_sampling_rate' )
+		
+		while True:
+			current_datetime = simulator.get_current_datetime( )
+			if current_datetime >= self._end_datetime:	
+				self._car.end_travel( )
+				break
+
+			time.sleep( sim_sampling_rate / 1000 )
 
 	def get_car( self ):
 		return self._car

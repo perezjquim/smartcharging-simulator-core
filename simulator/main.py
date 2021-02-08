@@ -1,13 +1,11 @@
-from core import *
-from data import *
-from ui import *
-
+from core.Simulator import Simulator
+from data.DataServer import DataServer
 from flask import Flask
 
-oSimulator = Simulator( )
-oSimulator.on_init( )
+simulator = Simulator( )
+simulator.on_init( )
 
-oDataServer = DataServer( oSimulator )
+data_server = DataServer( simulator )
 
-oApp = Flask( __name__ )
-oApp.register_blueprint( oDataServer.getBlueprint( ) )
+app = Flask( __name__ )
+app.register_blueprint( data_server.get_blueprint( ) )
