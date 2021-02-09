@@ -95,8 +95,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 		print( "> Simulation step..." )
 
 		current_datetime = self.get_current_datetime( )
-
-		print( "( ( ( Date: {} ) ) )".format( current_datetime ) )
+		
+		print( "( ( ( Step started at: {} ) ) )".format( current_datetime ) )
 
 		number_of_steps = self.get_config( 'number_of_steps' )
 		can_simulate_actions = ( self._current_step <= number_of_steps )
@@ -153,9 +153,11 @@ class Simulator( metaclass = SingletonMetaClass ):
 			print( '-- Simulation period ended: this step is only used to resume travels and/or charging periods! --' )
 
 		minutes_per_sim_step = self.get_config( 'minutes_per_sim_step' )
-		self.set_current_datetime( current_datetime + timedelta( minutes = minutes_per_sim_step ) )
-
+		new_datetime = current_datetime + timedelta( minutes = minutes_per_sim_step )
+		self.set_current_datetime( new_datetime )
 		self._current_step += 1
+
+		print( "( ( ( Step ended at: {} ) ) )".format( new_datetime ) )		
 
 		print( '< Simulation step... done!' )
 
