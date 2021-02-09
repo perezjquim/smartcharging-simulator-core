@@ -13,6 +13,9 @@ SIMULATOR_PORT=7777
 
 SIMULATOR_FLASK_HOST=0.0.0.0
 SIMULATOR_FLASK_PORT=6666
+
+GATEWAY_HOST=cont_energysim_gateway
+GATEWAY_PORT=8000
 # < CONSTANTS
 
 main: stop-docker-simulator run-docker-simulator
@@ -52,13 +55,21 @@ start-docker-simulator:
 stop-docker-simulator:
 	@echo '$(PATTERN_BEGIN) STOPPING SIMULATOR PACK...'
 
-	@( docker stop $(SIMULATOR_CONTAINER_NAME) && docker rm $(SIMULATOR_CONTAINER_NAME) ) || true
+	@( docker rm -f $(SIMULATOR_CONTAINER_NAME) ) || true
 
 	@echo '$(PATTERN_END) SIMULATOR PACK STOPPED!'	
 # < DOCKER-SIMULATOR
 
 # > SIMULATOR
-run-simulator:
+run-simulator: prep-simulator start-simulator
+
+prep-simulator:
+	@until nc -z $(GATEWAY_HOST) $(GATEWAY_PORT); do \
+	echo "$$(date) - waiting for gateway..."; \
+	sleep 2; \
+	done
+
+start-simulator:
 	@FLASK_APP=simulator/main.py \
 	python3 -m flask run \
 	--host=$(SIMULATOR_FLASK_HOST) \
