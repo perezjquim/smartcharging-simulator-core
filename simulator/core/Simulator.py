@@ -8,6 +8,8 @@ from .Car import Car
 
 class Simulator( metaclass = SingletonMetaClass ):
 
+	MAIN_LOG_PREFIX = '============================'
+
 	GATEWAY_REQUEST_BASE = 'http://cont_energysim_gateway:8000/{}'
 
 	_main_thread = None	
@@ -32,15 +34,18 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self._main_thread.start( )
 
 	def _fetch_config( self ):
-		self.log( "========== Fetching config..." )
+		self.log_main( "Fetching config..." )
 
 		self._config = ConfigurationHelper.read_config( )
 		self.log_debug( 'Config >> {}'.format( self._config ) )
 
-		self.log( "========== Fetching config... done!" )
+		self.log_main( "Fetching config... done!" )
 
 	def log( self, message ):
 		print( message )
+
+	def log_main( self, message ):
+		print( '{} {}'.format( Simulator.MAIN_LOG_PREFIX, message ) ) 
 
 	def log_debug( self, message ):
 		is_debug_enabled = self.get_config( 'enable_debug_mode' )
@@ -54,16 +59,16 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self._begin_simulation( )
 
 	def _initialize_cars( self ):
-		self.log( '========== Initializing cars...' )
+		self.log_main( 'Initializing cars...' )
 
 		number_of_cars = self.get_config( 'number_of_cars' )
 		for n in range( number_of_cars ):
 			self._cars.append( Car( self ) )
 
-		self.log( '========== Initializing cars... done!' )
+		self.log_main( 'Initializing cars... done!' )
 
 	def _initialize_datetime( self ):
-		self.log( '========== Initializing date...' )
+		self.log_main( 'Initializing date...' )
 
 		today_date = date.today( )
 		today_year = today_date.year
@@ -73,7 +78,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.set_current_datetime( datetime( year = today_year, month = today_month, day = today_day ) )
 		self.log( 'Date initialized as: {}'.format( self._current_datetime ) )
 
-		self.log( '========== Initializing date... done!' )
+		self.log_main( 'Initializing date... done!' )
 
 	def get_current_datetime( self ):
 		with self._current_datetime_lock:
@@ -84,7 +89,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self._current_datetime = new_datetime
 
 	def _begin_simulation( self ):
-		self.log( '========== Simulating...' )
+		self.log_main( 'Simulating...' )
 
 		sim_sampling_rate = self.get_config( 'sim_sampling_rate' )		
 		number_of_steps = self.get_config( 'number_of_steps' )
@@ -135,7 +140,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			time.sleep( sim_sampling_rate / 1000 )				
 
-		self.log( '========== Simulating... done!' )	
+		self.log_main( 'Simulating... done!' )	
 
 	def can_simulate_new_actions( self ):
 		with self._current_step_lock:
