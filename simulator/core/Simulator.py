@@ -20,12 +20,10 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 	_current_step_lock = None
 	_current_datetime_lock = None
-	_affluence_counts_lock	 = None
 
 	def on_init( self ):
 		self._current_step_lock = threading.Lock( )
-		self._current_datetime_lock = threading.Lock( )	
-		self._affluence_counts_lock = threading.Lock( )	
+		self._current_datetime_lock = threading.Lock( )
 		self._fetch_config( )
 		self._initialize_cars( )
 		self._initialize_datetime( )	
@@ -35,8 +33,10 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 	def _fetch_config( self ):
 		self.log( "========== Fetching config..." )
+
 		self._config = ConfigurationHelper.read_config( )
-		self.log_debug( self._config )
+		self.log_debug( 'Config >> {}'.format( self._config ) )
+
 		self.log( "========== Fetching config... done!" )
 
 	def log( self, message ):
@@ -83,28 +83,57 @@ class Simulator( metaclass = SingletonMetaClass ):
 		with self._current_datetime_lock:
 			self._current_datetime = new_datetime
 
-	def increment_current_datetime( self, minutes ):
-		with self._current_datetime_lock:
-			self._current_datetime += timedelta( minutes = minutes )
-
 	def _begin_simulation( self ):
 		self.log( '========== Simulating...' )
 
 		sim_sampling_rate = self.get_config( 'sim_sampling_rate' )		
-
 		number_of_steps = self.get_config( 'number_of_steps' )
+
 		while True:
-			cars_in_travel = [ c for c in self._cars if c.is_traveling( ) ]
-			cars_in_charging = [ c for c in self._cars if c.is_charging( ) ]
+
+			cars_in_travel = [ ]
+			cars_in_charging = [ ]
+
+			for c in self._cars:
+
+				c.lock( )
+
+				if c.is_traveling( ):
+					cars_in_travel.append( c )
+				if c.is_charging( ):
+					cars_in_charging.append( c )
+
+				c.unlock( )
 
 			current_step = self.get_current_step( )
 			is_simulation_running = ( current_step <= number_of_steps or len( cars_in_travel ) > 0 or len( cars_in_charging ) > 0 )
-			
-			if is_simulation_running:			
-				self.on_step( )
-				time.sleep( sim_sampling_rate / 1000 )
+
+			if is_simulation_running:	
+
+				self.log( "> Simulation step..." )		
+
+				current_datetime = self.get_current_datetime( )
+
+				if current_step > 1:
+					
+					minutes_per_sim_step = self.get_config( 'minutes_per_sim_step' )
+					current_datetime += timedelta( minutes = minutes_per_sim_step )
+					self.set_current_datetime( current_datetime )	
+				
+				self.log( "( ( ( Step #{} - at: {} ) ) )".format( current_step, current_datetime ) )						
+
+				self.on_step( current_datetime )
+
+				current_step += 1
+				self.set_current_step( current_step )			
+
+				self.log( '< Simulation step... done!' )							
+
 			else:
+
 				break
+
+			time.sleep( sim_sampling_rate / 1000 )				
 
 		self.log( '========== Simulating... done!' )	
 
@@ -118,57 +147,54 @@ class Simulator( metaclass = SingletonMetaClass ):
 		with self._current_step_lock:
 			return self._current_step
 
-	def increment_step( self ):
+	def set_current_step( self, new_step ):
 		with self._current_step_lock:
-			self._current_step += 1
+			self._current_step = new_step
 
-	def on_step( self ):
-		self.log( "> Simulation step..." )
-
-		current_datetime = self.get_current_datetime( )
-		
-		self.log( "( ( ( Step started at: {} ) ) )".format( current_datetime ) )
+	def on_step( self, current_datetime ):
 
 		if self.can_simulate_new_actions( ):
 
 			current_datetime_str = current_datetime.strftime( '%Y%m%d%H' )
 
 			if current_datetime_str in self._affluence_counts:
+
 				pass
+			
 			else:
+
 				current_hour_of_day = current_datetime.hour
 				affluence_url = "getAffluence/{}".format( current_hour_of_day )
 				affluence_res = self.fetch_gateway( affluence_url )
 				affluence = int( affluence_res[ 'affluence' ] )
 				self._affluence_counts[ current_datetime_str ] = affluence			
-				self.log_debug( affluence_res )
 
 			if self._affluence_counts[ current_datetime_str ] > 0:		
 
 				for c in self._cars:
+
 					c.lock( )
 
-					car_can_travel = ( not c.is_traveling( ) and not c.is_charging( ) )
+					car_can_travel = ( not c.is_traveling( ) and not c.is_charging( ) )		
 					if car_can_travel:
-						c.start_new_travel( )	
+						c.start_new_travel( current_datetime )	
+						self._affluence_counts[ current_datetime_str ] -= 1	
 
 					c.unlock( )
 
+					if self._affluence_counts[ current_datetime_str ] < 1:
+						break					
+
 		else:
+			
 			self.log( '-- Simulation period ended: this step is only used to resume travels and/or charging periods! --' )
 
-		minutes_per_sim_step = self.get_config( 'minutes_per_sim_step' )
-		self.increment_current_datetime( minutes_per_sim_step )
-		self.increment_step( )
-
-		current_datetime = self.get_current_datetime( )
-		self.log( "( ( ( Step ended at: {} ) ) )".format( current_datetime ) )		
-
-		self.log( '< Simulation step... done!' )
-
 	def fetch_gateway( self, endpoint ):
-		response = requests.get( Simulator.GATEWAY_REQUEST_BASE.format( endpoint ) )
+		url = Simulator.GATEWAY_REQUEST_BASE.format( endpoint )
+		response = requests.get( url )
 		response_json = response.json( )
+		self.log_debug( '\\\\\\ GATEWAY \\\\\\ URL: {}'.format( url )	 )
+		self.log_debug( '\\\\\\ GATEWAY \\\\\\ RESPONSE: {}'.format( response_json ) )
 
 		return response_json
 

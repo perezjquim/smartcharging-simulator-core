@@ -26,6 +26,7 @@ class Travel:
 		sim_sampling_rate = simulator.get_config( 'sim_sampling_rate' )
 		
 		while simulator.get_current_datetime( ) <= self._end_datetime:
+			self._car.log_debug( 'Traveling...' )
 			time.sleep( sim_sampling_rate / 1000 )
 
 		self._car.end_travel( )
