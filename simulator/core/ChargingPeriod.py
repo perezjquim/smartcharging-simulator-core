@@ -18,14 +18,25 @@ class ChargingPeriod:
 		self._charging_period_thread.start( )		
 
 	def run( self ):
-		simulator = self._car.get_simulator( )
+		car = self._car
+
+		simulator = car.get_simulator( )
 		sim_sampling_rate = simulator.get_config( 'sim_sampling_rate' )
-		
+
 		while simulator.get_current_datetime( ) <= self._end_datetime:
-			self._car.log_debug( 'Charging...' )
+			
+			peak_value = self._peak_value
+
+			car.lock( )			
+			
+			car.set_plug_consumption( peak_value )
+			car.log_debug( 'Charging... ({} KW)'.format( peak_value ) )			
+
+			car.unlock( )
+			
 			time.sleep( sim_sampling_rate / 1000 )
 
-		self._car.end_charging_period( )
+		car.end_charging_period( )
 
 	def get_car( self ):
 		return self._car

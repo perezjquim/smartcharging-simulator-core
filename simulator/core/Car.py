@@ -23,6 +23,7 @@ class Car:
 	_charging_periods = [ ]
 	_battery_level = 0
 	_lock = None
+	_plug_consumption = 0
 
 	def __init__( self, simulator ):
 		Car.counter += 1				
@@ -34,6 +35,7 @@ class Car:
 		self._charging_periods = [ ]
 		self._battery_level = Car.DEFAULT_BATTERY_LEVEL		
 		self._lock = threading.Lock( )
+		self._plug_consumption = 0
 
 	def get_simulator( self ):
 		return self._simulator
@@ -173,6 +175,7 @@ class Car:
 		if self.is_charging( ):
 
 			self.set_charging_state( False )	
+			self.set_plug_consumption( 0 )
 
 			self.log( 'Charging period ended!' )
 
@@ -180,7 +183,15 @@ class Car:
 
 			self.log( 'Car was not charging, yet an attempt to end a charging period was made (??)' )
 
-		self.unlock( )					
+		self.unlock( )	
+
+	def get_plug_consumption( self ):
+
+		return self._plug_consumption
+
+	def set_plug_consumption( self, new_plug_consumption ):
+
+		self._plug_consumption = new_plug_consumption	
 
 	def log( self, message ):
 		self._simulator.log( Car.LOG_TEMPLATE.format( self._id, message ) )

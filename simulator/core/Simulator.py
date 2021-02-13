@@ -98,6 +98,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			cars_in_travel = [ ]
 			cars_in_charging = [ ]
+			total_plug_consumption = 0
 
 			for c in self._cars:
 
@@ -108,7 +109,12 @@ class Simulator( metaclass = SingletonMetaClass ):
 				if c.is_charging( ):
 					cars_in_charging.append( c )
 
+				plug_consumption = c.get_plug_consumption( )
+				total_plug_consumption += plug_consumption
+
 				c.unlock( )
+
+			self.log( '### TOTAL PLUG CONSUMPTION: {} KW ###'.format( total_plug_consumption ) )
 
 			current_step = self.get_current_step( )
 			is_simulation_running = ( current_step <= number_of_steps or len( cars_in_travel ) > 0 or len( cars_in_charging ) > 0 )
