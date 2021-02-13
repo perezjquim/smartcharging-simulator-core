@@ -22,14 +22,28 @@ class Travel:
 		self._travel_thread.start( )		
 
 	def run( self ):
-		simulator = self._car.get_simulator( )
+		car = self._car
+		simulator = car.get_simulator( )
 		sim_sampling_rate = simulator.get_config( 'sim_sampling_rate' )
 		
-		while simulator.get_current_datetime( ) <= self._end_datetime:
-			self._car.log_debug( 'Traveling...' )
+		while True:
+
+			simulator.lock_current_datetime( )
+
+			current_datetime = simulator.get_current_datetime( )		
+			if current_datetime <= self._end_datetime:
+				
+				car.log_debug( 'Traveling...' )
+				simulator.unlock_current_datetime( )				
+
+			else:
+
+				simulator.unlock_current_datetime( )				
+				break
+
 			time.sleep( sim_sampling_rate / 1000 )
 
-		self._car.end_travel( )
+		car.end_travel( )
 
 	def get_car( self ):
 		return self._car

@@ -104,7 +104,7 @@ class Car:
 
 		else:
 
-			self.log( 'Travel started: designed to go from {} to {}'.format( start_datetime, end_datetime ) )				
+			self.log( 'Travel started: designed to go from {} to {}, with a battery consumption of {} and a distance of {} km'.format( start_datetime, end_datetime, battery_consumption, distance ) )				
 
 			new_travel = Travel( self, start_datetime, end_datetime, distance, battery_consumption )
 			self._travels.append( new_travel )
@@ -125,6 +125,9 @@ class Car:
 
 			self.log( 'Travel ended!' )			
 
+			simulator = self._simulator
+			simulator.lock_current_step( )
+
 			if self._simulator.can_simulate_new_actions( ):
 
 				if new_battery_level > 2:
@@ -142,15 +145,21 @@ class Car:
 					charging_period_peak_url = "getChargingPeriodPeak"
 					charging_period_peak_res = self._simulator.fetch_gateway( charging_period_peak_url )
 					charging_period_peak = float( charging_period_peak_res[ 'charging_period_peak' ] )	
+					
+					simulator.lock_current_datetime( )
 
-					travel_end_datetime = last_travel.get_end_datetime( )
-					charging_period_start_datetime = travel_end_datetime
+					current_datetime = simulator.get_current_datetime( )
+					charging_period_start_datetime = current_datetime
 					charging_period_end_datetime = charging_period_start_datetime + timedelta( minutes = charging_period_duration )
-					self._start_charging_period( charging_period_start_datetime, charging_period_end_datetime,charging_period_peak )															
+					self._start_charging_period( charging_period_start_datetime, charging_period_end_datetime,charging_period_peak )																		
+
+					simulator.unlock_current_datetime( )					
+
+			simulator.unlock_current_step( )							
 
 		else:
 
-			self.log( 'Car was not traveling, yet an attempt to end a travel was made (??)' )		
+			self.log( 'Car was not traveling, yet an attempt to end a travel was made (??)' )				
 
 		self.unlock( )				
 
@@ -162,7 +171,7 @@ class Car:
 
 		else:
 
-			self.log( 'Charging period started: designed to go from {} to {}'.format( start_datetime, end_datetime ) )	
+			self.log( 'Charging period started: designed to go from {} to {}, with a peak value of {} KW!'.format( start_datetime, end_datetime, peak_value ) )	
 
 			new_charging_period = ChargingPeriod( self, start_datetime, end_datetime, peak_value )
 			self._charging_periods.append( new_charging_period )

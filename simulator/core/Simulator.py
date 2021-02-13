@@ -1,6 +1,7 @@
 import time
 import threading
 import requests
+import inspect
 from datetime import date, datetime, timedelta
 from .SingletonMetaClass import SingletonMetaClass
 from .ConfigurationHelper import ConfigurationHelper
@@ -80,13 +81,31 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		self.log_main( 'Initializing date... done!' )
 
+	def lock_current_datetime( self ):
+		caller = inspect.stack()[1][3]
+		self.log_debug( 'LOCKING DATETIME... (by {})'.format( caller ) )
+		self._current_datetime_lock.acquire( )
+
+	def unlock_current_datetime( self ):
+		caller = inspect.stack()[1][3]
+		self.log_debug( 'UNLOCKING DATETIME... (by {})'.format( caller ) )
+		self._current_datetime_lock.release( )
+
+	def lock_current_step( self ):
+		caller = inspect.stack()[1][3]
+		self.log_debug( 'LOCKING STEP... (by {})'.format( caller ) )
+		self._current_step_lock.acquire( )
+
+	def unlock_current_step( self ):
+		caller = inspect.stack()[1][3]
+		self.log_debug( 'UNLOCKING STEP... (by {})'.format( caller ) )
+		self._current_step_lock.release( )		
+
 	def get_current_datetime( self ):
-		with self._current_datetime_lock:
-			return self._current_datetime
+		return self._current_datetime
 
 	def set_current_datetime( self, new_datetime ):
-		with self._current_datetime_lock:
-			self._current_datetime = new_datetime
+		self._current_datetime = new_datetime
 
 	def _begin_simulation( self ):
 		self.log_main( 'Simulating...' )
@@ -123,20 +142,27 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 				self.log( "> Simulation step..." )		
 
-				current_datetime = self.get_current_datetime( )
+				self.lock_current_datetime( )
 
+				current_datetime = self.get_current_datetime( )
 				if current_step > 1:
 					
 					minutes_per_sim_step = self.get_config( 'minutes_per_sim_step' )
 					current_datetime += timedelta( minutes = minutes_per_sim_step )
 					self.set_current_datetime( current_datetime )	
+
+				self.unlock_current_datetime( )
 				
 				self.log( "( ( ( Step #{} - at: {} ) ) )".format( current_step, current_datetime ) )						
 
 				self.on_step( current_datetime )
 
+				self.lock_current_step( )
+				
 				current_step += 1
 				self.set_current_step( current_step )			
+
+				self.unlock_current_step( )
 
 				self.log( '< Simulation step... done!' )							
 
@@ -149,18 +175,15 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.log_main( 'Simulating... done!' )	
 
 	def can_simulate_new_actions( self ):
-		with self._current_step_lock:
-			number_of_steps = self.get_config( 'number_of_steps' )
-			can_simulate_new_actions = ( self._current_step <= number_of_steps )
-			return can_simulate_new_actions
+		number_of_steps = self.get_config( 'number_of_steps' )
+		can_simulate_new_actions = ( self._current_step <= number_of_steps )
+		return can_simulate_new_actions
 
 	def get_current_step( self ):
-		with self._current_step_lock:
-			return self._current_step
+		return self._current_step
 
 	def set_current_step( self, new_step ):
-		with self._current_step_lock:
-			self._current_step = new_step
+		self._current_step = new_step
 
 	def on_step( self, current_datetime ):
 
@@ -194,6 +217,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 					c.unlock( )
 
 					if self._affluence_counts[ current_datetime_str ] < 1:
+						
 						break					
 
 		else:
