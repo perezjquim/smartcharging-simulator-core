@@ -3,7 +3,6 @@ PATTERN_BEGIN=»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
 PATTERN_END=«««««««««««««««««««««««««««««««««««««««««««««
 
 BUILDPACK_BUILDER=heroku/buildpacks:18
-BUILDPACK_PIP_DEFAULT_TIMEOUT=2000
 
 SIMULATOR_NETWORK_NAME=net_energysim
 
@@ -35,7 +34,6 @@ build-docker-simulator:
 	
 	@pack build $(SIMULATOR_PACK_NAME) \
 	--builder $(BUILDPACK_BUILDER) \
-	--env PIP_DEFAULT_TIMEOUT=$(BUILDPACK_PIP_DEFAULT_TIMEOUT) \
 	--pull-policy if-not-present \
 	--verbose
 
