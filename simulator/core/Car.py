@@ -82,12 +82,12 @@ class Car:
 			self.log( 'Invalid battery level given!' )
 
 	def start_new_travel( self, current_datetime ):		
-		travel_distance_url = "getTravelDistance"
+		travel_distance_url = "travel/distance"
 		travel_distance_res = self._simulator.fetch_gateway( travel_distance_url )
 		travel_distance = float( travel_distance_res[ 'travel_distance' ] )
 
 		initial_battery_level = self.get_battery_level( )	
-		final_battery_level_url = "getFinalBatteryLevel/{}/{}".format( initial_battery_level, travel_distance )
+		final_battery_level_url = "travel/final_battery_level/{}/{}".format( initial_battery_level, travel_distance )
 		final_battery_level_res = self._simulator.fetch_gateway( final_battery_level_url )
 		final_battery_level = int( final_battery_level_res[ 'final_battery_level' ] )
 
@@ -138,20 +138,16 @@ class Car:
 
 					self.log( 'Car reached <20% battery! Beginning charging period...' )
 					
-					charging_period_duration_url = "getChargingPeriodDuration"
+					charging_period_duration_url = "charging_period/duration"
 					charging_period_duration_res = self._simulator.fetch_gateway( charging_period_duration_url )
 					charging_period_duration = int( charging_period_duration_res[ 'charging_period_duration' ] )
 
-					charging_period_peak_url = "getChargingPeriodPeak"
-					charging_period_peak_res = self._simulator.fetch_gateway( charging_period_peak_url )
-					charging_period_peak = float( charging_period_peak_res[ 'charging_period_peak' ] )	
-					
 					simulator.lock_current_datetime( )
 
 					current_datetime = simulator.get_current_datetime( )
 					charging_period_start_datetime = current_datetime
 					charging_period_end_datetime = charging_period_start_datetime + timedelta( minutes = charging_period_duration )
-					self._start_charging_period( charging_period_start_datetime, charging_period_end_datetime,charging_period_peak )																		
+					self._start_charging_period( charging_period_start_datetime, charging_period_end_datetime )																		
 
 					simulator.unlock_current_datetime( )					
 
@@ -163,7 +159,7 @@ class Car:
 
 		self.unlock( )				
 
-	def _start_charging_period( self, start_datetime, end_datetime, peak_value ):
+	def _start_charging_period( self, start_datetime, end_datetime ):
 
 		if self.is_traveling( ) or self.is_charging( ):
 
@@ -171,9 +167,9 @@ class Car:
 
 		else:
 
-			self.log( 'Charging period started: designed to go from {} to {}, with a peak value of {} KW!'.format( start_datetime, end_datetime, peak_value ) )	
+			self.log( 'Charging period started: designed to go from {} to {} !'.format( start_datetime, end_datetime ) )	
 
-			new_charging_period = ChargingPeriod( self, start_datetime, end_datetime, peak_value )
+			new_charging_period = ChargingPeriod( self, start_datetime, end_datetime )
 			self._charging_periods.append( new_charging_period )
 			self.set_charging_state( True )
 
@@ -199,7 +195,6 @@ class Car:
 		return self._plug_consumption
 
 	def set_plug_consumption( self, new_plug_consumption ):
-
 		self._plug_consumption = new_plug_consumption	
 
 	def log( self, message ):

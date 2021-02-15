@@ -33,28 +33,18 @@ class ChargingPeriod:
 
 			if current_datetime <= self._end_datetime:
 				
-				car.lock( )		
+				car.lock( )	
 
 				elapsed_time = current_datetime - self._start_datetime
 				elapsed_time_perc = elapsed_time / charging_period_duration
+				elapsed_time_perc_formatted = elapsed_time_perc * 100        									
 
-				# <= 50% carregamento feito
-				# (2 * perc * peak)
-				# ex.: 2 * 0.3 * 2800
-				# ex.: 2 * 0.5 * 2800
-				if elapsed_time_perc <= 0.5: 
-					plug_consumption = ( 2 * elapsed_time_perc ) * self._peak_value
-
-				# > 50% carregamento feito
-				# ( 1 - perc ) * peak
-				# ex.: ( 1 - 0.8 ) * 2800
-				else:
-					plug_consumption = elapsed_time_perc * self._peak_value
-
-				elapsed_time_perc_formatted = elapsed_time_perc * 100
+				charging_period_energy_spent_url = "charging_period/energy_spent/{}".format( charging_period_progress )
+				charging_period_energy_spent_res = self._simulator.fetch_gateway( charging_period_energy_spent_url )
+				charging_period_energy_spent = float( charging_period_energy_spent_res[ 'charging_period_energy_spent' ] )	
 		
 				car.set_plug_consumption( plug_consumption )
-				car.log_debug( 'Charging... ({} KW -  {}% of {}%)'.format( plug_consumption, elapsed_time_perc_formatted, 100 ) )			
+				car.log_debug( 'Charging... ({} KW -  {}% of {}%)'.format( charging_period_energy_spent, elapsed_time_perc_formatted, 100 ) )			
 
 				car.unlock( )		
 				

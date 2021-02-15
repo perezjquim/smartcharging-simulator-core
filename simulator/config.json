@@ -1,7 +1,7 @@
 {
 	"number_of_cars": 2,
 	"sim_sampling_rate": 100,
-	"minutes_per_sim_step": 60,
+	"minutes_per_sim_step": 15,
 	"number_of_steps": 24,
 	"enable_debug_mode": false
 }
