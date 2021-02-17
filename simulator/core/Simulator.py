@@ -198,7 +198,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 			else:
 
 				current_hour_of_day = current_datetime.hour
-				affluence_url = "getAffluence/{}".format( current_hour_of_day )
+				affluence_url = "travel/affluence/{}".format( current_hour_of_day )
 				affluence_res = self.fetch_gateway( affluence_url )
 				affluence = int( affluence_res[ 'affluence' ] )
 				self._affluence_counts[ current_datetime_str ] = affluence			
