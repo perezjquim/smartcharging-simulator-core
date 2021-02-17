@@ -6,13 +6,11 @@ class ChargingPeriod:
 	_car = None
 	_start_datetime = None
 	_end_datetime = None
-	_peak_value = 0
 
-	def __init__( self, car, start_datetime, end_datetime, peak_value ):
+	def __init__( self, car, start_datetime, end_datetime ):
 		self._car = car
 		self._start_datetime = start_datetime
 		self._end_datetime = end_datetime
-		self._peak_value = peak_value
 
 		self._charging_period_thread = threading.Thread( target = self.run )
 		self._charging_period_thread.start( )		
@@ -39,11 +37,11 @@ class ChargingPeriod:
 				elapsed_time_perc = elapsed_time / charging_period_duration
 				elapsed_time_perc_formatted = elapsed_time_perc * 100        									
 
-				charging_period_energy_spent_url = "charging_period/energy_spent/{}".format( charging_period_progress )
-				charging_period_energy_spent_res = self._simulator.fetch_gateway( charging_period_energy_spent_url )
+				charging_period_energy_spent_url = "charging_period/energy_spent/{}".format( elapsed_time_perc )
+				charging_period_energy_spent_res = simulator.fetch_gateway( charging_period_energy_spent_url )
 				charging_period_energy_spent = float( charging_period_energy_spent_res[ 'charging_period_energy_spent' ] )	
 		
-				car.set_plug_consumption( plug_consumption )
+				car.set_plug_consumption( charging_period_energy_spent )
 				car.log_debug( 'Charging... ({} KW -  {}% of {}%)'.format( charging_period_energy_spent, elapsed_time_perc_formatted, 100 ) )			
 
 				car.unlock( )		
@@ -67,6 +65,3 @@ class ChargingPeriod:
 
 	def get_end_datetime( self ):
 		return self._end_datetime
-
-	def get_peak_value( self ):
-		return self._peak_value		
