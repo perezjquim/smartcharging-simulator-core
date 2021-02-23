@@ -4,8 +4,6 @@ from datetime import date, datetime, timedelta
 
 class Travel:
 
-	TRAVEL_DURATION = 10 #TODO		
-
 	_car = None
 	_start_datetime = None
 	_end_datetime = None
@@ -28,6 +26,10 @@ class Travel:
 		travel_distance_res = simulator.fetch_gateway( travel_distance_url )
 		self._distance = float( travel_distance_res[ 'travel_distance' ] )
 
+		travel_duration_url = "travel/duration"
+		travel_duration_res = simulator.fetch_gateway( travel_duration_url )
+		travel_duration = float( travel_duration_res[ 'travel_duration' ] )		
+
 		initial_battery_level = car.get_battery_level( )	
 		final_battery_level_url = "travel/final_battery_level/{}/{}".format( initial_battery_level, self._distance )
 		final_battery_level_res = simulator.fetch_gateway( final_battery_level_url )
@@ -39,7 +41,7 @@ class Travel:
 
 		current_datetime = simulator.get_current_datetime( )
 		self._start_datetime = current_datetime
-		self._end_datetime = self._start_datetime + timedelta( minutes = Travel.TRAVEL_DURATION ) #TODO
+		self._end_datetime = self._start_datetime + timedelta( minutes = travel_duration )
 
 		car.log( 'Travel started: designed to go from {} to {}, with a battery consumption of {} and a distance of {} km'.format( self._start_datetime, self._end_datetime, self._battery_consumption, self._distance ) )				
 
