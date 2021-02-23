@@ -5,6 +5,7 @@ import inspect
 from datetime import date, datetime, timedelta
 from .SingletonMetaClass import SingletonMetaClass
 from .ConfigurationHelper import ConfigurationHelper
+from .Logger import Logger
 from .Car import Car
 
 class Simulator( metaclass = SingletonMetaClass ):
@@ -48,15 +49,13 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.log_main( "Fetching config... done!" )
 
 	def log( self, message ):
-		print( message )
+		Logger.log( message )
 
 	def log_main( self, message ):
-		print( '{} {}'.format( Simulator.MAIN_LOG_PREFIX, message ) ) 
+		self.log( '{} {}'.format( Simulator.MAIN_LOG_PREFIX, message ) ) 
 
 	def log_debug( self, message ):
-		is_debug_enabled = self.get_config( 'enable_debug_mode' )
-		if is_debug_enabled:
-			self.log( 'DEBUG: {}'.format( message ) )
+		Logger.log_debug( message )
 
 	def get_config( self, config_key ):
 		return self._config[ config_key ]
