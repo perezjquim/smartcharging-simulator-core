@@ -24,6 +24,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 	_current_step_lock = None
 	_current_datetime_lock = None
 
+	_charging_plugs_semaphore = None
+
 	def on_init( self ):
 		self._current_step_lock = threading.Lock( )
 		self._current_datetime_lock = threading.Lock( )
@@ -33,6 +35,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self._current_step = 1	
 		self._main_thread = threading.Thread( target = self.run )
 		self._main_thread.start( )
+
+		number_of_charging_plugs = self.get_config( 'number_of_charging_plugs' )
+		self._charging_plugs_semaphore = threading.Semaphore( number_of_charging_plugs )
 
 	def _fetch_config( self ):
 		self.log_main( "Fetching config..." )
@@ -81,25 +86,38 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		self.log_main( 'Initializing date... done!' )
 
+	def _get_caller( self ):
+		return inspect.stack( )[ 2 ][ 3 ]
+
 	def lock_current_datetime( self ):
-		caller = inspect.stack()[1][3]
+		caller = self._get_caller( )
 		self.log_debug( 'LOCKING DATETIME... (by {})'.format( caller ) )
 		self._current_datetime_lock.acquire( )
 
 	def unlock_current_datetime( self ):
-		caller = inspect.stack()[1][3]
+		caller = self._get_caller( )
 		self.log_debug( 'UNLOCKING DATETIME... (by {})'.format( caller ) )
 		self._current_datetime_lock.release( )
 
 	def lock_current_step( self ):
-		caller = inspect.stack()[1][3]
+		caller = self._get_caller( )
 		self.log_debug( 'LOCKING STEP... (by {})'.format( caller ) )
 		self._current_step_lock.acquire( )
 
 	def unlock_current_step( self ):
-		caller = inspect.stack()[1][3]
+		caller = self._get_caller( )
 		self.log_debug( 'UNLOCKING STEP... (by {})'.format( caller ) )
 		self._current_step_lock.release( )		
+
+	def acquire_charging_plugs_semaphore( self ):
+		caller = self._get_caller( )		
+		self.log_debug( 'ACQUIRING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
+		self._charging_plugs_semaphore.acquire( )
+
+	def release_charging_plugs_semaphore( self ):
+		caller = self._get_caller( )			
+		self.log_debug( 'RELEASING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
+		self._charging_plugs_semaphore.release( )
 
 	def get_current_datetime( self ):
 		return self._current_datetime
@@ -211,7 +229,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 					car_can_travel = ( not c.is_traveling( ) and not c.is_charging( ) )		
 					if car_can_travel:
-						c.start_new_travel( current_datetime )	
+						c.start_travel( )	
 						self._affluence_counts[ current_datetime_str ] -= 1	
 
 					c.unlock( )

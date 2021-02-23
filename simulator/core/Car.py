@@ -11,8 +11,6 @@ class Car:
 
 	DEFAULT_BATTERY_LEVEL = 10
 
-	TRAVEL_DURATION = 10 #TODO			
-
 	counter = 0
 
 	_id = 0
@@ -81,22 +79,7 @@ class Car:
 		else:
 			self.log( 'Invalid battery level given!' )
 
-	def start_new_travel( self, current_datetime ):		
-		travel_distance_url = "travel/distance"
-		travel_distance_res = self._simulator.fetch_gateway( travel_distance_url )
-		travel_distance = float( travel_distance_res[ 'travel_distance' ] )
-
-		initial_battery_level = self.get_battery_level( )	
-		final_battery_level_url = "travel/final_battery_level/{}/{}".format( initial_battery_level, travel_distance )
-		final_battery_level_res = self._simulator.fetch_gateway( final_battery_level_url )
-		final_battery_level = int( final_battery_level_res[ 'final_battery_level' ] )
-
-		travel_start_datetime = current_datetime
-		travel_end_datetime = travel_start_datetime + timedelta( minutes = Car.TRAVEL_DURATION ) #TODO
-		battery_consumption = initial_battery_level - final_battery_level
-		self._start_travel( travel_start_datetime, travel_end_datetime, travel_distance, battery_consumption )				
-
-	def _start_travel( self, start_datetime, end_datetime, distance, battery_consumption ):
+	def start_travel( self ):	
 
 		if self.is_traveling( ) or self.is_charging( ):
 
@@ -104,9 +87,7 @@ class Car:
 
 		else:
 
-			self.log( 'Travel started: designed to go from {} to {}, with a battery consumption of {} and a distance of {} km'.format( start_datetime, end_datetime, battery_consumption, distance ) )				
-
-			new_travel = Travel( self, start_datetime, end_datetime, distance, battery_consumption )
+			new_travel = Travel( self )
 			self._travels.append( new_travel )
 			self.set_traveling_state( True )
 
@@ -128,7 +109,7 @@ class Car:
 			simulator = self._simulator
 			simulator.lock_current_step( )
 
-			if self._simulator.can_simulate_new_actions( ):
+			if simulator.can_simulate_new_actions( ):
 
 				if new_battery_level > 2:
 
@@ -136,22 +117,10 @@ class Car:
 
 				else:
 
-					self.log( 'Car reached <20% battery! Beginning charging period...' )
-					
-					charging_period_duration_url = "charging_period/duration"
-					charging_period_duration_res = self._simulator.fetch_gateway( charging_period_duration_url )
-					charging_period_duration = int( charging_period_duration_res[ 'charging_period_duration' ] )
+					self.log( 'Car reached <20% battery! Waiting for a available charging plug..' )										
+					self._start_charging_period( )																			
 
-					simulator.lock_current_datetime( )
-
-					current_datetime = simulator.get_current_datetime( )
-					charging_period_start_datetime = current_datetime
-					charging_period_end_datetime = charging_period_start_datetime + timedelta( minutes = charging_period_duration )
-					self._start_charging_period( charging_period_start_datetime, charging_period_end_datetime )																		
-
-					simulator.unlock_current_datetime( )					
-
-			simulator.unlock_current_step( )							
+			simulator.unlock_current_step( )																
 
 		else:
 
@@ -159,7 +128,7 @@ class Car:
 
 		self.unlock( )				
 
-	def _start_charging_period( self, start_datetime, end_datetime ):
+	def _start_charging_period( self ):
 
 		if self.is_traveling( ) or self.is_charging( ):
 
@@ -167,9 +136,7 @@ class Car:
 
 		else:
 
-			self.log( 'Charging period started: designed to go from {} to {} !'.format( start_datetime, end_datetime ) )	
-
-			new_charging_period = ChargingPeriod( self, start_datetime, end_datetime )
+			new_charging_period = ChargingPeriod( self )
 			self._charging_periods.append( new_charging_period )
 			self.set_charging_state( True )
 
@@ -183,6 +150,9 @@ class Car:
 			self.set_plug_consumption( 0 )
 
 			self.log( 'Charging period ended!' )
+
+			simulator = self._simulator
+			simulator.release_charging_plugs_semaphore( )
 
 		else:
 
