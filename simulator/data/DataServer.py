@@ -26,11 +26,7 @@ class DataServer:
 		event_loop = asyncio.get_event_loop( )
 		event_loop.run_until_complete( init_ws )		
 		event_loop.run_forever()
-		print( '``````````Initializing WS... done!``````````' )		
-
-		print( '``````````Initializing API...``````````' )
-		api.run( )	
-		print( '``````````Initializing API... done!``````````' )		
+		print( '``````````Initializing WS... done!``````````' )	
 
 	async def on_connect_ws( self, websocket, path ):
 		name = await websocket.recv( )
