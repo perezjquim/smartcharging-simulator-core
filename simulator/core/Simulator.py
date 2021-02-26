@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 from .SingletonMetaClass import SingletonMetaClass
 from .ConfigurationHelper import ConfigurationHelper
 from .Logger import Logger
+from data.SocketHelper import SocketHelper
 from .Car import Car
 
 class Simulator( metaclass = SingletonMetaClass ):
@@ -28,6 +29,10 @@ class Simulator( metaclass = SingletonMetaClass ):
 	_charging_plugs_semaphore = None
 
 	def on_init( self ):
+		socket_helper = SocketHelper( )
+		socket_helper.on_init( )
+		socket_helper.attach_on_client_message_received( self.on_client_message_received )		
+
 		self._current_step_lock = threading.Lock( )
 		self._current_datetime_lock = threading.Lock( )
 		self._fetch_config( )
@@ -39,6 +44,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		number_of_charging_plugs = self.get_config( 'number_of_charging_plugs' )
 		self._charging_plugs_semaphore = threading.Semaphore( number_of_charging_plugs )
+
+	def on_client_message_received( self, message ):
+		self.log( '$$$$$$ MESSAGE RECEIVED: {} $$$$$$'.format( message ) )
 
 	def _fetch_config( self ):
 		self.log_main( "Fetching config..." )

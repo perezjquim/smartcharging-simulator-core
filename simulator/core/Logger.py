@@ -1,11 +1,13 @@
 import json
 from .SingletonMetaClass import SingletonMetaClass
 from .ConfigurationHelper import ConfigurationHelper
-from .SingletonMetaClass import SingletonMetaClass
+from data.SocketHelper import SocketHelper
 
 class Logger( metaclass = SingletonMetaClass ):
 
 	def log( message ):
+		socket_helper = SocketHelper( )
+		socket_helper.send_message_to_clients( message )
 		print( message )
 
 	def log_debug( message ):
