@@ -32,16 +32,14 @@ class SocketHelper( metaclass = SingletonMetaClass ):
             while True:
                 message = await client.recv( )
                 self.on_client_message_received( message )           
-                asyncio.sleep( 1 )                     
+                asyncio.sleep( 0 )                     
         except:
             self.unregister_ws_client( client )
 
     def register_ws_client( self, client ):
-        print("reg.....")
         self._ws_clients.append( client )
 
     def unregister_ws_client( self, client ):     
-        print("unreg....")
         self._ws_clients.remove( client )                 
 
     def attach_on_client_message_received( self, recipient ):    
@@ -58,7 +56,6 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         asyncio.run_coroutine_threadsafe( self._send_message( message ), self._event_loop )
 
     async def _send_message( self, message ):
-        print("trying to send!!!!")
         for c in self._ws_clients:
             try:    
                 await c.send( message )
