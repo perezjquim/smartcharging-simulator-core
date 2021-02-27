@@ -14,4 +14,4 @@ class Logger( metaclass = SingletonMetaClass ):
 		config = ConfigurationHelper.read_config( )
 		is_debug_enabled = config[ 'enable_debug_mode' ]
 		if is_debug_enabled:
-			self.log( 'DEBUG: {}'.format( message ) )
+			Logger.log( 'DEBUG: {}'.format( message ) )

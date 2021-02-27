@@ -2,6 +2,7 @@ import time
 import threading
 import requests
 import inspect
+import re
 from datetime import date, datetime, timedelta
 from .SingletonMetaClass import SingletonMetaClass
 from .ConfigurationHelper import ConfigurationHelper
@@ -14,6 +15,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 	MAIN_LOG_PREFIX = '============================'
 
 	GATEWAY_REQUEST_BASE = 'http://cont_energysim_gateway:8000/{}'
+
+	MESSAGE_REGEX = '(?:^{}\$)(.*)'
+	MESSAGE_PREFIX_COMMAND = 'COMMAND'
 
 	_main_thread = None	
 	_config = { }
@@ -28,6 +32,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 	_charging_plugs_semaphore = None
 
+	_is_simulation_running_lock = None
+	_is_simulation_running = False
+
 	def on_init( self ):
 		socket_helper = SocketHelper( )
 		socket_helper.on_init( )
@@ -35,26 +42,55 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		self._current_step_lock = threading.Lock( )
 		self._current_datetime_lock = threading.Lock( )
+		self._is_simulation_running_lock = threading.Lock( )
+
 		self._fetch_config( )
-		self._initialize_cars( )
-		self._initialize_datetime( )	
-		self._current_step = 1	
-		self._main_thread = threading.Thread( target = self.run )
-		self._main_thread.start( )
 
 		number_of_charging_plugs = self.get_config( 'number_of_charging_plugs' )
 		self._charging_plugs_semaphore = threading.Semaphore( number_of_charging_plugs )
 
-	def on_client_message_received( self, message ):
-		self.log( '$$$$$$ MESSAGE RECEIVED: {} $$$$$$'.format( message ) )
+	def on_start( self ):
+		if self.is_simulation_running( ):			
+			self.log( 'Simulation cannot be started (it is already running)!' )
+		else:
+			self.log_main( 'Starting simulation...' )
+			self._initialize_cars( )
+			self._initialize_datetime( )	
+			self._current_step = 1			
+			self._main_thread = threading.Thread( target = self.run )	
+			self.set_simulation_state( True )			
+			self._main_thread.start( )
+			self.log_main( 'Starting simulation... done!' )		
+
+	def on_stop( self ):
+		if self.is_simulation_running( ):			
+			self.log_main( 'Stopping simulation!' )
+			self._clean_up( )
+		else:
+			self.log( 'Simulation cannot be stopped (it is not running)!' )		
+
+	def _clean_up( self ):
+		self.set_simulation_state( False )
+		self._main_thread.join( )
+
+	def on_client_message_received( self, message ):	
+		self.log_debug( "$$$ MESSAGE RECEIVED: {} $$$".format( message ) )
+		command_regex = Simulator.MESSAGE_REGEX.format( Simulator.MESSAGE_PREFIX_COMMAND )
+		command_regex_match = re.search( command_regex, message )
+		if( command_regex_match ):
+			command = command_regex_match.group( 1 )
+			if command == 'START-SIMULATION':
+				self.on_start( )
+			elif command == 'STOP-SIMULATION':
+				self.on_stop( )
 
 	def _fetch_config( self ):
-		self.log_main( "Fetching config..." )
+		self.log( "Fetching config..." )
 
 		self._config = ConfigurationHelper.read_config( )
 		self.log_debug( 'Config >> {}'.format( self._config ) )
 
-		self.log_main( "Fetching config... done!" )
+		self.log( "Fetching config... done!" )
 
 	def log( self, message ):
 		Logger.log( message )
@@ -68,20 +104,18 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def get_config( self, config_key ):
 		return self._config[ config_key ]
 
-	def run( self ):	
-		self._begin_simulation( )
-
 	def _initialize_cars( self ):
-		self.log_main( 'Initializing cars...' )
+		self.log( 'Initializing cars...' )
 
+		self._cars = [ ]
 		number_of_cars = self.get_config( 'number_of_cars' )
 		for n in range( number_of_cars ):
 			self._cars.append( Car( self ) )
 
-		self.log_main( 'Initializing cars... done!' )
+		self.log( 'Initializing cars... done!' )
 
 	def _initialize_datetime( self ):
-		self.log_main( 'Initializing date...' )
+		self.log( 'Initializing date...' )
 
 		today_date = date.today( )
 		today_year = today_date.year
@@ -91,10 +125,11 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.set_current_datetime( datetime( year = today_year, month = today_month, day = today_day ) )
 		self.log( 'Date initialized as: {}'.format( self._current_datetime ) )
 
-		self.log_main( 'Initializing date... done!' )
+		self.log( 'Initializing date... done!' )
 
 	def _get_caller( self ):
-		return inspect.stack( )[ 2 ][ 3 ]
+		stack = inspect.stack( )[ 2 ]
+		return stack[ 1 ] + "::" + stack[ 3 ]
 
 	def lock_current_datetime( self ):
 		caller = self._get_caller( )
@@ -132,13 +167,13 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def set_current_datetime( self, new_datetime ):
 		self._current_datetime = new_datetime
 
-	def _begin_simulation( self ):
+	def run( self ):
 		self.log_main( 'Simulating...' )
 
 		sim_sampling_rate = self.get_config( 'sim_sampling_rate' )		
 		number_of_steps = self.get_config( 'number_of_steps' )
 
-		while True:
+		while self.is_simulation_running( ):
 
 			cars_in_travel = [ ]
 			cars_in_charging = [ ]
@@ -161,9 +196,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self.log( '### TOTAL PLUG CONSUMPTION: {} KW ###'.format( total_plug_consumption ) )
 
 			current_step = self.get_current_step( )
-			is_simulation_running = ( current_step <= number_of_steps or len( cars_in_travel ) > 0 or len( cars_in_charging ) > 0 )
+			should_simulate_next_step = ( current_step <= number_of_steps or len( cars_in_travel ) > 0 or len( cars_in_charging ) > 0 )
 
-			if is_simulation_running:	
+			if should_simulate_next_step:	
 
 				self.log( "> Simulation step..." )		
 
@@ -193,9 +228,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			else:
 
-				break
+				self.set_simulation_state( False )	
 
-			time.sleep( sim_sampling_rate / 1000 )				
+			time.sleep( sim_sampling_rate / 1000 )						
 
 		self.log_main( 'Simulating... done!' )	
 
@@ -203,6 +238,27 @@ class Simulator( metaclass = SingletonMetaClass ):
 		number_of_steps = self.get_config( 'number_of_steps' )
 		can_simulate_new_actions = ( self._current_step <= number_of_steps )
 		return can_simulate_new_actions
+
+	def lock_simulation( self ):
+		caller = self._get_caller( )
+		self.log_debug( 'LOCKING SIMULATION... (by {})'.format( caller ) )
+		self._is_simulation_running_lock.acquire( )		
+
+	def unlock_simulation( self ):
+		caller = self._get_caller( )
+		self.log_debug( 'UNLOCKING SIMULATION... (by {})'.format( caller ) )
+		self._is_simulation_running_lock.release( )			
+
+	def is_simulation_running( self ):
+		self.lock_simulation( )
+		is_simulation_running = self._is_simulation_running
+		self.unlock_simulation( )
+		return is_simulation_running
+
+	def set_simulation_state( self, new_value ):
+		self.lock_simulation( )
+		self._is_simulation_running = new_value
+		self.unlock_simulation( )
 
 	def get_current_step( self ):
 		return self._current_step

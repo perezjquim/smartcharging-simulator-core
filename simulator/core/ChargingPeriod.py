@@ -44,7 +44,7 @@ class ChargingPeriod:
 
 			sim_sampling_rate = simulator.get_config( 'sim_sampling_rate' )
 
-			while True:
+			while simulator.is_simulation_running( ):
 
 				simulator.lock_current_datetime( )
 
