@@ -3,6 +3,8 @@ import asyncio
 import websockets
 import os
 import threading
+import json
+import traceback
 
 class SocketHelper( metaclass = SingletonMetaClass ):
 
@@ -30,12 +32,18 @@ class SocketHelper( metaclass = SingletonMetaClass ):
             self.register_ws_client( client )            
             await client.send( 'WS -- CONNECTED SUCCESSFULLY!' )
             while True:
-                message = await client.recv( )
+                message = await self._receive_message( client )
                 self.on_client_message_received( message )           
-                asyncio.sleep( 1 )                     
+                asyncio.sleep( 0 )                     
         except Exception as exc:
             print( 'EXCEPTION: {}'.format( exc ) )
+            traceback.print_exc( )            
             self.unregister_ws_client( client )
+
+    async def _receive_message( self, client ):
+        message_str = await client.recv( )
+        message = json.loads( message_str )
+        return message
 
     def register_ws_client( self, client ):
         self._ws_clients.append( client )
@@ -53,13 +61,17 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         for r in self._ws_client_message_recipients:
             r( message )
 
-    def send_message_to_clients( self, message ):
-        asyncio.run_coroutine_threadsafe( self._send_message( message ), self._event_loop )
+    def send_message_to_clients( self, message_type, message_value ):
+        asyncio.run_coroutine_threadsafe( self._send_message( message_type, message_value ), self._event_loop )
 
-    async def _send_message( self, message ):
+    async def _send_message( self, message_type, message_value ):
+        message = { 'message_type' : message_type, 'message_value' : message_value }
+        message_str = json.dumps( message )
+        
         for c in self._ws_clients:
             try:    
-                await c.send( message )
+                await c.send( message_str )
             except Exception as exc:
                 print( 'EXCEPTION: {}'.format( exc ) )
+                traceback.print_exc( )                            
                 self.unregister_ws_client( client )

@@ -161,7 +161,6 @@ class Car:
 		self.unlock( )	
 
 	def get_plug_consumption( self ):
-
 		return self._plug_consumption
 
 	def set_plug_consumption( self, new_plug_consumption ):
@@ -172,3 +171,12 @@ class Car:
 
 	def log_debug( self, message ):
 		self._simulator.log_debug( Car.LOG_TEMPLATE.format( self._id, message ) )		
+
+	def destroy( self ):
+		if len( self._travels ) > 0:
+			for t in self._travels:
+				t.destroy( )
+
+		if len( self._charging_periods ) > 0:
+			for c in self._charging_periods:
+				c.destroy( )

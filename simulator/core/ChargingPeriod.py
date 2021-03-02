@@ -1,22 +1,14 @@
-import threading
 import time
 from datetime import date, datetime, timedelta
+from .CarEvent import CarEvent
 
-class ChargingPeriod:
-
-	_car = None
-	_duration = 0
-	_start_datetime = None
-	_end_datetime = None
+class ChargingPeriod( CarEvent ):
 
 	def __init__( self, car ):
-		self._car = car
-
-		self._charging_period_thread = threading.Thread( target = self.run )
-		self._charging_period_thread.start( )		
+		super( ).__init__( car )	
 
 	def run( self ):
-		car = self._car
+		car = self.get_car( )
 
 		simulator = car.get_simulator( )
 
@@ -33,10 +25,14 @@ class ChargingPeriod:
 			simulator.lock_current_datetime( )
 
 			current_datetime = simulator.get_current_datetime( )
-			self._start_datetime = current_datetime
-			self._end_datetime = self._start_datetime + timedelta( minutes = charging_period_duration )
 
-			car.log( 'Charging period started: designed to go from {} to {}!'.format( self._start_datetime, self._end_datetime ) )				
+			start_datetime = current_datetime
+			self.set_start_datetime( start_datetime )
+
+			end_datetime = start_datetime + timedelta( minutes = charging_period_duration )
+			self.set_end_datetime( end_datetime )
+
+			car.log( 'Charging period started: designed to go from {} to {}!'.format( start_datetime, end_datetime ) )				
 
 			simulator.unlock_current_datetime( )				
 
@@ -50,11 +46,11 @@ class ChargingPeriod:
 
 				current_datetime = simulator.get_current_datetime( )
 
-				if current_datetime <= self._end_datetime:
+				if current_datetime <= end_datetime:
 					
 					car.lock( )	
 
-					elapsed_time = ( ( current_datetime - self._start_datetime ).total_seconds( ) ) / 60
+					elapsed_time = ( ( current_datetime - start_datetime ).total_seconds( ) ) / 60
 					elapsed_time_perc = elapsed_time / charging_period_duration
 					elapsed_time_perc_formatted = elapsed_time_perc * 100        									
 
@@ -83,12 +79,3 @@ class ChargingPeriod:
 			simulator.unlock_current_step( )
 
 		simulator.release_charging_plugs_semaphore( )			
-
-	def get_car( self ):
-		return self._car
-
-	def get_start_datetime( self ):
-		return self._start_datetime
-
-	def get_end_datetime( self ):
-		return self._end_datetime

@@ -6,7 +6,7 @@ import re
 from datetime import date, datetime, timedelta
 from .SingletonMetaClass import SingletonMetaClass
 from .ConfigurationHelper import ConfigurationHelper
-from .Logger import Logger
+from data.Logger import Logger
 from data.SocketHelper import SocketHelper
 from .Car import Car
 
@@ -15,9 +15,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 	MAIN_LOG_PREFIX = '============================'
 
 	GATEWAY_REQUEST_BASE = 'http://cont_energysim_gateway:8000/{}'
-
-	MESSAGE_REGEX = '(?:^{}\$)(.*)'
-	MESSAGE_PREFIX_COMMAND = 'COMMAND'
 
 	_main_thread = None	
 	_config = { }
@@ -57,28 +54,35 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self._initialize_cars( )
 			self._initialize_datetime( )	
 			self._current_step = 1			
-			self._main_thread = threading.Thread( target = self.run )	
-			self.set_simulation_state( True )			
+			self.set_simulation_state( True )	
+			self._main_thread = threading.Thread( target = self.run )						
 			self._main_thread.start( )
 			self.log_main( 'Starting simulation... done!' )		
 
 	def on_stop( self ):
 		if self.is_simulation_running( ):			
 			self.log_main( 'Stopping simulation!' )
-			self._clean_up( )
+			self._end_simulation( True )
 		else:
 			self.log( 'Simulation cannot be stopped (it is not running)!' )		
 
-	def _clean_up( self ):
+	def _end_simulation( self, wait ):
 		self.set_simulation_state( False )
-		self._main_thread.join( )
+
+		if wait:
+			for c in self._cars:
+				c.destroy( )		
+			self._main_thread.join( )
 
 	def on_client_message_received( self, message ):	
 		self.log_debug( "$$$ MESSAGE RECEIVED: {} $$$".format( message ) )
-		command_regex = Simulator.MESSAGE_REGEX.format( Simulator.MESSAGE_PREFIX_COMMAND )
-		command_regex_match = re.search( command_regex, message )
-		if( command_regex_match ):
-			command = command_regex_match.group( 1 )
+
+		message_type = message[ 'message_type' ]
+
+		if message_type == 'command':
+
+			command = message[ 'message_value' ]
+
 			if command == 'START-SIMULATION':
 				self.on_start( )
 			elif command == 'STOP-SIMULATION':
@@ -228,7 +232,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			else:
 
-				self.set_simulation_state( False )	
+				self._end_simulation( False )
 
 			time.sleep( sim_sampling_rate / 1000 )						
 
