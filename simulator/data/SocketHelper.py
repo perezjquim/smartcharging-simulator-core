@@ -30,7 +30,8 @@ class SocketHelper( metaclass = SingletonMetaClass ):
     async def on_connect_ws_client( self, client, path ):
         try:
             self.register_ws_client( client )            
-            await client.send( 'WS -- CONNECTED SUCCESSFULLY!' )
+            init_message_str = self._stringify_message( 'log', 'WS -- CONNECTED SUCCESSFULLY!' )
+            await client.send( init_message_str )
             while True:
                 message = await self._receive_message( client )
                 self.on_client_message_received( message )           
@@ -64,9 +65,13 @@ class SocketHelper( metaclass = SingletonMetaClass ):
     def send_message_to_clients( self, message_type, message_value ):
         asyncio.run_coroutine_threadsafe( self._send_message( message_type, message_value ), self._event_loop )
 
-    async def _send_message( self, message_type, message_value ):
+    def _stringify_message( self, message_type, message_value ):
         message = { 'message_type' : message_type, 'message_value' : message_value }
         message_str = json.dumps( message )
+        return message_str
+
+    async def _send_message( self, message_type, message_value ):
+        message_str = self._stringify_message( message_type, message_value )
         
         for c in self._ws_clients:
             try:    
