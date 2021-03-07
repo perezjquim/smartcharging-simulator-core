@@ -177,7 +177,11 @@ class Simulator( metaclass = SingletonMetaClass ):
 		sim_sampling_rate = self.get_config( 'sim_sampling_rate' )		
 		number_of_steps = self.get_config( 'number_of_steps' )
 
+		socket_helper = SocketHelper( )		
+
 		while self.is_simulation_running( ):
+
+			data_to_export = { "cars": [ ] }
 
 			cars_in_travel = [ ]
 			cars_in_charging = [ ]
@@ -195,7 +199,11 @@ class Simulator( metaclass = SingletonMetaClass ):
 				plug_consumption = c.get_plug_consumption( )
 				total_plug_consumption += plug_consumption
 
+				data_to_export[ "cars" ].append( c.get_data( ) )
+
 				c.unlock( )
+
+			socket_helper.send_message_to_clients( 'data', data_to_export )				
 
 			self.log( '### TOTAL PLUG CONSUMPTION: {} KW ###'.format( total_plug_consumption ) )
 

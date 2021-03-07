@@ -70,3 +70,10 @@ class Travel( CarEvent ):
 
 	def get_battery_consumption( self ):
 		return self._battery_consumption	
+
+	def get_data( self ):
+		data = super( ).get_data( )
+		return data.update({
+			"distance" : self._distance,
+			"battery_consumption" : self._battery_consumption
+		})

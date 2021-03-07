@@ -35,3 +35,9 @@ class CarEvent:
 
 	def destroy( self ):
 		self._thread.join( )
+
+	def get_data( self ):
+		return {
+			"start_datetime" : self._start_datetime,
+			"end_datetime" : self._end_datetime
+		}

@@ -180,3 +180,17 @@ class Car:
 		if len( self._charging_periods ) > 0:
 			for c in self._charging_periods:
 				c.destroy( )
+
+		self._set_charging_state( False )
+		self._set_traveling_state( False )
+
+	def get_data( self ):
+		return { 
+			"id" : self._id,
+			"is_traveling" : self._is_traveling,
+			"is_charging" : self._is_charging,
+			"travels" : [ t.get_data( ) for t in self._travels ],
+			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ],
+			"battery_level" : self._battery_level,
+			"plug_consumption" : self._plug_consumption
+		}
