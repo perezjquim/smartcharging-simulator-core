@@ -16,6 +16,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 	GATEWAY_REQUEST_BASE = 'http://cont_energysim_gateway:8000/{}'
 
+	_socket_helper = None
+
 	_main_thread = None	
 	_config = { }
 	_cars = [ ]
@@ -33,9 +35,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 	_is_simulation_running = False
 
 	def on_init( self ):
-		socket_helper = SocketHelper( )
-		socket_helper.on_init( )
-		socket_helper.attach_on_client_message_received( self.on_client_message_received )		
+		self._socket_helper = SocketHelper( )
+		self._socket_helper.on_init( )	
 
 		self._current_step_lock = threading.Lock( )
 		self._current_datetime_lock = threading.Lock( )
@@ -45,6 +46,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		number_of_charging_plugs = self.get_config( 'number_of_charging_plugs' )
 		self._charging_plugs_semaphore = threading.Semaphore( number_of_charging_plugs )
+
+		self._socket_helper.attach_on_client_connected( self.on_client_connected )	
+		self._socket_helper.attach_on_client_message_received( self.on_client_message_received )		
 
 	def on_start( self ):
 		if self.is_simulation_running( ):			
@@ -57,22 +61,38 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self.set_simulation_state( True )	
 			self._main_thread = threading.Thread( target = self.run )						
 			self._main_thread.start( )
-			self.log_main( 'Starting simulation... done!' )		
+			self.log_main( 'Starting simulation... done!' )				
 
 	def on_stop( self ):
 		if self.is_simulation_running( ):			
 			self.log_main( 'Stopping simulation!' )
-			self._end_simulation( True )
+			self._end_simulation( True )		
 		else:
 			self.log( 'Simulation cannot be stopped (it is not running)!' )		
 
-	def _end_simulation( self, wait ):
+	def _end_simulation( self, wait_for_main_thread ):
 		self.set_simulation_state( False )
 
-		if wait:
-			for c in self._cars:
-				c.destroy( )		
+		for c in self._cars:
+			c.destroy( )	
+
+		if wait_for_main_thread:					
 			self._main_thread.join( )
+
+		self._send_sim_data_to_clients( )
+
+	def on_client_connected( self, client ):		
+		self._send_sim_state_to_clients( client )
+		self._send_sim_data_to_clients( client )		
+
+	def _send_sim_state_to_clients( self, client=None ):
+		self.log_debug( '////// SENDING SIM STATE... //////' )
+
+		is_sim_running = self.is_simulation_running( )
+		message = { 'is_sim_running' : is_sim_running }
+		self._socket_helper.send_message_to_clients( 'state', message )
+
+		self.log_debug( '////// SENDING SIM STATE... done! //////' )		
 
 	def on_client_message_received( self, message ):	
 		self.log_debug( "$$$ MESSAGE RECEIVED: {} $$$".format( message ) )
@@ -172,23 +192,18 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self._current_datetime = new_datetime
 
 	def run( self ):
-		self.log_main( 'Simulating...' )
+		self.log_main( 'Simulating...' )		
 
 		sim_sampling_rate = self.get_config( 'sim_sampling_rate' )		
 		number_of_steps = self.get_config( 'number_of_steps' )
 
-		socket_helper = SocketHelper( )		
-
 		while self.is_simulation_running( ):
-
-			data_to_export = { "cars": [ ] }
 
 			cars_in_travel = [ ]
 			cars_in_charging = [ ]
 			total_plug_consumption = 0
 
 			for c in self._cars:
-
 				c.lock( )
 
 				if c.is_traveling( ):
@@ -199,16 +214,11 @@ class Simulator( metaclass = SingletonMetaClass ):
 				plug_consumption = c.get_plug_consumption( )
 				total_plug_consumption += plug_consumption
 
-				data_to_export[ "cars" ].append( c.get_data( ) )
-
-				c.unlock( )
-
-			socket_helper.send_message_to_clients( 'data', data_to_export )				
+				c.unlock( )		
 
 			self.log( '### TOTAL PLUG CONSUMPTION: {} KW ###'.format( total_plug_consumption ) )
 
-			current_step = self.get_current_step( )
-			should_simulate_next_step = ( current_step <= number_of_steps or len( cars_in_travel ) > 0 or len( cars_in_charging ) > 0 )
+			should_simulate_next_step = ( self.can_simulate_new_actions( ) or len( cars_in_travel ) > 0 or len( cars_in_charging ) > 0 )
 
 			if should_simulate_next_step:	
 
@@ -217,6 +227,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 				self.lock_current_datetime( )
 
 				current_datetime = self.get_current_datetime( )
+				current_step = self.get_current_step( )				
 				if current_step > 1:
 					
 					minutes_per_sim_step = self.get_config( 'minutes_per_sim_step' )
@@ -242,13 +253,31 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 				self._end_simulation( False )
 
-			time.sleep( sim_sampling_rate / 1000 )						
+			self._send_sim_data_to_clients( )
 
+			time.sleep( sim_sampling_rate / 1000 )	
+							
 		self.log_main( 'Simulating... done!' )	
+
+	def _send_sim_data_to_clients( self, client=None ):
+		self.log_debug( '////// SENDING SIM DATA... //////' )
+
+		data_to_export = { "cars": [ ] }
+
+		for c in self._cars:
+			#c.lock( )
+
+			data_to_export[ "cars" ].append( c.get_data( ) )
+
+			#c.unlock( )				
+
+		self._socket_helper.send_message_to_clients( 'data', data_to_export, client )		
+
+		self.log_debug( '////// SENDING SIM DATA... done! //////' )			
 
 	def can_simulate_new_actions( self ):
 		number_of_steps = self.get_config( 'number_of_steps' )
-		can_simulate_new_actions = ( self._current_step <= number_of_steps )
+		can_simulate_new_actions = self.is_simulation_running( ) and ( self._current_step <= number_of_steps )
 		return can_simulate_new_actions
 
 	def lock_simulation( self ):
@@ -271,6 +300,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.lock_simulation( )
 		self._is_simulation_running = new_value
 		self.unlock_simulation( )
+		self._send_sim_state_to_clients( )		
 
 	def get_current_step( self ):
 		return self._current_step
@@ -302,15 +332,14 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 					c.lock( )
 
-					car_can_travel = ( not c.is_traveling( ) and not c.is_charging( ) )		
+					car_can_travel = ( self.is_simulation_running( ) and not c.is_traveling( ) and not c.is_charging( ) )		
 					if car_can_travel:
 						c.start_travel( )	
 						self._affluence_counts[ current_datetime_str ] -= 1	
 
 					c.unlock( )
 
-					if self._affluence_counts[ current_datetime_str ] < 1:
-						
+					if self._affluence_counts[ current_datetime_str ] < 1:						
 						break					
 
 		else:

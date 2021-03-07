@@ -80,83 +80,56 @@ class Car:
 			self.log( 'Invalid battery level given!' )
 
 	def start_travel( self ):	
-
-		if self.is_traveling( ) or self.is_charging( ):
-
-			self.log( 'Invalid state to start a new travel!' )
-
-		else:
-
-			new_travel = Travel( self )
-			self._travels.append( new_travel )
-			self.set_traveling_state( True )
+		new_travel = Travel( self )
+		self._travels.append( new_travel )
+		self.set_traveling_state( True )
 
 	def end_travel( self ):
-
 		self.lock( )		
 
-		if self.is_traveling( ):
+		self.set_traveling_state( False )
+		last_travel = self._travels[ -1 ]
+		last_travel_battery_consumption = last_travel.get_battery_consumption( )
+		battery_level = self.get_battery_level( )
+		new_battery_level = battery_level - last_travel_battery_consumption
+		self.set_battery_level( new_battery_level )
 
-			self.set_traveling_state( False )
-			last_travel = self._travels[ -1 ]
-			last_travel_battery_consumption = last_travel.get_battery_consumption( )
-			battery_level = self.get_battery_level( )
-			new_battery_level = battery_level - last_travel_battery_consumption
-			self.set_battery_level( new_battery_level )
+		self.log( 'Travel ended!' )
 
-			self.log( 'Travel ended!' )			
+		self.unlock( )			
 
-			simulator = self._simulator
-			simulator.lock_current_step( )
+		simulator = self._simulator
+		simulator.lock_current_step( )
 
-			if simulator.can_simulate_new_actions( ):
+		if simulator.can_simulate_new_actions( ):
 
-				if new_battery_level > 2:
+			if new_battery_level > 2:
 
-					pass
+				pass
 
-				else:
+			else:
 
-					self.log( 'Car reached <20% battery! Waiting for a available charging plug..' )										
-					self._start_charging_period( )																			
+				self.log( 'Car reached <20% battery! Waiting for a available charging plug..' )										
+				self._start_charging_period( )																			
 
-			simulator.unlock_current_step( )																
-
-		else:
-
-			self.log( 'Car was not traveling, yet an attempt to end a travel was made (??)' )				
-
-		self.unlock( )				
+		simulator.unlock_current_step( )																				
 
 	def _start_charging_period( self ):
+		self.lock( )
 
-		if self.is_traveling( ) or self.is_charging( ):
+		new_charging_period = ChargingPeriod( self )
+		self._charging_periods.append( new_charging_period )
+		self.set_charging_state( True )
 
-			self.log( 'Invalid state to start a new charging period!' )
-
-		else:
-
-			new_charging_period = ChargingPeriod( self )
-			self._charging_periods.append( new_charging_period )
-			self.set_charging_state( True )
+		self.unlock( )
 
 	def end_charging_period( self ):
-
 		self.lock( )	
 
-		if self.is_charging( ):
+		self.set_charging_state( False )	
+		self.set_plug_consumption( 0 )
 
-			self.set_charging_state( False )	
-			self.set_plug_consumption( 0 )
-
-			self.log( 'Charging period ended!' )
-
-			simulator = self._simulator
-			simulator.release_charging_plugs_semaphore( )
-
-		else:
-
-			self.log( 'Car was not charging, yet an attempt to end a charging period was made (??)' )
+		self.log( 'Charging period ended!' )
 
 		self.unlock( )	
 
@@ -173,24 +146,19 @@ class Car:
 		self._simulator.log_debug( Car.LOG_TEMPLATE.format( self._id, message ) )		
 
 	def destroy( self ):
-		if len( self._travels ) > 0:
-			for t in self._travels:
-				t.destroy( )
+		for t in self._travels:
+			t.destroy( )
 
-		if len( self._charging_periods ) > 0:
-			for c in self._charging_periods:
-				c.destroy( )
-
-		self._set_charging_state( False )
-		self._set_traveling_state( False )
+		for c in self._charging_periods:
+			c.destroy( )
 
 	def get_data( self ):
 		return { 
 			"id" : self._id,
-			"is_traveling" : self._is_traveling,
-			"is_charging" : self._is_charging,
+			"is_traveling" : self.is_traveling( ),
+			"is_charging" : self.is_charging( ),
 			"travels" : [ t.get_data( ) for t in self._travels ],
 			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ],
-			"battery_level" : self._battery_level,
-			"plug_consumption" : self._plug_consumption
+			"battery_level" : self.get_battery_level( ),
+			"plug_consumption" : self.get_plug_consumption( )
 		}

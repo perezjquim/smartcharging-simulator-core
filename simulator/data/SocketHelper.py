@@ -9,7 +9,8 @@ import traceback
 class SocketHelper( metaclass = SingletonMetaClass ):
 
     _ws_clients = [ ]
-    _ws_client_message_recipients = [ ]
+    _ws_client_connection_listeners = [ ]
+    _ws_client_message_listeners = [ ]
 
     _event_loop = None
 
@@ -29,9 +30,10 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         
     async def on_connect_ws_client( self, client, path ):
         try:
-            self.register_ws_client( client )            
+            self.register_ws_client( client )                
             init_message_str = self._stringify_message( 'log', 'WS -- CONNECTED SUCCESSFULLY!' )
             await client.send( init_message_str )
+            self.on_client_connected( client )
             while True:
                 message = await self._receive_message( client )
                 self.on_client_message_received( message )           
@@ -50,33 +52,54 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         self._ws_clients.append( client )
 
     def unregister_ws_client( self, client ):     
-        self._ws_clients.remove( client )                 
+        self._ws_clients.remove( client )             
 
-    def attach_on_client_message_received( self, recipient ):    
-        self._ws_client_message_recipients.append( recipient )  
+    def attach_on_client_connected( self, listener ):    
+        self._ws_client_connection_listeners.append( listener )              
 
-    def detach_on_client_message_received( self, recipient ):
-        self._ws_client_message_recipients.remove( recipient )                        
+    def detach_on_client_connected( self, listener ):    
+        self._ws_client_connection_listeners.remove( listener )             
+
+    def attach_on_client_message_received( self, listener ):    
+        self._ws_client_message_listeners.append( listener )  
+
+    def detach_on_client_message_received( self, listener ):
+        self._ws_client_message_listeners.remove( listener )      
+
+    def on_client_connected( self, client ):
+        for l in self._ws_client_connection_listeners:
+            l( client )
 
     def on_client_message_received( self, message ):
-        for r in self._ws_client_message_recipients:
-            r( message )
+        for l in self._ws_client_message_listeners:
+            l( message )
 
-    def send_message_to_clients( self, message_type, message_value ):
-        asyncio.run_coroutine_threadsafe( self._send_message( message_type, message_value ), self._event_loop )
+    def send_message_to_clients( self, message_type, message_value, client=None ):
+        asyncio.run_coroutine_threadsafe( self._send_message( message_type, message_value, client ), self._event_loop )    
 
     def _stringify_message( self, message_type, message_value ):
         message = { 'message_type' : message_type, 'message_value' : message_value }
         message_str = json.dumps( message )
         return message_str
 
-    async def _send_message( self, message_type, message_value ):
+    async def _send_message( self, message_type, message_value, client=None ):
         message_str = self._stringify_message( message_type, message_value )
-        
-        for c in self._ws_clients:
-            try:    
-                await c.send( message_str )
+
+        if client:
+
+            try:
+                await client.send( message_str )
             except Exception as exc:
                 print( 'EXCEPTION: {}'.format( exc ) )
                 traceback.print_exc( )                            
                 self.unregister_ws_client( client )
+
+        else:                
+            
+            for c in self._ws_clients:
+                try:    
+                    await c.send( message_str )
+                except Exception as exc:
+                    print( 'EXCEPTION: {}'.format( exc ) )
+                    traceback.print_exc( )                            
+                    self.unregister_ws_client( c )
