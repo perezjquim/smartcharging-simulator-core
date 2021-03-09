@@ -16,6 +16,7 @@ class SocketHelper( metaclass = SingletonMetaClass ):
 
     def on_init( self ):
         self._event_loop = asyncio.get_event_loop( )
+        self._messages_to_be_sent_queue = asyncio.Queue( )
 
         env_variables = os.environ
         ws_host = env_variables[ 'SIMULATOR_HOST' ]
@@ -24,6 +25,7 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         print( '``````````Serving WS...``````````' )      
         init_ws_task = websockets.serve( self.on_connect_ws_client, ws_host, ws_port )        
         self._event_loop.run_until_complete( init_ws_task )
+
         serve_ws_thread = threading.Thread( target = lambda : self._event_loop.run_forever( ) )
         serve_ws_thread.start( )
         print( '``````````Serving WS... done!``````````' )            
@@ -75,7 +77,7 @@ class SocketHelper( metaclass = SingletonMetaClass ):
             l( message )
 
     def send_message_to_clients( self, message_type, message_value, client=None ):
-        asyncio.run_coroutine_threadsafe( self._send_message( message_type, message_value, client ), self._event_loop )    
+        asyncio.run_coroutine_threadsafe( self._send_message( message_type, message_value, client ), self._event_loop )
 
     def _stringify_message( self, message_type, message_value ):
         message = { 'message_type' : message_type, 'message_value' : message_value }
@@ -83,6 +85,7 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         return message_str
 
     async def _send_message( self, message_type, message_value, client=None ):
+
         message_str = self._stringify_message( message_type, message_value )
 
         if client:
