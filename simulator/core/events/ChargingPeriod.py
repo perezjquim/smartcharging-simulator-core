@@ -40,6 +40,8 @@ class ChargingPeriod( CarEvent ):
 
 			sim_sampling_rate = simulator.get_config( 'sim_sampling_rate' )
 
+			ended_normally = False					
+
 			while simulator.is_simulation_running( ):
 
 				simulator.lock_current_datetime( )
@@ -67,12 +69,15 @@ class ChargingPeriod( CarEvent ):
 
 				else:
 
-					simulator.unlock_current_datetime( )							
+					ended_normally = True
+
+					simulator.unlock_current_datetime( )
+
 					break
 				
 				time.sleep( sim_sampling_rate / 1000 )
 
-			car.end_charging_period( )								
+			car.end_charging_period( ended_normally )								
 
 		else:
 

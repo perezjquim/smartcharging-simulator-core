@@ -126,11 +126,18 @@ class Car:
 
 		self.unlock( )
 
-	def end_charging_period( self ):
+	def end_charging_period( self, ended_normally ):
 		self.lock( )	
 
-		self.set_charging_state( False )	
 		self.set_plug_consumption( 0 )
+
+		if ended_normally:
+			self.set_battery_level( Car.DEFAULT_BATTERY_LEVEL )
+		else:
+			#TODO
+			pass
+			
+		self.set_charging_state( False )			
 
 		self.log( 'Charging period ended!' )
 
