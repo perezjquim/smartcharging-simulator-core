@@ -1,13 +1,12 @@
 import time
 import threading
 import requests
-import inspect
-import re
 from datetime import date, datetime, timedelta
-from .SingletonMetaClass import SingletonMetaClass
-from .ConfigurationHelper import ConfigurationHelper
+from base.SingletonMetaClass import SingletonMetaClass
+from config.ConfigurationHelper import ConfigurationHelper
 from data.Logger import Logger
 from data.SocketHelper import SocketHelper
+from base.DebugHelper import DebugHelper
 from .Car import Car
 
 class Simulator( metaclass = SingletonMetaClass ):
@@ -151,37 +150,33 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		self.log( 'Initializing date... done!' )
 
-	def _get_caller( self ):
-		stack = inspect.stack( )[ 2 ]
-		return stack[ 1 ] + "::" + stack[ 3 ]
-
 	def lock_current_datetime( self ):
-		caller = self._get_caller( )
+		caller = DebugHelper.get_caller( )
 		self.log_debug( 'LOCKING DATETIME... (by {})'.format( caller ) )
 		self._current_datetime_lock.acquire( )
 
 	def unlock_current_datetime( self ):
-		caller = self._get_caller( )
+		caller = DebugHelper.get_caller( )
 		self.log_debug( 'UNLOCKING DATETIME... (by {})'.format( caller ) )
 		self._current_datetime_lock.release( )
 
 	def lock_current_step( self ):
-		caller = self._get_caller( )
+		caller = DebugHelper.get_caller( )
 		self.log_debug( 'LOCKING STEP... (by {})'.format( caller ) )
 		self._current_step_lock.acquire( )
 
 	def unlock_current_step( self ):
-		caller = self._get_caller( )
+		caller = DebugHelper.get_caller( )
 		self.log_debug( 'UNLOCKING STEP... (by {})'.format( caller ) )
 		self._current_step_lock.release( )		
 
 	def acquire_charging_plugs_semaphore( self ):
-		caller = self._get_caller( )		
+		caller = DebugHelper.get_caller( )		
 		self.log_debug( 'ACQUIRING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
 		self._charging_plugs_semaphore.acquire( )
 
 	def release_charging_plugs_semaphore( self ):
-		caller = self._get_caller( )			
+		caller = DebugHelper.get_caller( )			
 		self.log_debug( 'RELEASING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
 		self._charging_plugs_semaphore.release( )
 
@@ -262,14 +257,18 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def _send_sim_data_to_clients( self, client=None ):
 		self.log_debug( '////// SENDING SIM DATA... //////' )
 
-		data_to_export = { "cars": [ ] }
+		data_to_export = { "cars": [ ], "travels": [ ] }
 
 		for c in self._cars:
-			#c.lock( )
+			c.lock( )
+			
+			car_data = c.get_data( )
+			data_to_export[ 'cars' ].append( car_data )
 
-			data_to_export[ "cars" ].append( c.get_data( ) )
+			travel_data = car_data[ 'travels' ]
+			data_to_export[ 'travels' ].append( travel_data )
 
-			#c.unlock( )				
+			c.unlock( )				
 
 		self._socket_helper.send_message_to_clients( 'data', data_to_export, client )		
 
@@ -281,12 +280,12 @@ class Simulator( metaclass = SingletonMetaClass ):
 		return can_simulate_new_actions
 
 	def lock_simulation( self ):
-		caller = self._get_caller( )
+		caller = DebugHelper.get_caller( )
 		self.log_debug( 'LOCKING SIMULATION... (by {})'.format( caller ) )
 		self._is_simulation_running_lock.acquire( )		
 
 	def unlock_simulation( self ):
-		caller = self._get_caller( )
+		caller = DebugHelper.get_caller( )
 		self.log_debug( 'UNLOCKING SIMULATION... (by {})'.format( caller ) )
 		self._is_simulation_running_lock.release( )			
 

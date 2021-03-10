@@ -1,6 +1,6 @@
 import json
-from core.SingletonMetaClass import SingletonMetaClass
-from core.ConfigurationHelper import ConfigurationHelper
+from base.SingletonMetaClass import SingletonMetaClass
+from config.ConfigurationHelper import ConfigurationHelper
 from .SocketHelper import SocketHelper
 
 class Logger( metaclass = SingletonMetaClass ):

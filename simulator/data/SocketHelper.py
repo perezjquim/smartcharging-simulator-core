@@ -1,4 +1,4 @@
-from core.SingletonMetaClass import SingletonMetaClass
+from base.SingletonMetaClass import SingletonMetaClass
 import asyncio
 import websockets
 import os

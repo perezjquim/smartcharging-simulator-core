@@ -1,9 +1,9 @@
 import time
 import threading
-import inspect
 from datetime import timedelta
-from .Travel import Travel
-from .ChargingPeriod import ChargingPeriod
+from .events.Travel import Travel
+from .events.ChargingPeriod import ChargingPeriod
+from base.DebugHelper import DebugHelper
 
 class Car:
 
@@ -35,16 +35,19 @@ class Car:
 		self._lock = threading.Lock( )
 		self._plug_consumption = 0
 
+	def get_id( self ):
+		return self._id
+
 	def get_simulator( self ):
 		return self._simulator
 
 	def lock( self ):
-		caller = inspect.stack()[1][3]
+		caller = DebugHelper.get_caller( )
 		self.log_debug( 'LOCKING... (by {})'.format( caller ) )
 		self._lock.acquire( )
 
 	def unlock( self ):
-		caller = inspect.stack()[1][3]
+		caller = DebugHelper.get_caller( )
 		self.log_debug( 'UNLOCKING... (by {})'.format( caller ) )
 		self._lock.release( )
 

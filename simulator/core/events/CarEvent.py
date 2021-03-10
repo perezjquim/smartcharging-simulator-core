@@ -37,6 +37,9 @@ class CarEvent:
 		self._thread.join( )
 
 	def get_data( self ):
+		car = self._car
+		car_id = car.get_id( )
+
 		start_datetime_str = ''
 		end_datetime_str = ''
 		
@@ -47,6 +50,7 @@ class CarEvent:
 			end_datetime_str = self._end_datetime.isoformat( )
 
 		return {
-			"start_datetime" : start_datetime_str,
-			"end_datetime" : end_datetime_str
+			'car_id' : car_id,
+			'start_datetime' : start_datetime_str,
+			'end_datetime' : end_datetime_str
 		}

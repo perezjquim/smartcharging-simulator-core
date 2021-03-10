@@ -1,5 +1,5 @@
 import json
-from .SingletonMetaClass import SingletonMetaClass
+from base.SingletonMetaClass import SingletonMetaClass
 
 class ConfigurationHelper( metaclass = SingletonMetaClass ):
 
