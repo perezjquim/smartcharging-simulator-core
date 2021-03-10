@@ -257,18 +257,33 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def _send_sim_data_to_clients( self, client=None ):
 		self.log_debug( '////// SENDING SIM DATA... //////' )
 
-		data_to_export = { "cars": [ ], "travels": [ ] }
+		cars_sim_data = [ ]
+		travels_sim_data = [ ]
+		charging_periods_sim_data = [ ]
 
 		for c in self._cars:
 			c.lock( )
 			
 			car_data = c.get_data( )
-			data_to_export[ 'cars' ].append( car_data )
+			cars_sim_data.append( car_data )
 
 			travel_data = car_data[ 'travels' ]
-			data_to_export[ 'travels' ].append( travel_data )
+			travels_sim_data += travel_data
 
-			c.unlock( )				
+			charging_period_data = car_data[ 'charging_periods' ]
+			charging_periods_sim_data += charging_period_data		
+
+			c.unlock( )
+
+		cars_sim_data.sort( key = lambda x : x[ 'id' ] )
+		travels_sim_data.sort( key = lambda x : x[ 'id' ] )
+		charging_periods_sim_data.sort( key = lambda x : x[ 'id' ] )			
+
+		data_to_export = { 
+			'cars': cars_sim_data, 
+			'travels': travels_sim_data, 
+			'charging_periods': charging_periods_sim_data 
+		}		
 
 		self._socket_helper.send_message_to_clients( 'data', data_to_export, client )		
 

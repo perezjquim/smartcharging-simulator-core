@@ -4,12 +4,17 @@ from datetime import date, datetime, timedelta
 
 class CarEvent:
 
+	counter = 0
+
 	_car = None
 	_start_datetime = None
 	_end_datetime = None
 	_thread = None
 
 	def __init__( self, car ):
+		CarEvent.counter += 1
+		self._id = CarEvent.counter
+
 		self._car = car
 
 		self._thread = threading.Thread( target = self.run )
@@ -50,6 +55,7 @@ class CarEvent:
 			end_datetime_str = self._end_datetime.isoformat( )
 
 		return {
+			'id' : self._id,
 			'car_id' : car_id,
 			'start_datetime' : start_datetime_str,
 			'end_datetime' : end_datetime_str
