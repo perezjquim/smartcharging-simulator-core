@@ -9,8 +9,16 @@ class StatsHelper( metaclass = SingletonMetaClass ):
 	def on_init( self ):
 		self.clean_up( )
 
-	def refresh( self ):
+	def update_stats( self, sim_data ):
 		pass
+
+	def get_stats( self ):
+		return {
+			'home_stats' : {
+				'columns' : [ { 'type': 'string', 'label': 'Task' }, { 'type': 'number', 'label': 'Hours per Day' } ],
+				'rows' : [ [ 'Work', 11 ], [ 'Eat', 2 ], [ 'Watch TV', 4 ] ]
+			}
+		}
 
 	def clean_up( self ):
 		self._car_stats = [ ]

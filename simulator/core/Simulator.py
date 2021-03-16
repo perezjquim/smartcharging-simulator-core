@@ -6,6 +6,7 @@ from base.SingletonMetaClass import SingletonMetaClass
 from config.ConfigurationHelper import ConfigurationHelper
 from data.Logger import Logger
 from data.SocketHelper import SocketHelper
+from data.DataExporter import DataExporter
 from base.DebugHelper import DebugHelper
 from .Car import Car
 
@@ -16,6 +17,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 	GATEWAY_REQUEST_BASE = 'http://cont_energysim_gateway:8000/{}'
 
 	_socket_helper = None
+	_data_exporter = None
 
 	_main_thread = None	
 	_config = { }
@@ -37,6 +39,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self._socket_helper = SocketHelper( )
 		self._socket_helper.on_init( )	
 
+		self._data_exporter = DataExporter( )
+		self._data_exporter.on_init( )		
+
 		self._current_step_lock = threading.Lock( )
 		self._current_datetime_lock = threading.Lock( )
 		self._is_simulation_running_lock = threading.Lock( )
@@ -54,6 +59,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self.log( 'Simulation cannot be started (it is already running)!' )
 		else:
 			self.log_main( 'Starting simulation...' )
+			self._data_exporter.on_init( )
 			self._initialize_cars( )
 			self._initialize_datetime( )	
 			self._current_step = 1			
@@ -126,6 +132,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 	def get_config( self, config_key ):
 		return self._config[ config_key ]
+
+	def get_cars( self ):
+		return self._cars
 
 	def _initialize_cars( self ):
 		self.log( 'Initializing cars...' )
@@ -257,35 +266,12 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def _send_sim_data_to_clients( self, client=None ):
 		self.log_debug( '////// SENDING SIM DATA... //////' )
 
-		cars_sim_data = [ ]
-		travels_sim_data = [ ]
-		charging_periods_sim_data = [ ]
+		self.lock_current_datetime( )
 
-		for c in self._cars:
-			c.lock( )
-			
-			car_data = c.get_data( )
-			cars_sim_data.append( car_data )
+		simulation_data = self._data_exporter.prepare_simulation_data( self )
+		self._socket_helper.send_message_to_clients( 'data', simulation_data, client )		
 
-			travel_data = car_data[ 'travels' ]
-			travels_sim_data += travel_data
-
-			charging_period_data = car_data[ 'charging_periods' ]
-			charging_periods_sim_data += charging_period_data		
-
-			c.unlock( )
-
-		cars_sim_data.sort( key = lambda x : x[ 'id' ] )
-		travels_sim_data.sort( key = lambda x : x[ 'id' ] )
-		charging_periods_sim_data.sort( key = lambda x : x[ 'id' ] )			
-
-		data_to_export = { 
-			'cars': cars_sim_data, 
-			'travels': travels_sim_data, 
-			'charging_periods': charging_periods_sim_data 
-		}		
-
-		self._socket_helper.send_message_to_clients( 'data', data_to_export, client )		
+		self.unlock_current_datetime( )
 
 		self.log_debug( '////// SENDING SIM DATA... done! //////' )			
 
