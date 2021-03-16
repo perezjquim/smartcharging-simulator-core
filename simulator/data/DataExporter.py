@@ -31,9 +31,22 @@ class DataExporter( metaclass = SingletonMetaClass ):
 
 			c.unlock( )
 
+		plugs_sim_data = [ ]		
+
+		plugs = simulator.get_charging_plugs( )
+
+		for p in plugs:
+			p.lock( )
+
+			plug_data = p.get_data( )
+			plugs_sim_data.append( plug_data )
+
+			p.unlock( )
+
 		cars_sim_data.sort( key = lambda x : x[ 'id' ] )
 		travels_sim_data.sort( key = lambda x : x[ 'id' ] )
-		charging_periods_sim_data.sort( key = lambda x : x[ 'id' ] )		
+		charging_periods_sim_data.sort( key = lambda x : x[ 'id' ] )	
+		plugs_sim_data.sort( key = lambda x : x[ 'id' ] )			
 
 		sim_datetime = simulator.get_current_datetime( )
 		sim_datetime_str = '' 
@@ -44,7 +57,8 @@ class DataExporter( metaclass = SingletonMetaClass ):
 			'sim_datetime': sim_datetime_str,
 			'cars': cars_sim_data, 
 			'travels': travels_sim_data, 
-			'charging_periods': charging_periods_sim_data 
+			'charging_periods': charging_periods_sim_data,
+			'plugs': plugs_sim_data
 		}
 
 		self._stats_helper.update_stats( data_to_export )

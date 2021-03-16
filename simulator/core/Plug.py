@@ -1,62 +1,77 @@
 import threading
-import time
-from datetime import date, datetime, timedelta
+from base.DebugHelper import DebugHelper
 
 class Plug:
 
+	LOG_TEMPLATE = '++++++++++ Plug #{} --- {}'	
+
 	counter = 0
 
-	_car = None
-	_start_datetime = None
-	_end_datetime = None
-	_thread = None
+	_id = 0
 
-	def __init__( self, car ):
+	_simulator = None
+	
+	_plugged_car = None
+	_charging_periods = [ ]
+
+	_lock = None
+
+	def __init__( self, simulator ):
 		Plug.counter += 1
 		self._id = Plug.counter
+		self._charging_periods = [ ]
+		self._simulator = simulator
+		self._lock = threading.Lock( )
 
-		self._car = car
+	def is_busy( self ):
+		return self._plugged_car != None
 
-		self._thread = threading.Thread( target = self.run )
-		self._thread.start( )		
+	def plug_car( self, car, charging_period ):
+		self._plugged_car = car
+		self._charging_periods.append( charging_period )
 
-	def run( self ):
-		raise NotImplementedError		
+	def unplug_car( self ):
+		self._plugged_car = None
 
-	def get_car( self ):
-		return self._car
+	def get_plugged_car( self ):
+		return self._plugged_car
 
-	def get_start_datetime( self ):
-		return self._start_datetime
+	def get_charging_periods( self ):
+		return self._charging_periods
 
-	def get_end_datetime( self ):
-		return self._end_datetime
+	def lock( self ):
+		caller = DebugHelper.get_caller( )
+		self.log_debug( 'LOCKING... (by {})'.format( caller ) )
+		self._lock.acquire( )
 
-	def set_start_datetime( self, start_datetime ):
-		self._start_datetime = start_datetime
+	def unlock( self ):
+		caller = DebugHelper.get_caller( )
+		self.log_debug( 'UNLOCKING... (by {})'.format( caller ) )
+		self._lock.release( )		
 
-	def set_end_datetime( self, end_datetime ):
-		self._end_datetime = end_datetime
+	def log( self, message ):
+		self._simulator.log( Plug.LOG_TEMPLATE.format( self._id, message ) )
+
+	def log_debug( self, message ):
+		self._simulator.log_debug( Plug.LOG_TEMPLATE.format( self._id, message ) )				
 
 	def destroy( self ):
-		self._thread.join( )
+		#NOP
+		pass
 
 	def get_data( self ):
-		car = self._car
-		car_id = car.get_id( )
-
-		start_datetime_str = ''
-		end_datetime_str = ''
-		
-		if self._start_datetime:
-			start_datetime_str = self._start_datetime.isoformat( )
-
-		if self._end_datetime:
-			end_datetime_str = self._end_datetime.isoformat( )
+		plugged_car = self._plugged_car
+		plugged_car_id = ''
+		energy_consumption = 0
+		if plugged_car:
+			plugged_car.lock( )
+			plugged_car_id = plugged_car.get_id( )
+			energy_consumption = plugged_car.get_plug_consumption( )
+			plugged_car.unlock( )
 
 		return {
 			'id' : self._id,
-			'car_id' : car_id,
-			'start_datetime' : start_datetime_str,
-			'end_datetime' : end_datetime_str
+			'plugged_car_id' : plugged_car_id,
+			'energy_consumption' : energy_consumption,
+			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ]
 		}

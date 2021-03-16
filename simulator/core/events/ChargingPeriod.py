@@ -2,6 +2,7 @@ import time
 from datetime import date, datetime, timedelta
 from .CarEvent import CarEvent
 from core.CarStatuses import CarStatuses
+from core.Plug import Plug
 
 class ChargingPeriod( CarEvent ):
 
@@ -17,7 +18,7 @@ class ChargingPeriod( CarEvent ):
 		car.set_status( CarStatuses.STATUS_WAITING_TO_CHARGE )
 		car.unlock( )
 
-		simulator.acquire_charging_plugs_semaphore( )
+		plug = simulator.acquire_charging_plug( car, self )
 
 		car.lock( )
 		car.set_status( CarStatuses.STATUS_CHARGING )
@@ -92,4 +93,4 @@ class ChargingPeriod( CarEvent ):
 
 			simulator.unlock_current_step( )
 
-		simulator.release_charging_plugs_semaphore( )			
+		simulator.release_charging_plug( plug )			

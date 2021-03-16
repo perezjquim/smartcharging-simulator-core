@@ -9,6 +9,7 @@ from data.SocketHelper import SocketHelper
 from data.DataExporter import DataExporter
 from base.DebugHelper import DebugHelper
 from .Car import Car
+from .Plug import Plug
 
 class Simulator( metaclass = SingletonMetaClass ):
 
@@ -21,17 +22,19 @@ class Simulator( metaclass = SingletonMetaClass ):
 	_config = { }
 	_cars = [ ]
 
-	_current_step = 1
-	_current_datetime = None
 	_affluence_counts = { }
 
+	_current_step = 1
 	_current_step_lock = None
+
+	_current_datetime = None	
 	_current_datetime_lock = None
 
-	_charging_plugs_semaphore = None
+	_charging_plugs = [ ]
+	_charging_plugs_semaphore = None	
 
-	_is_simulation_running_lock = None
 	_is_simulation_running = False
+	_is_simulation_running_lock = None	
 
 	def on_init( self ):
 		self._socket_helper = SocketHelper( )
@@ -59,6 +62,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self.log_main( 'Starting simulation...' )
 			self._data_exporter.on_init( )
 			self._initialize_cars( )
+			self._initialize_plugs( )
 			self._initialize_datetime( )	
 			self._current_step = 1			
 			self.set_simulation_state( True )	
@@ -134,6 +138,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def get_cars( self ):
 		return self._cars
 
+	def get_charging_plugs( self ):
+		return self._charging_plugs
+
 	def _initialize_cars( self ):
 		self.log( 'Initializing cars...' )
 
@@ -157,6 +164,15 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		self.log( 'Initializing date... done!' )
 
+	def _initialize_plugs( self ):
+		self.log( 'Initializing plugs...' )
+
+		number_of_charging_plugs = self.get_config( 'number_of_charging_plugs' )
+		for n in range( number_of_charging_plugs ):
+			self._charging_plugs.append( Plug( self ) )
+
+		self.log( 'Initializing plugs... done!' )		
+
 	def lock_current_datetime( self ):
 		caller = DebugHelper.get_caller( )
 		self.log_debug( 'LOCKING DATETIME... (by {})'.format( caller ) )
@@ -177,15 +193,33 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.log_debug( 'UNLOCKING STEP... (by {})'.format( caller ) )
 		self._current_step_lock.release( )		
 
-	def acquire_charging_plugs_semaphore( self ):
+	def acquire_charging_plug( self, car, charging_period ):
+		self._acquire_charging_plugs_semaphore( )
+
+		for p in self._charging_plugs:
+			p.lock( )
+
+			if not p.is_busy( ):
+				available_plug = p
+				available_plug.plug_car( car, charging_period )				
+				available_plug.unlock( )
+				return available_plug
+
+			p.unlock( )
+
+	def _acquire_charging_plugs_semaphore( self ):
 		caller = DebugHelper.get_caller( )		
 		self.log_debug( 'ACQUIRING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
-		self._charging_plugs_semaphore.acquire( )
+		self._charging_plugs_semaphore.acquire( )		
 
-	def release_charging_plugs_semaphore( self ):
+	def release_charging_plug( self, plug ):
+		plug.unplug_car( )
+		self._release_charging_plugs_semaphore( )
+
+	def _release_charging_plugs_semaphore( self ):
 		caller = DebugHelper.get_caller( )			
 		self.log_debug( 'RELEASING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
-		self._charging_plugs_semaphore.release( )
+		self._charging_plugs_semaphore.release( )		
 
 	def get_current_datetime( self ):
 		return self._current_datetime
