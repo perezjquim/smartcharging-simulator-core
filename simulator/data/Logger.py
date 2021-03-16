@@ -3,7 +3,10 @@ from base.SingletonMetaClass import SingletonMetaClass
 from config.ConfigurationHelper import ConfigurationHelper
 from .SocketHelper import SocketHelper
 
-class Logger( metaclass = SingletonMetaClass ):
+class Logger( ):
+
+	def __init__( ):
+		raise NotSupportedError
 
 	def log( log_str ):
 		socket_helper = SocketHelper( )

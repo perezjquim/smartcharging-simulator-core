@@ -14,8 +14,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 	MAIN_LOG_PREFIX = '============================'
 
-	GATEWAY_REQUEST_BASE = 'http://cont_energysim_gateway:8000/{}'
-
 	_socket_helper = None
 	_data_exporter = None
 
@@ -203,17 +201,14 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		while self.is_simulation_running( ):
 
-			cars_in_travel = [ ]
-			cars_in_charging = [ ]
+			number_of_busy_cars = 0
 			total_plug_consumption = 0
 
 			for c in self._cars:
 				c.lock( )
 
-				if c.is_traveling( ):
-					cars_in_travel.append( c )
-				if c.is_charging( ):
-					cars_in_charging.append( c )
+				if c.is_busy( ):
+					number_of_busy_cars += 1
 
 				plug_consumption = c.get_plug_consumption( )
 				total_plug_consumption += plug_consumption
@@ -222,7 +217,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			self.log( '### TOTAL PLUG CONSUMPTION: {} KW ###'.format( total_plug_consumption ) )
 
-			should_simulate_next_step = ( self.can_simulate_new_actions( ) or len( cars_in_travel ) > 0 or len( cars_in_charging ) > 0 )
+			should_simulate_next_step = ( self.can_simulate_new_actions( ) or number_of_busy_cars > 0 )
 
 			if should_simulate_next_step:	
 
@@ -332,7 +327,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 					c.lock( )
 
-					car_can_travel = ( self.is_simulation_running( ) and not c.is_traveling( ) and not c.is_charging( ) )		
+					car_can_travel = ( self.is_simulation_running( ) and not c.is_busy( ) )		
 					if car_can_travel:
 						c.start_travel( )	
 						self._affluence_counts[ current_datetime_str ] -= 1	
@@ -347,7 +342,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self.log( '-- Simulation period ended: this step is only used to resume travels and/or charging periods! --' )
 
 	def fetch_gateway( self, endpoint ):
-		url = Simulator.GATEWAY_REQUEST_BASE.format( endpoint )
+		base_url = self.get_config( 'gateway_request_base_url' )
+		url = base_url.format( endpoint )
 		response = requests.get( url )
 		response_json = response.json( )
 		self.log_debug( '\\\\\\ GATEWAY \\\\\\ URL: {}'.format( url )	 )
