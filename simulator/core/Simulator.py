@@ -167,6 +167,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def _initialize_plugs( self ):
 		self.log( 'Initializing plugs...' )
 
+		self._charging_plugs = [ ]
 		number_of_charging_plugs = self.get_config( 'number_of_charging_plugs' )
 		for n in range( number_of_charging_plugs ):
 			self._charging_plugs.append( Plug( self ) )
