@@ -40,8 +40,8 @@ class SocketHelper( metaclass = SingletonMetaClass ):
                 message = await self._receive_message( client )
                 self.on_client_message_received( message )           
                 asyncio.sleep( 0 )                     
-        except Exception as exc:
-            print( 'EXCEPTION: {}'.format( exc ) )
+        except:
+            print( 'EXCEPTION!' )
             traceback.print_exc( )            
             self.unregister_ws_client( client )
 
@@ -92,8 +92,8 @@ class SocketHelper( metaclass = SingletonMetaClass ):
 
             try:
                 await client.send( message_str )
-            except Exception as exc:
-                print( 'EXCEPTION: {}'.format( exc ) )
+            except:
+                print( 'EXCEPTION!' )
                 traceback.print_exc( )                            
                 self.unregister_ws_client( client )
 
@@ -102,7 +102,7 @@ class SocketHelper( metaclass = SingletonMetaClass ):
             for c in self._ws_clients:
                 try:    
                     await c.send( message_str )
-                except Exception as exc:
-                    print( 'EXCEPTION: {}'.format( exc ) )
+                except:
+                    print( 'EXCEPTION!' )
                     traceback.print_exc( )                            
                     self.unregister_ws_client( c )
