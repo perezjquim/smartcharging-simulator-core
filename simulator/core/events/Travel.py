@@ -4,11 +4,17 @@ from .CarEvent import CarEvent
 
 class Travel( CarEvent ):
 
+	counter = 0
+
+	_id = 0
 	_distance = 0
 	_battery_consumption = 0		
 
 	def __init__( self, car ):
 		super( ).__init__( car )
+
+		Travel.counter += 1
+		self._id  = Travel.counter
 
 	def run( self ):
 		car = self.get_car( )

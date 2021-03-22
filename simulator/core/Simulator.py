@@ -10,6 +10,8 @@ from data.DataExporter import DataExporter
 from base.DebugHelper import DebugHelper
 from .Car import Car
 from .Plug import Plug
+from .events.Travel import Travel
+from .events.ChargingPeriod import ChargingPeriod
 
 class Simulator( metaclass = SingletonMetaClass ):
 
@@ -85,6 +87,11 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		if wait_for_main_thread:					
 			self._main_thread.join( )
+
+		Car.counter = 0
+		Plug.counter = 0
+		Travel.counter = 0
+		ChargingPeriod.counter = 0
 
 		self._send_sim_data_to_clients( )
 

@@ -6,8 +6,15 @@ from core.Plug import Plug
 
 class ChargingPeriod( CarEvent ):
 
+	counter = 0
+
+	_id = 0	
+
 	def __init__( self, car ):
 		super( ).__init__( car )	
+
+		ChargingPeriod.counter += 1
+		self._id = ChargingPeriod.counter
 
 	def run( self ):
 		car = self.get_car( )

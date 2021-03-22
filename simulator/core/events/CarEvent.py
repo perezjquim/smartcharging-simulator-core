@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 
 class CarEvent:
 
-	counter = 0
+	_id = 0
 
 	_car = None
 	_start_datetime = None
@@ -12,9 +12,6 @@ class CarEvent:
 	_thread = None
 
 	def __init__( self, car ):
-		CarEvent.counter += 1
-		self._id = CarEvent.counter
-
 		self._car = car
 
 		self._thread = threading.Thread( target = self.run )
