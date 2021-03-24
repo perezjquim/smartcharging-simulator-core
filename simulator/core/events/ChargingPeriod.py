@@ -25,7 +25,8 @@ class ChargingPeriod( CarEvent ):
 		car.set_status( CarStatuses.STATUS_WAITING_TO_CHARGE )
 		car.unlock( )
 
-		plug = simulator.acquire_charging_plug( car, self )
+		plug = simulator.acquire_charging_plug( )
+		plug.plug_car( car, self )		
 
 		car.lock( )
 		car.set_status( CarStatuses.STATUS_CHARGING )
@@ -77,7 +78,8 @@ class ChargingPeriod( CarEvent ):
 					charging_period_energy_spent_res = simulator.fetch_gateway( charging_period_energy_spent_url )
 					charging_period_energy_spent = float( charging_period_energy_spent_res[ 'charging_period_energy_spent' ] )	
 			
-					car.set_plug_consumption( charging_period_energy_spent )
+					plug.set_energy_consumption( charging_period_energy_spent )
+
 					car.log_debug( 'Charging... ({} KW - {}% of {}%)'.format( charging_period_energy_spent, elapsed_time_perc_formatted, 100 ) )			
 
 					car.unlock( )		
