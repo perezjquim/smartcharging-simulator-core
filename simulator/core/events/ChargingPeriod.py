@@ -10,6 +10,8 @@ class ChargingPeriod( CarEvent ):
 
 	_id = 0	
 
+	_plug = None
+
 	def __init__( self, car ):
 		super( ).__init__( car )	
 
@@ -25,8 +27,7 @@ class ChargingPeriod( CarEvent ):
 		car.set_status( CarStatuses.STATUS_WAITING_TO_CHARGE )
 		car.unlock( )
 
-		plug = simulator.acquire_charging_plug( )
-		plug.plug_car( car, self )		
+		simulator.acquire_charging_plug( car, self )
 
 		car.lock( )
 		car.set_status( CarStatuses.STATUS_CHARGING )
@@ -78,7 +79,7 @@ class ChargingPeriod( CarEvent ):
 					charging_period_energy_spent_res = simulator.fetch_gateway( charging_period_energy_spent_url )
 					charging_period_energy_spent = float( charging_period_energy_spent_res[ 'charging_period_energy_spent' ] )	
 			
-					plug.set_energy_consumption( charging_period_energy_spent )
+					self._plug.set_energy_consumption( charging_period_energy_spent )
 
 					car.log_debug( 'Charging... ({} KW - {}% of {}%)'.format( charging_period_energy_spent, elapsed_time_perc_formatted, 100 ) )			
 
@@ -102,4 +103,19 @@ class ChargingPeriod( CarEvent ):
 
 			simulator.unlock_current_step( )
 
-		simulator.release_charging_plug( plug )			
+		simulator.release_charging_plug( self._plug )		
+
+	def set_plug( self, new_plug ):
+		self._plug = new_plug	
+
+	def get_data( self ):
+		data = super( ).get_data( )
+		
+		plug_id = ''
+		if self._plug:
+			plug_id = self._plug.get_id( )
+
+		data.update({
+			'plug_id' : plug_id
+		})	
+		return data		

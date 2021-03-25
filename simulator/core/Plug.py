@@ -32,10 +32,9 @@ class Plug:
 	def get_id( self ):
 		return self._id
 
-	def plug_car( self, car, charging_period ):
-		self._plugged_car = car
+	def plug_car( self, car ):
 		car.set_plug( self )
-		self._charging_periods.append( charging_period )
+		self._plugged_car = car
 
 	def unplug_car( self ):
 		self._plugged_car.set_plug( None )
@@ -48,7 +47,10 @@ class Plug:
 		return self._energy_consumption
 
 	def set_energy_consumption( self, new_energy_consumption ):
-		self._energy_consumption = new_energy_consumption			
+		self._energy_consumption = new_energy_consumption	
+
+	def add_charging_period( self, new_charging_period ):
+		self._charging_periods.append( new_charging_period )		
 
 	def get_charging_periods( self ):
 		return self._charging_periods

@@ -201,16 +201,19 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.log_debug( 'UNLOCKING STEP... (by {})'.format( caller ) )
 		self._current_step_lock.release( )		
 
-	def acquire_charging_plug( self ):
+	def acquire_charging_plug( self, car, charging_period ):
 		self._acquire_charging_plugs_semaphore( )
 
 		for p in self._charging_plugs:
 			p.lock( )
 
 			if not p.is_busy( ):
-				available_plug = p			
-				available_plug.unlock( )
-				return available_plug
+				p.plug_car( car )
+				p.add_charging_period( charging_period )
+				charging_period.set_plug( p )				
+				
+				p.unlock( )
+				break
 
 			p.unlock( )
 

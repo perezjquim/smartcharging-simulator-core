@@ -23,7 +23,6 @@ class Car:
 	_plug = None
 	_lock = None
 
-
 	def __init__( self, simulator ):
 		Car.counter += 1				
 		self._id = Car.counter
