@@ -106,3 +106,5 @@ class SocketHelper( metaclass = SingletonMetaClass ):
                     print( 'EXCEPTION!' )
                     traceback.print_exc( )                            
                     self.unregister_ws_client( c )
+
+        asyncio.sleep( 0 )

@@ -1,15 +1,19 @@
 import threading
+from data.Logger import Logger
 from base.DebugHelper import DebugHelper
+from .PlugStatuses import PlugStatuses
 
 class Plug:
 
-	LOG_TEMPLATE = '++++++++++ Plug #{} --- {}'	
+	LOG_TEMPLATE = '++++++++++ Plug {} --- {}'	
 
-	counter = 0
+	__counter = 0
+	__charging_plugs_semaphore = None		
 
 	_id = 0
 
 	_simulator = None
+	_status = None	
 	
 	_plugged_car = None
 	_energy_consumption = 0
@@ -19,12 +23,41 @@ class Plug:
 	_lock = None
 
 	def __init__( self, simulator ):
-		Plug.counter += 1
-		self._id = Plug.counter
+		Plug.__counter += 1
+		self._id = Plug.__counter
 		self._charging_periods = [ ]
 		self._simulator = simulator
+		self._status = PlugStatuses.STATUS_ENABLED
 		self._energy_consumption = 0		
+
+		if Plug.__charging_plugs_semaphore == None:
+			number_of_charging_plugs = simulator.get_config( 'number_of_charging_plugs' )
+			Plug.__charging_plugs_semaphore = threading.Semaphore( number_of_charging_plugs )	
+
 		self._lock = threading.Lock( )
+
+	def acquire_charging_plug( car, charging_period ):
+		caller = DebugHelper.get_caller( )		
+		Plug.static_log_debug( 'ACQUIRING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
+		Plug.__charging_plugs_semaphore.acquire( )
+
+	def release_charging_plug( self ):
+		self.lock( )
+		self.unplug_car( )
+		self.unlock( )
+
+		caller = DebugHelper.get_caller( )			
+		Plug.static_log_debug( 'RELEASING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
+		Plug.__charging_plugs_semaphore.release( )		
+
+	def is_available( self ):
+		return self.is_enabled( ) and not self.is_busy( )
+
+	def is_enabled( self ):
+		return self._status == PlugStatuses.STATUS_ENABLED
+
+	def set_status( self, new_status ):
+		self._status = new_status
 
 	def is_busy( self ):
 		return self._plugged_car != None
@@ -33,8 +66,9 @@ class Plug:
 		return self._id
 
 	def plug_car( self, car ):
-		car.set_plug( self )
-		self._plugged_car = car
+		if self.is_enabled( ):
+			car.set_plug( self )
+			self._plugged_car = car
 
 	def unplug_car( self ):
 		self._plugged_car.set_plug( None )
@@ -47,7 +81,10 @@ class Plug:
 		return self._energy_consumption
 
 	def set_energy_consumption( self, new_energy_consumption ):
-		self._energy_consumption = new_energy_consumption	
+		if self.is_enabled( ):
+			self._energy_consumption = new_energy_consumption	
+		else:
+			self._energy_consumption = 0
 
 	def add_charging_period( self, new_charging_period ):
 		self._charging_periods.append( new_charging_period )		
@@ -65,11 +102,17 @@ class Plug:
 		self.log_debug( 'UNLOCKING... (by {})'.format( caller ) )
 		self._lock.release( )		
 
+	def static_log( message ):
+		Logger.log( Plug.LOG_TEMPLATE.format( '', message ) )
+
+	def static_log_debug( message ):
+		Logger.log_debug( Plug.LOG_TEMPLATE.format( '', message ) )	
+
 	def log( self, message ):
-		self._simulator.log( Plug.LOG_TEMPLATE.format( self._id, message ) )
+		Logger.log( Plug.LOG_TEMPLATE.format( self._id, message ) )
 
 	def log_debug( self, message ):
-		self._simulator.log_debug( Plug.LOG_TEMPLATE.format( self._id, message ) )				
+		Logger.log_debug( Plug.LOG_TEMPLATE.format( self._id, message ) )				
 
 	def destroy( self ):
 		#NOP
@@ -85,7 +128,8 @@ class Plug:
 
 		return {
 			'id' : self._id,
+			'status' : self._status,
 			'plugged_car_id' : plugged_car_id,
 			'energy_consumption' : self._energy_consumption,
 			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ]
-		}
+		}		

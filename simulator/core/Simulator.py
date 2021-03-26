@@ -33,7 +33,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 	_current_datetime_lock = None
 
 	_charging_plugs = [ ]
-	_charging_plugs_semaphore = None	
 
 	_is_simulation_running = False
 	_is_simulation_running_lock = None	
@@ -50,9 +49,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self._is_simulation_running_lock = threading.Lock( )
 
 		self._fetch_config( )
-
-		number_of_charging_plugs = self.get_config( 'number_of_charging_plugs' )
-		self._charging_plugs_semaphore = threading.Semaphore( number_of_charging_plugs )
 
 		self._socket_helper.attach_on_client_connected( self.on_client_connected )	
 		self._socket_helper.attach_on_client_message_received( self.on_client_message_received )		
@@ -88,10 +84,10 @@ class Simulator( metaclass = SingletonMetaClass ):
 		if wait_for_main_thread:					
 			self._main_thread.join( )
 
-		Car.counter = 0
-		Plug.counter = 0
-		Travel.counter = 0
-		ChargingPeriod.counter = 0
+		Car.__counter = 0
+		Plug.__counter = 0
+		Travel.__counter = 0
+		ChargingPeriod.__counter = 0
 
 		self._send_sim_data_to_clients( )
 
@@ -112,15 +108,21 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.log_debug( "$$$ MESSAGE RECEIVED: {} $$$".format( message ) )
 
 		message_type = message[ 'message_type' ]
+		message_value = message[ 'message_value' ]
 
 		if message_type == 'command':
 
-			command = message[ 'message_value' ]
+			command_name = message_value[ 'command_name' ]
+			command_args = message_value[ 'command_args' ]
 
-			if command == 'START-SIMULATION':
+			if command_name == 'START-SIMULATION':
 				self.on_start( )
-			elif command == 'STOP-SIMULATION':
+			elif command_name == 'STOP-SIMULATION':
 				self.on_stop( )
+			elif command_name == 'SET-PLUG-STATUS':
+				plug_id = command_args[ 'plug_id' ]
+				plug_new_status = command_args[ 'plug_new_status' ]
+				self._set_plug_status( plug_id, plug_new_status )
 
 	def _fetch_config( self ):
 		self.log( "Fetching config..." )
@@ -147,6 +149,13 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 	def get_charging_plugs( self ):
 		return self._charging_plugs
+
+	def set_charging_plug_status( self, plug_id, plug_new_status ):
+		plug = ( filter( lambda p : p.get_id( ) == plug_id, self._charging_plugs ) )
+		plug = plug[ 0 ]
+		plug.lock( )
+		plug.set_status( plug_new_status )
+		plug.unlock( )
 
 	def _initialize_cars( self ):
 		self.log( 'Initializing cars...' )
@@ -179,7 +188,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		for n in range( number_of_charging_plugs ):
 			self._charging_plugs.append( Plug( self ) )
 
-		self.log( 'Initializing plugs... done!' )		
+		self.log( 'Initializing plugs... done!' )				
 
 	def lock_current_datetime( self ):
 		caller = DebugHelper.get_caller( )
@@ -200,36 +209,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 		caller = DebugHelper.get_caller( )
 		self.log_debug( 'UNLOCKING STEP... (by {})'.format( caller ) )
 		self._current_step_lock.release( )		
-
-	def acquire_charging_plug( self, car, charging_period ):
-		self._acquire_charging_plugs_semaphore( )
-
-		for p in self._charging_plugs:
-			p.lock( )
-
-			if not p.is_busy( ):
-				p.plug_car( car )
-				p.add_charging_period( charging_period )
-				charging_period.set_plug( p )				
-				
-				p.unlock( )
-				break
-
-			p.unlock( )
-
-	def _acquire_charging_plugs_semaphore( self ):
-		caller = DebugHelper.get_caller( )		
-		self.log_debug( 'ACQUIRING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
-		self._charging_plugs_semaphore.acquire( )		
-
-	def release_charging_plug( self, plug ):
-		plug.unplug_car( )
-		self._release_charging_plugs_semaphore( )
-
-	def _release_charging_plugs_semaphore( self ):
-		caller = DebugHelper.get_caller( )			
-		self.log_debug( 'RELEASING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
-		self._charging_plugs_semaphore.release( )		
 
 	def get_current_datetime( self ):
 		return self._current_datetime

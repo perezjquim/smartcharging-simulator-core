@@ -6,7 +6,7 @@ from core.Plug import Plug
 
 class ChargingPeriod( CarEvent ):
 
-	counter = 0
+	__counter = 0
 
 	_id = 0	
 
@@ -15,8 +15,8 @@ class ChargingPeriod( CarEvent ):
 	def __init__( self, car ):
 		super( ).__init__( car )	
 
-		ChargingPeriod.counter += 1
-		self._id = ChargingPeriod.counter
+		ChargingPeriod.__counter += 1
+		self._id = ChargingPeriod.__counter
 
 	def run( self ):
 		car = self.get_car( )
@@ -27,7 +27,21 @@ class ChargingPeriod( CarEvent ):
 		car.set_status( CarStatuses.STATUS_WAITING_TO_CHARGE )
 		car.unlock( )
 
-		simulator.acquire_charging_plug( car, self )
+		Plug.acquire_charging_plug( car, self )
+
+		plugs = simulator.get_charging_plugs( )
+		for p in plugs:
+			p.lock( )
+
+			if not p.is_available( ):
+				p.plug_car( car )
+				p.add_charging_period( self )
+				self.set_plug( p )				
+				
+				p.unlock( )
+				break
+
+			p.unlock( )		
 
 		car.lock( )
 		car.set_status( CarStatuses.STATUS_CHARGING )
@@ -71,15 +85,23 @@ class ChargingPeriod( CarEvent ):
 					
 					car.lock( )	
 
-					elapsed_time = ( ( current_datetime - start_datetime ).total_seconds( ) ) / 60
-					elapsed_time_perc = elapsed_time / charging_period_duration
-					elapsed_time_perc_formatted = elapsed_time_perc * 100        									
+					self._plug.lock( )
 
-					charging_period_energy_spent_url = "charging_period/energy_spent/{}".format( elapsed_time_perc )
-					charging_period_energy_spent_res = simulator.fetch_gateway( charging_period_energy_spent_url )
-					charging_period_energy_spent = float( charging_period_energy_spent_res[ 'charging_period_energy_spent' ] )	
-			
+					charging_period_energy_spent = 0					
+
+					if self._plug.is_enabled( ):
+
+						elapsed_time = ( ( current_datetime - start_datetime ).total_seconds( ) ) / 60
+						elapsed_time_perc = elapsed_time / charging_period_duration
+						elapsed_time_perc_formatted = elapsed_time_perc * 100        									
+
+						charging_period_energy_spent_url = "charging_period/energy_spent/{}".format( elapsed_time_perc )
+						charging_period_energy_spent_res = simulator.fetch_gateway( charging_period_energy_spent_url )
+						charging_period_energy_spent = float( charging_period_energy_spent_res[ 'charging_period_energy_spent' ] )	
+
 					self._plug.set_energy_consumption( charging_period_energy_spent )
+
+					self._plug.unlock( )
 
 					car.log_debug( 'Charging... ({} KW - {}% of {}%)'.format( charging_period_energy_spent, elapsed_time_perc_formatted, 100 ) )			
 
@@ -103,7 +125,7 @@ class ChargingPeriod( CarEvent ):
 
 			simulator.unlock_current_step( )
 
-		simulator.release_charging_plug( self._plug )		
+		self._plug.release_charging_plug(  )		
 
 	def set_plug( self, new_plug ):
 		self._plug = new_plug	

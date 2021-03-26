@@ -48,8 +48,9 @@ class CarEvent:
 		if self._start_datetime:
 			start_datetime_str = self._start_datetime.isoformat( )
 
-		if self._end_datetime:
-			end_datetime_str = self._end_datetime.isoformat( )
+		if not self._thread.is_alive( ):			
+			if self._end_datetime:
+				end_datetime_str = self._end_datetime.isoformat( )
 
 		return {
 			'id' : self._id,

@@ -1,18 +1,19 @@
 import time
 import threading
 from datetime import timedelta
+from data.Logger import Logger
+from base.DebugHelper import DebugHelper
 from .events.Travel import Travel
 from .events.ChargingPeriod import ChargingPeriod
-from base.DebugHelper import DebugHelper
 from .CarStatuses import CarStatuses
 
 class Car:
 
-	LOG_TEMPLATE = '»»»»»»»»»» Car #{} --- {}'
+	LOG_TEMPLATE = '»»»»»»»»»» Car {} --- {}'
 
 	DEFAULT_BATTERY_LEVEL = 10
 
-	counter = 0
+	__counter = 0
 
 	_id = 0
 	_simulator = None
@@ -24,8 +25,8 @@ class Car:
 	_lock = None
 
 	def __init__( self, simulator ):
-		Car.counter += 1				
-		self._id = Car.counter
+		Car.__counter += 1				
+		self._id = Car.__counter
 		self._simulator = simulator
 		self._status = CarStatuses.STATUS_READY
 		self._travels = [ ]	
@@ -141,13 +142,13 @@ class Car:
 
 		self.log( 'Charging period ended!' )
 
-		self.unlock( )	
+		self.unlock( )		
 
 	def log( self, message ):
-		self._simulator.log( Car.LOG_TEMPLATE.format( self._id, message ) )
+		Logger.log( Car.LOG_TEMPLATE.format( self._id, message ) )
 
 	def log_debug( self, message ):
-		self._simulator.log_debug( Car.LOG_TEMPLATE.format( self._id, message ) )		
+		Logger.log_debug( Car.LOG_TEMPLATE.format( self._id, message ) )		
 
 	def destroy( self ):
 		for t in self._travels:
