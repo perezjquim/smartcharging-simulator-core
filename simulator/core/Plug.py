@@ -28,10 +28,10 @@ class Plug:
 		self._charging_periods = [ ]
 		self._simulator = simulator
 		self._status = PlugStatuses.STATUS_ENABLED
-		self._energy_consumption = 0		
+		self._energy_consumption = 0	
 
 		if Plug.__charging_plugs_semaphore == None:
-			number_of_charging_plugs = simulator.get_config( 'number_of_charging_plugs' )
+			number_of_charging_plugs = self._simulator.get_config( 'number_of_charging_plugs' )
 			Plug.__charging_plugs_semaphore = threading.Semaphore( number_of_charging_plugs )	
 
 		self._lock = threading.Lock( )
@@ -67,7 +67,6 @@ class Plug:
 
 	def plug_car( self, car ):
 		if self.is_enabled( ):
-			car.set_plug( self )
 			self._plugged_car = car
 
 	def unplug_car( self ):

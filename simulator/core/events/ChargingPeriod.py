@@ -33,9 +33,10 @@ class ChargingPeriod( CarEvent ):
 		for p in plugs:
 			p.lock( )
 
-			if not p.is_available( ):
+			if p.is_available( ):
 				p.plug_car( car )
-				p.add_charging_period( self )
+				p.add_charging_period( self )				
+				car.set_plug( p )
 				self.set_plug( p )				
 				
 				p.unlock( )
