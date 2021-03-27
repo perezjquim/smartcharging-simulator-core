@@ -53,13 +53,13 @@ class ChargingPeriod( CarEvent ):
 
 				p.unlock( )		
 
-		car.lock( )
-		car.set_status( CarStatuses.STATUS_CHARGING )
-		car.unlock( )		
-
 		simulator.lock_current_step( )
 
 		if simulator.can_simulate_new_actions( ):
+
+			car.lock( )
+			car.set_status( CarStatuses.STATUS_CHARGING )
+			car.unlock( )					
 
 			charging_period_duration_url = "charging_period/duration"
 			charging_period_duration_res = simulator.fetch_gateway( charging_period_duration_url )
@@ -133,6 +133,11 @@ class ChargingPeriod( CarEvent ):
 			car.end_charging_period( ended_normally )								
 
 		else:
+
+			car.lock( )
+			car.log( 'Charging period canceled!' )
+			car.set_status( CarStatuses.STATUS_READY )
+			car.unlock( )					
 
 			simulator.unlock_current_step( )
 
