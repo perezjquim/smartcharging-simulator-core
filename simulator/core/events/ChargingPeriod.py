@@ -18,6 +18,9 @@ class ChargingPeriod( CarEvent ):
 		ChargingPeriod.__counter += 1
 		self._id = ChargingPeriod.__counter
 
+	def reset_counter( ):
+		ChargingPeriod.__counter = 0		
+
 	def run( self ):
 		car = self.get_car( )
 
@@ -29,20 +32,26 @@ class ChargingPeriod( CarEvent ):
 
 		Plug.acquire_charging_plug( car, self )
 
-		plugs = simulator.get_charging_plugs( )
-		for p in plugs:
-			p.lock( )
+		has_found_plug = False
 
-			if p.is_available( ):
-				p.plug_car( car )
-				p.add_charging_period( self )				
-				car.set_plug( p )
-				self.set_plug( p )				
-				
-				p.unlock( )
-				break
+		while not has_found_plug:
 
-			p.unlock( )		
+			plugs = simulator.get_charging_plugs( )
+			for p in plugs:
+				p.lock( )
+
+				if p.is_available( ):
+					
+					has_found_plug = True
+					p.plug_car( car )
+					p.add_charging_period( self )				
+					car.set_plug( p )
+					self.set_plug( p )									
+
+					p.unlock( )
+					break
+
+				p.unlock( )		
 
 		car.lock( )
 		car.set_status( CarStatuses.STATUS_CHARGING )
@@ -73,52 +82,53 @@ class ChargingPeriod( CarEvent ):
 			simulator.unlock_current_step( )
 
 			sim_sampling_rate = simulator.get_config( 'sim_sampling_rate' )
+			minutes_per_sim_step = simulator.get_config( 'minutes_per_sim_step' )
 
-			ended_normally = False					
+			ended_normally = False		
+			elapsed_time = 0			
 
 			while simulator.is_simulation_running( ):
 
-				simulator.lock_current_datetime( )
+				if elapsed_time <= charging_period_duration:					
 
-				current_datetime = simulator.get_current_datetime( )
+					self._plug.lock( )				
 
-				if current_datetime <= end_datetime:
-					
-					car.lock( )	
+					progress_perc = elapsed_time / charging_period_duration
+					progress_perc_formatted = progress_perc * 100        					
 
-					self._plug.lock( )
+					if self._plug.is_enabled( ):									
 
-					charging_period_energy_spent = 0					
-
-					if self._plug.is_enabled( ):
-
-						elapsed_time = ( ( current_datetime - start_datetime ).total_seconds( ) ) / 60
-						elapsed_time_perc = elapsed_time / charging_period_duration
-						elapsed_time_perc_formatted = elapsed_time_perc * 100        									
-
-						charging_period_energy_spent_url = "charging_period/energy_spent/{}".format( elapsed_time_perc )
+						elapsed_time = elapsed_time + minutes_per_sim_step
+						charging_period_energy_spent_url = "charging_period/energy_spent/{}".format( progress_perc )
 						charging_period_energy_spent_res = simulator.fetch_gateway( charging_period_energy_spent_url )
 						charging_period_energy_spent = float( charging_period_energy_spent_res[ 'charging_period_energy_spent' ] )	
 
-					self._plug.set_energy_consumption( charging_period_energy_spent )
+						self._plug.set_energy_consumption( charging_period_energy_spent )
+						car.log_debug( 'Charging... ({} KW - {}% of {}%)'.format( charging_period_energy_spent, progress_perc_formatted, 100 ) )			
+
+					else:
+
+						charging_period_energy_spent = 0							
+						self._plug.set_energy_consumption( charging_period_energy_spent )
+
+						car.log_debug( 'Charging is pending!' )			
 
 					self._plug.unlock( )
-
-					car.log_debug( 'Charging... ({} KW - {}% of {}%)'.format( charging_period_energy_spent, elapsed_time_perc_formatted, 100 ) )			
-
-					car.unlock( )		
-					
-					simulator.unlock_current_datetime( )						
 
 				else:
 
 					ended_normally = True
 
-					simulator.unlock_current_datetime( )
-
 					break
 				
 				time.sleep( sim_sampling_rate / 1000 )
+
+			simulator.lock_current_datetime( )
+			
+			current_datetime = simulator.get_current_datetime( )
+			self.set_end_datetime( current_datetime )				
+
+			simulator.unlock_current_datetime( )
 
 			car.end_charging_period( ended_normally )								
 

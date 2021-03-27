@@ -35,6 +35,9 @@ class Car:
 		self._plug = None
 		self._lock = threading.Lock( )
 
+	def reset_counter( ):
+		Car.__counter = 0		
+
 	def get_id( self ):
 		return self._id
 

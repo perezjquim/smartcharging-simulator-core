@@ -84,10 +84,10 @@ class Simulator( metaclass = SingletonMetaClass ):
 		if wait_for_main_thread:					
 			self._main_thread.join( )
 
-		Car.__counter = 0
-		Plug.__counter = 0
-		Travel.__counter = 0
-		ChargingPeriod.__counter = 0
+		Car.reset_counter( )
+		Plug.reset_counter( )
+		Travel.reset_counter( )
+		ChargingPeriod.reset_counter( )
 
 		self._send_sim_data_to_clients( )
 
@@ -122,7 +122,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 			elif command_name == 'SET-PLUG-STATUS':
 				plug_id = command_args[ 'plug_id' ]
 				plug_new_status = command_args[ 'plug_new_status' ]
-				self._set_plug_status( plug_id, plug_new_status )
+				self.set_charging_plug_status( plug_id, plug_new_status )
+			else:
+				self.log( 'Unknown command received - {}'.format( message_value ) )
 
 	def _fetch_config( self ):
 		self.log( "Fetching config..." )
@@ -151,7 +153,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		return self._charging_plugs
 
 	def set_charging_plug_status( self, plug_id, plug_new_status ):
-		plug = ( filter( lambda p : p.get_id( ) == plug_id, self._charging_plugs ) )
+		plug = list( filter( lambda p : p.get_id( ) == plug_id, self._charging_plugs ) )
 		plug = plug[ 0 ]
 		plug.lock( )
 		plug.set_status( plug_new_status )

@@ -36,6 +36,9 @@ class Plug:
 
 		self._lock = threading.Lock( )
 
+	def reset_counter( ):
+		Plug.__counter = 0
+
 	def acquire_charging_plug( car, charging_period ):
 		caller = DebugHelper.get_caller( )		
 		Plug.static_log_debug( 'ACQUIRING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
@@ -58,6 +61,7 @@ class Plug:
 
 	def set_status( self, new_status ):
 		self._status = new_status
+		self.log( 'New status: {}!'.format( new_status ) )		
 
 	def is_busy( self ):
 		return self._plugged_car != None

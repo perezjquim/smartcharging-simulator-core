@@ -16,6 +16,9 @@ class Travel( CarEvent ):
 		Travel.__counter += 1
 		self._id  = Travel.__counter
 
+	def reset_counter( ):
+		Travel.__counter = 0		
+
 	def run( self ):
 		car = self.get_car( )
 
@@ -51,23 +54,29 @@ class Travel( CarEvent ):
 		simulator.unlock_current_datetime( )
 
 		sim_sampling_rate = simulator.get_config( 'sim_sampling_rate' )
-		
+		minutes_per_sim_step = simulator.get_config( 'minutes_per_sim_step' )
+
+		elapsed_time = 0		
+	
 		while simulator.is_simulation_running( ):
 
-			simulator.lock_current_datetime( )
+			if elapsed_time <= travel_duration:
 
-			current_datetime = simulator.get_current_datetime( )		
-			if current_datetime <= end_datetime:
-				
-				car.log_debug( 'Traveling...' )
-				simulator.unlock_current_datetime( )				
+				elapsed_time = elapsed_time + minutes_per_sim_step								
+				car.log_debug( 'Traveling...' )		
 
 			else:
-
-				simulator.unlock_current_datetime( )				
+		
 				break
 
 			time.sleep( sim_sampling_rate / 1000 )
+
+		simulator.lock_current_datetime( )
+		
+		current_datetime = simulator.get_current_datetime( )
+		self.set_end_datetime( current_datetime )				
+
+		simulator.unlock_current_datetime( )			
 
 		car.end_travel( )
 
