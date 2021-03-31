@@ -21,7 +21,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 	_data_exporter = None
 
 	_main_thread = None	
-	_config = { }
 	_cars = [ ]
 
 	_affluence_counts = { }
@@ -47,8 +46,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self._current_step_lock = threading.Lock( )
 		self._current_datetime_lock = threading.Lock( )
 		self._is_simulation_running_lock = threading.Lock( )
-
-		self._fetch_config( )
 
 		self._socket_helper.attach_on_client_connected( self.on_client_connected )	
 		self._socket_helper.attach_on_client_message_received( self.on_client_message_received )		
@@ -99,7 +96,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.log_debug( '////// SENDING SIM STATE... //////' )
 
 		is_sim_running = self.is_simulation_running( )
-		message = { 'is_sim_running' : is_sim_running }
+		config = self.get_config( )
+		message = { 'is_sim_running' : is_sim_running, 'config' : config }
 		self._socket_helper.send_message_to_clients( 'state', message )
 
 		self.log_debug( '////// SENDING SIM STATE... done! //////' )		
@@ -116,23 +114,28 @@ class Simulator( metaclass = SingletonMetaClass ):
 			command_args = message_value[ 'command_args' ]
 
 			if command_name == 'START-SIMULATION':
+
 				self.on_start( )
+
 			elif command_name == 'STOP-SIMULATION':
+
 				self.on_stop( )
+
 			elif command_name == 'SET-PLUG-STATUS':
+
 				plug_id = command_args[ 'plug_id' ]
 				plug_new_status = command_args[ 'plug_new_status' ]
 				self.set_charging_plug_status( plug_id, plug_new_status )
+
+			elif command_name == 'SET-CONFIG':
+
+				config_key = command_args[ 'config_key' ]
+				config_new_value = command_args[ 'config_value' ]
+				self.set_config_by_key( config_key, config_new_value)
+
 			else:
+
 				self.log( 'Unknown command received - {}'.format( message_value ) )
-
-	def _fetch_config( self ):
-		self.log( "Fetching config..." )
-
-		self._config = ConfigurationHelper.read_config( )
-		self.log_debug( 'Config >> {}'.format( self._config ) )
-
-		self.log( "Fetching config... done!" )
 
 	def log( self, message ):
 		Logger.log( message )
@@ -143,8 +146,19 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def log_debug( self, message ):
 		Logger.log_debug( message )
 
-	def get_config( self, config_key ):
-		return self._config[ config_key ]
+	def get_config( self ):
+		config_helper = ConfigurationHelper( )
+		config = config_helper.get_config( )
+		return config
+
+	def get_config_by_key( self, config_key ):
+		config_helper = ConfigurationHelper( )
+		config_value = config_helper.get_config_by_key( config_key )
+		return config_value
+
+	def set_config_by_key( self, config_key, config_value ):
+		config_helper = ConfigurationHelper( )
+		config_helper.set_config_by_key( config_key, config_value )
 
 	def get_cars( self ):
 		return self._cars
@@ -163,7 +177,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.log( 'Initializing cars...' )
 
 		self._cars = [ ]
-		number_of_cars = self.get_config( 'number_of_cars' )
+		number_of_cars = self.get_config_by_key( 'number_of_cars' )
 		for n in range( number_of_cars ):
 			self._cars.append( Car( self ) )
 
@@ -186,7 +200,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.log( 'Initializing plugs...' )
 
 		self._charging_plugs = [ ]
-		number_of_charging_plugs = self.get_config( 'number_of_charging_plugs' )
+		number_of_charging_plugs = self.get_config_by_key( 'number_of_charging_plugs' )
 		for n in range( number_of_charging_plugs ):
 			self._charging_plugs.append( Plug( self ) )
 
@@ -221,8 +235,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def run( self ):
 		self.log_main( 'Simulating...' )		
 
-		sim_sampling_rate = self.get_config( 'sim_sampling_rate' )		
-		number_of_steps = self.get_config( 'number_of_steps' )
+		sim_sampling_rate = self.get_config_by_key( 'sim_sampling_rate' )		
+		number_of_steps = self.get_config_by_key( 'number_of_steps' )
 
 		while self.is_simulation_running( ):
 
@@ -256,7 +270,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 				current_step = self.get_current_step( )				
 				if current_step > 1:
 					
-					minutes_per_sim_step = self.get_config( 'minutes_per_sim_step' )
+					minutes_per_sim_step = self.get_config_by_key( 'minutes_per_sim_step' )
 					current_datetime += timedelta( minutes = minutes_per_sim_step )
 					self.set_current_datetime( current_datetime )	
 
@@ -298,7 +312,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.log_debug( '////// SENDING SIM DATA... done! //////' )			
 
 	def can_simulate_new_actions( self ):
-		number_of_steps = self.get_config( 'number_of_steps' )
+		number_of_steps = self.get_config_by_key( 'number_of_steps' )
 		can_simulate_new_actions = self.is_simulation_running( ) and ( self._current_step <= number_of_steps )
 		return can_simulate_new_actions
 
@@ -369,7 +383,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self.log( '-- Simulation period ended: this step is only used to resume travels and/or charging periods! --' )
 
 	def fetch_gateway( self, endpoint ):
-		base_url = self.get_config( 'gateway_request_base_url' )
+		base_url = self.get_config_by_key( 'gateway_request_base_url' )
 		url = base_url.format( endpoint )
 		response = requests.get( url )
 		response_json = response.json( )

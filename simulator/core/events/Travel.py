@@ -53,8 +53,8 @@ class Travel( CarEvent ):
 
 		simulator.unlock_current_datetime( )
 
-		sim_sampling_rate = simulator.get_config( 'sim_sampling_rate' )
-		minutes_per_sim_step = simulator.get_config( 'minutes_per_sim_step' )
+		sim_sampling_rate = simulator.get_config_by_key( 'sim_sampling_rate' )
+		minutes_per_sim_step = simulator.get_config_by_key( 'minutes_per_sim_step' )
 
 		elapsed_time = 0		
 	

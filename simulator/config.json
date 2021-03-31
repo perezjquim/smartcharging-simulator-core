@@ -1,6 +1,6 @@
 {
-	"number_of_cars": 5,
-	"number_of_charging_plugs": 3,
+	"number_of_cars": 10,
+	"number_of_charging_plugs": 4,
 	"sim_sampling_rate": 100,
 	"minutes_per_sim_step": 15,
 	"number_of_steps": 96,

@@ -1,11 +1,51 @@
 import json
+import threading
 from base.SingletonMetaClass import SingletonMetaClass
 
 class ConfigurationHelper( metaclass = SingletonMetaClass ):
 
 	CONFIG_FILE_NAME = 'simulator/config.json'	
 
-	def read_config( ):
+	_lock = None
+	_config = None
+
+	def __init__( ):
+		self._lock = threading.Lock( )
+
+	def get_config( self ):
+		self._lock.acquire( )
+
+		if not self._config:
+			self._read_config( )		
+
+		config = self._config
+
+		self._lock.release( )
+
+		return config
+
+	def get_config_by_key( self, config_key ):
+		self._lock.acquire( )
+
+		if not self._config:
+			self._read_config( )
+
+		config_value = self._config[ config_key ]
+
+		self._lock.release( )
+
+		return config_value
+
+	def set_config_by_key( self, config_key, config_value ):
+		self._lock.acquire( )
+
+		if not self._config:
+			self._read_config( )
+
+		self._config[ config_key ] = config_value
+
+		self._lock.release( )	
+
+	def _read_config( self ):
 		with open( ConfigurationHelper.CONFIG_FILE_NAME ) as file:
-	    		config = json.load( file )
-	    		return config
+	    		self._config = json.load( file )
