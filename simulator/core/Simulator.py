@@ -129,9 +129,14 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			elif command_name == 'SET-CONFIG':
 
+				new_config = command_args[ 'new_config' ]
+				self.set_config( new_config )				
+
+			elif command_name == 'SET-CONFIG-BY-KEY':
+
 				config_key = command_args[ 'config_key' ]
 				config_new_value = command_args[ 'config_value' ]
-				self.set_config_by_key( config_key, config_new_value)
+				self.set_config_by_key( config_key, config_new_value )
 
 			else:
 
@@ -150,6 +155,10 @@ class Simulator( metaclass = SingletonMetaClass ):
 		config_helper = ConfigurationHelper( )
 		config = config_helper.get_config( )
 		return config
+
+	def set_config( self, new_config ):
+		config_helper = ConfigurationHelper( )
+		config_helper.set_config( new_config )
 
 	def get_config_by_key( self, config_key ):
 		config_helper = ConfigurationHelper( )

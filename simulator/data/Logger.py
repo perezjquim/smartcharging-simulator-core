@@ -14,7 +14,7 @@ class Logger( ):
 		print( log_str )
 
 	def log_debug( log_str ):
-		config = ConfigurationHelper.read_config( )
-		is_debug_enabled = config[ 'enable_debug_mode' ]
+		config_helper = ConfigurationHelper( )
+		is_debug_enabled = config_helper.get_config_by_key( 'enable_debug_mode' )
 		if is_debug_enabled:
 			Logger.log( 'DEBUG: {}'.format( log_str ) )

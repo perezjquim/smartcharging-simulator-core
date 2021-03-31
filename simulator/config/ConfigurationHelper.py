@@ -9,7 +9,7 @@ class ConfigurationHelper( metaclass = SingletonMetaClass ):
 	_lock = None
 	_config = None
 
-	def __init__( ):
+	def __init__( self ):
 		self._lock = threading.Lock( )
 
 	def get_config( self ):
@@ -23,6 +23,13 @@ class ConfigurationHelper( metaclass = SingletonMetaClass ):
 		self._lock.release( )
 
 		return config
+
+	def set_config( self, new_config ):
+		self._lock.acquire( )		
+
+		self._config = new_config
+
+		self._lock.release( )
 
 	def get_config_by_key( self, config_key ):
 		self._lock.acquire( )
