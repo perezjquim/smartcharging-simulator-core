@@ -1,4 +1,6 @@
 # > CONSTANTS
+PIP_PATH_FIX=~/.local/bin
+
 PATTERN_BEGIN=»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
 PATTERN_END=«««««««««««««««««««««««««««««««««««««««««««««
 
@@ -26,8 +28,12 @@ run-docker-simulator: build-docker-simulator start-docker-simulator
 build-docker-simulator:
 	@echo '$(PATTERN_BEGIN) BUILDING SIMULATOR PACK...'
 
-	@if ( ( pip3 list | grep -F pipreqs ) &> /dev/null ) ; then echo "pipreqs already installed!" ;\
-	else echo "pipreqs not installed! installing..." && pip3 install pipreqs; fi
+	@if [ -d "$(PIP_PATH_FIX)" ] && [[ ":$PATH:" != *":$(PIP_PATH_FIX):"* ]]; then \
+		PATH="${PATH:+"$PATH:""}$(PIP_PATH_FIX)"; \
+	fi	
+
+	@if ( ( pip list | grep -F pipreqs ) > /dev/null ) ; then echo "pipreqs already installed!" ;\
+	else echo "pipreqs not installed! installing..." && pip install pipreqs; fi
 
 	@pipreqs --force --savepath requirements.txt.tmp
 	@sort -r requirements.txt.tmp > requirements.txt.tmp.sorted
