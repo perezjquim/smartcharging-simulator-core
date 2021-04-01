@@ -33,9 +33,9 @@ check-dependencies:
 		echo "pack already installed!" ; \
 	else \
 		echo "pack not installed! installing..." && \
-		sudo add-apt-repository ppa:cncf-buildpacks/pack-cli && \
-		sudo apt-get update && \
-		sudo apt-get install pack-cli; \
+		add-apt-repository ppa:cncf-buildpacks/pack-cli && \
+		apt-get update && \
+		apt-get install pack-cli; \
 	fi			
 
 	@bash -c 'source ~/.profile'		
