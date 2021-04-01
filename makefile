@@ -37,7 +37,7 @@ check-dependencies:
 		curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.18.0/pack-v0.18.0-linux.tgz" \
 		| \
 		sudo tar -C /usr/local/bin/ --no-same-owner -xzv pack \
-		)
+		) \
 	fi			
 
 	@bash -c 'source ~/.profile'		
