@@ -32,12 +32,8 @@ check-dependencies:
 	@if ( dpkg -l pack-cli > /dev/null 2>&1 ) ; then \
 		echo "pack already installed!" ; \
 	else \
-		echo "pack not installed! installing..." && \
-		( \
-		curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.18.0/pack-v0.18.0-linux.tgz" \
-		| \
-		sudo tar -C /usr/local/bin/ --no-same-owner -xzv pack \
-		) \
+		echo "pack not installed! please install..."; \
+		exit 1; \
 	fi			
 
 	@bash -c 'source ~/.profile'		
