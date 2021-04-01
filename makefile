@@ -18,18 +18,22 @@ GATEWAY_HOST=cont_energysim_gateway
 GATEWAY_PORT=8000
 # < CONSTANTS
 
-main: stop-docker-simulator run-docker-simulator
+main: check-dependencies stop-docker-simulator run-docker-simulator
+
+check-dependencies:
+	@if ( pip3 list  | grep -F pipreqs > /dev/null ) ; then echo "pipreqs already installed!" ;\
+	else echo "pipreqs not installed! installing..." && pip3 install pipreqs; fi	
+
+	@if ( pip3 list  | grep -F pack > /dev/null ) ; then echo "pack already installed!" ;\
+	else echo "pack not installed! installing..." && pip3 install pack; fi			
+
+	@bash -c 'source ~/.profile'		
 
 # > DOCKER-SIMULATOR
 run-docker-simulator: build-docker-simulator start-docker-simulator
 
 build-docker-simulator:
 	@echo '$(PATTERN_BEGIN) BUILDING SIMULATOR PACK...'
-
-	@bash -c 'source ~/.profile'
-
-	@if ( pip list  | grep -F pipreqs > /dev/null ) ; then echo "pipreqs already installed!" ;\
-	else echo "pipreqs not installed! installing..." && pip install pipreqs; fi
 
 	@pipreqs --force --savepath requirements.txt.tmp
 	@sort -r requirements.txt.tmp > requirements.txt.tmp.sorted
