@@ -28,11 +28,9 @@ run-docker-simulator: build-docker-simulator start-docker-simulator
 build-docker-simulator:
 	@echo '$(PATTERN_BEGIN) BUILDING SIMULATOR PACK...'
 
-	@if [ -d "$(PIP_PATH_FIX)" ] && [[ ":$PATH:" != *":$(PIP_PATH_FIX):"* ]]; then \
-		PATH="${PATH:+"$PATH:""}$(PIP_PATH_FIX)"; \
-	fi	
+	@bash -c 'source ~/.profile'
 
-	@if ( ( pip list | grep -F pipreqs ) > /dev/null ) ; then echo "pipreqs already installed!" ;\
+	@if ( ( pip list &> /dev/null ) | ( grep -F pipreqs &> /dev/null ) ) ; then echo "pipreqs already installed!" ;\
 	else echo "pipreqs not installed! installing..." && pip install pipreqs; fi
 
 	@pipreqs --force --savepath requirements.txt.tmp
