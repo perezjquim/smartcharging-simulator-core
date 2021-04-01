@@ -24,8 +24,8 @@ check-dependencies:
 	@if ( pip3 list  | grep -F pipreqs > /dev/null ) ; then echo "pipreqs already installed!" ;\
 	else echo "pipreqs not installed! installing..." && pip3 install pipreqs; fi	
 
-	@if ( pip3 list  | grep -F pack > /dev/null ) ; then echo "pack already installed!" ;\
-	else echo "pack not installed! installing..." && pip3 install pack; fi			
+	@if ( pip list  | grep -F pack > /dev/null ) ; then echo "pack already installed!" ;\
+	else echo "pack not installed! installing..." && pip install pack; fi			
 
 	@bash -c 'source ~/.profile'		
 
