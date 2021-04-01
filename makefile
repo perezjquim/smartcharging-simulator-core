@@ -26,6 +26,9 @@ run-docker-simulator: build-docker-simulator start-docker-simulator
 build-docker-simulator:
 	@echo '$(PATTERN_BEGIN) BUILDING SIMULATOR PACK...'
 
+	@if [ pip list | grep -F pipreqs ]; then echo "pipreqs already installed!" ;\
+	else echo "pipreqs not installed! installing..." && pip install pipreqs
+
 	@pipreqs --force --savepath requirements.txt.tmp
 	@sort -r requirements.txt.tmp > requirements.txt.tmp.sorted
 	@if cmp -s requirements.txt.tmp.sorted requirements.txt; then :;\
