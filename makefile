@@ -30,7 +30,7 @@ build-docker-simulator:
 
 	@bash -c 'source ~/.profile'
 
-	@if ( ( pip list &> /dev/null ) | ( grep -F pipreqs &> /dev/null ) ) ; then echo "pipreqs already installed!" ;\
+	@if ( pip list  | grep -F pipreqs &> /dev/null ) ; then echo "pipreqs already installed!" ;\
 	else echo "pipreqs not installed! installing..." && pip install pipreqs; fi
 
 	@pipreqs --force --savepath requirements.txt.tmp
