@@ -33,9 +33,11 @@ check-dependencies:
 		echo "pack already installed!" ; \
 	else \
 		echo "pack not installed! installing..." && \
-		add-apt-repository ppa:cncf-buildpacks/pack-cli && \
-		apt-get update && \
-		apt-get install pack-cli; \
+		( \
+		curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.18.0/pack-v0.18.0-linux.tgz" \
+		| \
+		sudo tar -C /usr/local/bin/ --no-same-owner -xzv pack \
+		)
 	fi			
 
 	@bash -c 'source ~/.profile'		
