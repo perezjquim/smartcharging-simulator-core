@@ -21,13 +21,26 @@ GATEWAY_PORT=8000
 main: check-dependencies stop-docker-simulator run-docker-simulator
 
 check-dependencies:
-	@if ( pip3 list  | grep -F pipreqs > /dev/null ) ; then echo "pipreqs already installed!" ;\
-	else echo "pipreqs not installed! installing..." && pip3 install pipreqs; fi	
+	@echo '$(PATTERN_BEGIN) CHECKING DEPENDENCIES...'
 
-	@if ( pip list  | grep -F pack > /dev/null ) ; then echo "pack already installed!" ;\
-	else echo "pack not installed! installing..." && pip install pack; fi			
+	@if ( pip3 list | grep -F pipreqs > /dev/null 2>&1 ) ; then \
+		echo "pipreqs already installed!" ; \
+	else \
+		echo "pipreqs not installed! installing..." && pip3 install pipreqs; \
+	fi	
+
+	@if ( dpkg -l pack-cli > /dev/null 2>&1 ) ; then \
+		echo "pack already installed!" ; \
+	else \
+		echo "pack not installed! installing..." && \
+		sudo add-apt-repository ppa:cncf-buildpacks/pack-cli && \
+		sudo apt-get update && \
+		sudo apt-get install pack-cli; \
+	fi			
 
 	@bash -c 'source ~/.profile'		
+
+	@echo '$(PATTERN_END) DEPENDENCIES CHECKED!'
 
 # > DOCKER-SIMULATOR
 run-docker-simulator: build-docker-simulator start-docker-simulator
