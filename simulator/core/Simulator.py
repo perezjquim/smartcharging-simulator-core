@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 from base.SingletonMetaClass import SingletonMetaClass
 from config.ConfigurationHelper import ConfigurationHelper
 from data.Logger import Logger
+from data.DBHelper import DBHelper
 from data.SocketHelper import SocketHelper
 from data.DataExporter import DataExporter
 from base.DebugHelper import DebugHelper
@@ -17,6 +18,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 	MAIN_LOG_PREFIX = '============================'
 
+	_db_helper = None
 	_socket_helper = None
 	_data_exporter = None
 
@@ -37,6 +39,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 	_is_simulation_running_lock = None	
 
 	def on_init( self ):
+		self._db_helper = DBHelper( )
+		self._db_helper.on_init( )
+
 		self._socket_helper = SocketHelper( )
 		self._socket_helper.on_init( )	
 

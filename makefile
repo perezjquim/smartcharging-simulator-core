@@ -16,6 +16,8 @@ SIMULATOR_WS_PORT_EXTERNAL=9002:9001
 
 GATEWAY_HOST=cont_energysim_gateway
 GATEWAY_PORT=8000
+
+DB_VOLUME_PATH=vol_energysim_db:/app/db
 # < CONSTANTS
 
 main: check-dependencies stop-docker-simulator run-docker-simulator
@@ -66,6 +68,7 @@ start-docker-simulator:
 	@docker run -d \
 	--name $(SIMULATOR_CONTAINER_NAME) \
 	--network $(SIMULATOR_NETWORK_NAME) \
+	--volume $(DB_VOLUME_PATH) \
 	-p $(SIMULATOR_FLASK_PORT_EXTERNAL) \
 	-p $(SIMULATOR_WS_PORT_EXTERNAL) \
 	-e SIMULATOR_HOST=$(SIMULATOR_HOST) \
