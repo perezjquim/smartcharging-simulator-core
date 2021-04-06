@@ -1,14 +1,19 @@
 import time
 from datetime import date, datetime, timedelta
-from .CarEvent import CarEvent
-from core.CarStatuses import CarStatuses
-from core.Plug import Plug
+from peewee import *
+
+from base.ImportHelper import ImportHelper
+
+BaseModel = ImportHelper.import_class( 'model.BaseModel' )
+CarEvent = ImportHelper.import_class( 'core.events.CarEvent' )
+CarStatuses = ImportHelper.import_class( 'core.CarStatuses' )
+Plug = ImportHelper.import_class( 'core.Plug' )
 
 class ChargingPeriod( CarEvent ):
 
 	__counter = 0
 
-	_id = 0	
+	_id = AutoField( column = 'id' )
 
 	_plug = None
 

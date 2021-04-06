@@ -1,10 +1,13 @@
-from base.SingletonMetaClass import SingletonMetaClass
 import asyncio
 import websockets
 import os
 import threading
 import json
 import traceback
+
+from base.ImportHelper import ImportHelper
+
+SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
 
 class SocketHelper( metaclass = SingletonMetaClass ):
 

@@ -1,7 +1,10 @@
 from flask import Blueprint, Response
 import json
-from base.SingletonMetaClass import SingletonMetaClass
-from .DataExporter import DataExporter
+
+from base.ImportHelper import ImportHelper
+
+SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
+DataExporter = ImportHelper.import_class( 'data.DataExporter' )
 
 api = Blueprint( "DataServer", __name__ )
 

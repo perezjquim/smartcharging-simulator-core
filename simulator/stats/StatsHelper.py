@@ -1,6 +1,9 @@
 import random
-from base.SingletonMetaClass import SingletonMetaClass
-from core.CarStatuses import CarStatuses
+
+from base.ImportHelper import ImportHelper
+
+SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
+CarStatuses = ImportHelper.import_class( 'core.CarStatuses' )
 
 class StatsHelper( metaclass = SingletonMetaClass ):
 

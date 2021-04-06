@@ -1,6 +1,9 @@
 import json
 import threading
-from base.SingletonMetaClass import SingletonMetaClass
+
+from base.ImportHelper import ImportHelper
+
+SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
 
 class ConfigurationHelper( metaclass = SingletonMetaClass ):
 

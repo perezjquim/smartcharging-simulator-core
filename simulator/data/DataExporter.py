@@ -1,5 +1,7 @@
-from base.SingletonMetaClass import SingletonMetaClass
-from stats.StatsHelper import StatsHelper
+from base.ImportHelper import ImportHelper
+
+SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
+StatsHelper = ImportHelper.import_class( 'stats.StatsHelper' )
 
 class DataExporter( metaclass = SingletonMetaClass ):
 

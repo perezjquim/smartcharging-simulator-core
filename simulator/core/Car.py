@@ -1,13 +1,18 @@
 import time
 import threading
+from peewee import *
 from datetime import timedelta
-from data.Logger import Logger
-from base.DebugHelper import DebugHelper
-from .events.Travel import Travel
-from .events.ChargingPeriod import ChargingPeriod
-from .CarStatuses import CarStatuses
 
-class Car:
+from base.ImportHelper import ImportHelper
+
+Logger = ImportHelper.import_class( 'data.Logger' )
+BaseModel = ImportHelper.import_class( 'model.BaseModel' )
+DebugHelper = ImportHelper.import_class( 'base.DebugHelper' )
+Travel = ImportHelper.import_class( 'core.events.Travel' )
+ChargingPeriod = ImportHelper.import_class( 'core.events.ChargingPeriod' )
+CarStatuses = ImportHelper.import_class( 'core.CarStatuses' )
+
+class Car( BaseModel ):
 
 	LOG_TEMPLATE = '»»»»»»»»»» Car {} --- {}'
 
@@ -15,12 +20,12 @@ class Car:
 
 	__counter = 0
 
-	_id = 0
+	_id = AutoField( column = 'id' )
 	_simulator = None
-	_status = None
+	_status = CharField( column = 'status' )
 	_travels = [ ]
 	_charging_periods = [ ]
-	_battery_level = 0
+	_battery_level = FloatField( column = 'battery_level' )
 	_plug = None
 	_lock = None
 

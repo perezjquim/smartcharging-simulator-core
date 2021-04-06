@@ -1,14 +1,19 @@
 import time
 from datetime import date, datetime, timedelta
-from .CarEvent import CarEvent
+from peewee import *
+
+from base.ImportHelper import ImportHelper
+
+BaseModel = ImportHelper.import_class( 'model.BaseModel' )
+CarEvent = ImportHelper.import_class( 'core.events.CarEvent' )
 
 class Travel( CarEvent ):
 
 	__counter = 0
 
-	_id = 0
-	_distance = 0
-	_battery_consumption = 0		
+	_id = AutoField( column = 'id' )
+	_distance = FloatField( column = 'distance' )
+	_battery_consumption = FloatField( column = 'battery_consumption' )		
 
 	def __init__( self, car ):
 		super( ).__init__( car )

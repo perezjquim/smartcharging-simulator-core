@@ -1,22 +1,27 @@
 import threading
-from data.Logger import Logger
-from base.DebugHelper import DebugHelper
-from .PlugStatuses import PlugStatuses
+from peewee import *
 
-class Plug:
+from base.ImportHelper import ImportHelper
+
+Logger = ImportHelper.import_class( 'data.Logger' )
+BaseModel = ImportHelper.import_class( 'model.BaseModel' )
+DebugHelper = ImportHelper.import_class( 'base.DebugHelper' )
+PlugStatuses = ImportHelper.import_class( 'core.PlugStatuses' )
+
+class Plug( BaseModel ):
 
 	LOG_TEMPLATE = '++++++++++ Plug {} --- {}'	
 
 	__counter = 0
 	__charging_plugs_semaphore = None		
 
-	_id = 0
+	_id = AutoField( column = 'id' )
 
 	_simulator = None
-	_status = None	
+	_status = CharField( column = 'status' )	
 	
 	_plugged_car = None
-	_energy_consumption = 0
+	_energy_consumption = FloatField( column = 'energy_consumption' )
 
 	_charging_periods = [ ]
 

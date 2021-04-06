@@ -1,14 +1,19 @@
 import threading
 import time
 from datetime import date, datetime, timedelta
+from peewee import *
 
-class CarEvent:
+from base.ImportHelper import ImportHelper
+
+BaseModel = ImportHelper.import_class( 'model.BaseModel' )
+
+class CarEvent( BaseModel ):
 
 	_id = 0
 
 	_car = None
-	_start_datetime = None
-	_end_datetime = None
+	_start_datetime = DateTimeField( column = 'start_datetime' )
+	_end_datetime = DateTimeField( column = 'end_datetime' )
 	_thread = None
 
 	def __init__( self, car ):
