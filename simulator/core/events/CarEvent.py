@@ -5,7 +5,9 @@ from peewee import *
 
 from base.ImportHelper import ImportHelper
 
+"""
 BaseModel = ImportHelper.import_class( 'model.BaseModel' )
+"""
 
 class CarEvent( BaseModel ):
 

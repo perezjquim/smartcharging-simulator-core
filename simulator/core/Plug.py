@@ -3,10 +3,12 @@ from peewee import *
 
 from base.ImportHelper import ImportHelper
 
+"""
 Logger = ImportHelper.import_class( 'data.Logger' )
 BaseModel = ImportHelper.import_class( 'model.BaseModel' )
 DebugHelper = ImportHelper.import_class( 'base.DebugHelper' )
 PlugStatuses = ImportHelper.import_class( 'core.PlugStatuses' )
+"""
 
 class Plug( BaseModel ):
 

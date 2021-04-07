@@ -1,10 +1,8 @@
+from base.ImportHelper import ImportHelper
 from flask import Flask
 
-from base.ImportHelper import ImportHelper
-
-Simulator = ImportHelper.import_class( 'core.Simulator' )
-SocketHelper = ImportHelper.import_class( 'data.SocketHelper' )
-DataServer = ImportHelper.import_class( 'data.DataServer' )
+import core.Simulator
+import data.DataServer
 
 simulator = Simulator( )
 simulator.on_init( )

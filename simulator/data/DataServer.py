@@ -3,8 +3,10 @@ import json
 
 from base.ImportHelper import ImportHelper
 
+"""
 SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
 DataExporter = ImportHelper.import_class( 'data.DataExporter' )
+"""
 
 api = Blueprint( "DataServer", __name__ )
 

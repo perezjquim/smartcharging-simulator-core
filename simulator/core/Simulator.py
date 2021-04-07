@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 
 from base.ImportHelper import ImportHelper
 
+"""
 SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
 ConfigurationHelper = ImportHelper.import_class( 'config.ConfigurationHelper' )
 Logger = ImportHelper.import_class( 'data.Logger' )
@@ -15,6 +16,7 @@ Car = ImportHelper.import_class( 'core.Car' )
 Plug = ImportHelper.import_class( 'core.Plug' )
 Travel = ImportHelper.import_class( 'core.events.Travel' )
 ChargingPeriod = ImportHelper.import_class( 'core.events.ChargingPeriod' )
+"""
 
 class Simulator( metaclass = SingletonMetaClass ):
 

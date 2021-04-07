@@ -2,9 +2,11 @@ import json
 
 from base.ImportHelper import ImportHelper
 
+"""
 SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
 ConfigurationHelper = ImportHelper.import_class( 'config.ConfigurationHelper' )
 SocketHelper = ImportHelper.import_class( 'data.SocketHelper' )
+"""
 
 class Logger( ):
 

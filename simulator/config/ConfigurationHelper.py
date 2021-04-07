@@ -3,7 +3,9 @@ import threading
 
 from base.ImportHelper import ImportHelper
 
+"""
 SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
+"""
 
 class ConfigurationHelper( metaclass = SingletonMetaClass ):
 

@@ -4,8 +4,10 @@ from peewee import *
 
 from base.ImportHelper import ImportHelper
 
+"""
 BaseModel = ImportHelper.import_class( 'model.BaseModel' )
 CarEvent = ImportHelper.import_class( 'core.events.CarEvent' )
+"""
 
 class Travel( CarEvent ):
 

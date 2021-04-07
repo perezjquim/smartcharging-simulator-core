@@ -5,12 +5,14 @@ from datetime import timedelta
 
 from base.ImportHelper import ImportHelper
 
+"""
 Logger = ImportHelper.import_class( 'data.Logger' )
 BaseModel = ImportHelper.import_class( 'model.BaseModel' )
 DebugHelper = ImportHelper.import_class( 'base.DebugHelper' )
 Travel = ImportHelper.import_class( 'core.events.Travel' )
 ChargingPeriod = ImportHelper.import_class( 'core.events.ChargingPeriod' )
 CarStatuses = ImportHelper.import_class( 'core.CarStatuses' )
+"""
 
 class Car( BaseModel ):
 

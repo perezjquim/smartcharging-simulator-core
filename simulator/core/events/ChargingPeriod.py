@@ -4,10 +4,12 @@ from peewee import *
 
 from base.ImportHelper import ImportHelper
 
+"""
 BaseModel = ImportHelper.import_class( 'model.BaseModel' )
 CarEvent = ImportHelper.import_class( 'core.events.CarEvent' )
 CarStatuses = ImportHelper.import_class( 'core.CarStatuses' )
 Plug = ImportHelper.import_class( 'core.Plug' )
+"""
 
 class ChargingPeriod( CarEvent ):
 
