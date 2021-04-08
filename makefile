@@ -17,7 +17,12 @@ SIMULATOR_WS_PORT_EXTERNAL=9002:9001
 GATEWAY_HOST=cont_energysim_gateway
 GATEWAY_PORT=8000
 
-DB_VOLUME_PATH=vol_energysim_db:/app/db
+DB_VOLUME=vol_energysim_db
+DB_VOLUME_PATH=/app/db
+DB_VOLUME_BACKUP=$(DB_VOLUME)_BACKUP
+DB_VOLUME_BACKUP_FILENAME=$(DB_VOLUME_BACKUP).tar
+
+UNIX_SUPRESS_OUTPUT=> /dev/null 2>&1
 # < CONSTANTS
 
 main: check-dependencies stop-docker-simulator run-docker-simulator
@@ -25,13 +30,13 @@ main: check-dependencies stop-docker-simulator run-docker-simulator
 check-dependencies:
 	@echo '$(PATTERN_BEGIN) CHECKING DEPENDENCIES...'
 
-	@if ( pip3 list | grep -F pipreqs > /dev/null 2>&1 ) ; then \
+	@if ( pip3 list | grep -F pipreqs $(UNIX_SUPRESS_OUTPUT) ) ; then \
 		echo "pipreqs already installed!" ; \
 	else \
 		echo "pipreqs not installed! installing..." && pip3 install pipreqs; \
 	fi	
 
-	@if ( dpkg -l pack-cli > /dev/null 2>&1 ) ; then \
+	@if ( dpkg -l pack-cli $(UNIX_SUPRESS_OUTPUT) ) ; then \
 		echo "pack already installed!" ; \
 	else \
 		echo "pack not installed! please install..."; \
@@ -68,7 +73,7 @@ start-docker-simulator:
 	@docker run -d \
 	--name $(SIMULATOR_CONTAINER_NAME) \
 	--network $(SIMULATOR_NETWORK_NAME) \
-	--volume $(DB_VOLUME_PATH) \
+	--volume $(DB_VOLUME):$(DB_VOLUME_PATH) \
 	-p $(SIMULATOR_FLASK_PORT_EXTERNAL) \
 	-p $(SIMULATOR_WS_PORT_EXTERNAL) \
 	-e SIMULATOR_HOST=$(SIMULATOR_HOST) \
@@ -100,3 +105,52 @@ start-simulator:
 	--host=$(SIMULATOR_HOST) \
 	--port=$(SIMULATOR_FLASK_PORT)
 # < SIMULATOR
+
+# > DB VOLUME
+clean-db:
+	@echo '$(PATTERN_BEGIN) CLEANING DB VOLUME...'
+
+	@docker volume rm $(DB_VOLUME) --force
+
+	@echo '$(PATTERN_END) DB VOLUME CLEANED UP!'	
+
+backup-db-export:
+	@echo '$(PATTERN_BEGIN) EXPORTING DB VOLUME BACKUP...'
+
+	@docker run \
+		--volume $(DB_VOLUME) \
+		--name $(DB_VOLUME_BACKUP) \
+		ubuntu /bin/bash
+
+	@( docker run \
+		--rm \
+		--volumes-from $(SIMULATOR_CONTAINER_NAME) \
+		--volume $(shell pwd):/backup \
+		bash -c "cd $(DB_VOLUME_PATH) && tar cvf /backup/$(DB_VOLUME_BACKUP_FILENAME) *" \
+		|| \
+		true )
+
+	@docker rm $(DB_VOLUME_BACKUP)			
+
+	@echo '$(PATTERN_END) DB VOLUME BACKUP EXPORTED (to $(DB_VOLUME_BACKUP_FILENAME))!'
+
+backup-db-apply: 
+	@echo '$(PATTERN_BEGIN) APPLYING DB VOLUME BACKUP...'
+
+	@docker run \
+		--volume $(DB_VOLUME) \
+		--name $(DB_VOLUME_BACKUP) \
+		ubuntu /bin/bash
+
+	@( docker run \
+		--rm \
+		--volume $(shell pwd):/backup \
+		bash -c "tar xvf /backup/$(DB_VOLUME_BACKUP_FILENAME)" \
+		|| \
+		true )
+
+	@docker rm $(DB_VOLUME_BACKUP)		
+
+	@echo '$(PATTERN_END) DB VOLUME BACKUP APPLIED!'	
+
+# < DB VOLUME

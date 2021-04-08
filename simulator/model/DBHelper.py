@@ -1,3 +1,4 @@
+import sqlite3 as sql
 from peewee import *
 
 from base.SingletonMetaClass import SingletonMetaClass
@@ -10,8 +11,10 @@ class DBHelper( metaclass = SingletonMetaClass ):
 	_db = None
 
 	def __init__( self ):
+		db_dummy_var = sql.connect( DBHelper.__FILE_PATH )
+		db_dummy_var.close( )
+		
 		self._db = SqliteDatabase( DBHelper.__FILE_PATH, pragmas = DBHelper.__PRAGMAS )
-		self._db.connect( )
 
 	def on_init( self ):
 		self._prepare( )
