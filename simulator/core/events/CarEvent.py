@@ -3,19 +3,15 @@ import time
 from datetime import date, datetime, timedelta
 from peewee import *
 
-from base.ImportHelper import ImportHelper
-
-"""
-BaseModel = ImportHelper.import_class( 'model.BaseModel' )
-"""
+from model.BaseModel import *
 
 class CarEvent( BaseModel ):
 
 	_id = 0
 
 	_car = None
-	_start_datetime = DateTimeField( column = 'start_datetime' )
-	_end_datetime = DateTimeField( column = 'end_datetime' )
+	_start_datetime = DateTimeField( column_name = 'start_datetime' )
+	_end_datetime = DateTimeField( column_name = 'end_datetime' )
 	_thread = None
 
 	def __init__( self, car ):

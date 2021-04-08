@@ -3,20 +3,16 @@ import threading
 import requests
 from datetime import date, datetime, timedelta
 
-from base.ImportHelper import ImportHelper
-
-"""
-SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
-ConfigurationHelper = ImportHelper.import_class( 'config.ConfigurationHelper' )
-Logger = ImportHelper.import_class( 'data.Logger' )
-SocketHelper = ImportHelper.import_class( 'data.SocketHelper' )
-DataExporter = ImportHelper.import_class( 'data.DataExporter' )
-DebugHelper = ImportHelper.import_class( 'base.DebugHelper' )
-Car = ImportHelper.import_class( 'core.Car' )
-Plug = ImportHelper.import_class( 'core.Plug' )
-Travel = ImportHelper.import_class( 'core.events.Travel' )
-ChargingPeriod = ImportHelper.import_class( 'core.events.ChargingPeriod' )
-"""
+from base.SingletonMetaClass import *
+from config.ConfigurationHelper import *
+from data.Logger import *
+from data.DataExporter import *
+from data.SocketHelper import *
+from base.DebugHelper import *
+from .Car import *
+from .Plug import *
+from .events.Travel import *
+from .events.ChargingPeriod import *
 
 class Simulator( metaclass = SingletonMetaClass ):
 
@@ -25,7 +21,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 	__counter = 0
 	_current_simulation_id = 0
 
-	_db_helper = None
 	_socket_helper = None
 	_data_exporter = None
 
@@ -46,9 +41,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 	_is_simulation_running_lock = None	
 
 	def on_init( self ):		
-		self._db_helper = DBHelper( )
-		self._db_helper.on_init( )
-
 		self._socket_helper = SocketHelper( )
 		self._socket_helper.on_init( )	
 
@@ -414,4 +406,3 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.log_debug( '\\\\\\ GATEWAY \\\\\\ RESPONSE: {}'.format( response_json ) )
 
 		return response_json
-

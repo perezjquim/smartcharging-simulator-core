@@ -5,10 +5,8 @@ import threading
 import json
 import traceback
 
-from base.ImportHelper import ImportHelper
-
-SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
-
+from base.SingletonMetaClass import *
+    
 class SocketHelper( metaclass = SingletonMetaClass ):
 
     _ws_clients = [ ]

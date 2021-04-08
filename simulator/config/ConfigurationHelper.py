@@ -1,11 +1,7 @@
 import json
 import threading
 
-from base.ImportHelper import ImportHelper
-
-"""
-SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
-"""
+from base.SingletonMetaClass import *
 
 class ConfigurationHelper( metaclass = SingletonMetaClass ):
 

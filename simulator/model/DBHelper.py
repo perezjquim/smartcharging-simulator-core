@@ -1,12 +1,6 @@
 from peewee import *
 
-from base.ImportHelper import ImportHelper
-
-SingletonMetaClass = ImportHelper.import_class( 'base.SingletonMetaClass' )
-Car = ImportHelper.import_class( 'core.Car' )
-Plug = ImportHelper.import_class( 'core.Plug' )
-ChargingPeriod = ImportHelper.import_class( 'core.events.ChargingPeriod' )
-Travel = ImportHelper.import_class( 'core.events.Travel' )
+from base.SingletonMetaClass import SingletonMetaClass
 
 class DBHelper( metaclass = SingletonMetaClass ):
 
@@ -16,11 +10,21 @@ class DBHelper( metaclass = SingletonMetaClass ):
 	_db = None
 
 	def __init__( self ):
-		self._db = sqliteDatabase( DBHelper.__FILE_PATH, pragmas = DBHelper.__PRAGMAS )
+		self._db = SqliteDatabase( DBHelper.__FILE_PATH, pragmas = DBHelper.__PRAGMAS )
+		self._db.connect( )
+
+	def on_init( self ):
 		self._prepare( )
 
 	def _prepare( self ):
-		self._db.create_tables( [ Car, Plug, ChargingPeriod, Travel ] )
+		from core.Car import Car
+		from core.Plug import Plug
+		from core.events.ChargingPeriod import ChargingPeriod
+		from core.events.Travel import Travel
 
-	def get_db( self ):
-		return self._db
+		models = [ Car, Plug, ChargingPeriod, Travel ] 
+
+		for m in models:
+			m._meta.set_database( self._db )
+
+		self._db.create_tables( models )

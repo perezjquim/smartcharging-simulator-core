@@ -1,8 +1,11 @@
-from base.ImportHelper import ImportHelper
 from flask import Flask
 
-import core.Simulator
-import data.DataServer
+from model.DBHelper import DBHelper
+from core.Simulator import Simulator
+from data.DataServer import DataServer
+
+db_helper = DBHelper( )
+db_helper.on_init( )
 
 simulator = Simulator( )
 simulator.on_init( )
