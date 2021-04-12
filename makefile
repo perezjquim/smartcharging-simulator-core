@@ -83,13 +83,7 @@ stop-docker-simulator:
 # < DOCKER-SIMULATOR
 
 # > SIMULATOR
-run-simulator: prep-simulator start-simulator
-
-prep-simulator:
-	@until nc -z $(GATEWAY_HOST) $(GATEWAY_PORT); do \
-	echo "$$(date) - waiting for gateway..."; \
-	sleep 2; \
-	done
+run-simulator: start-simulator
 
 start-simulator:
 	@FLASK_APP=simulator/main.py \

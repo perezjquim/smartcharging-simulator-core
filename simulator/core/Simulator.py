@@ -395,9 +395,13 @@ class Simulator( metaclass = SingletonMetaClass ):
 		base_url = self.get_config_by_key( 'gateway_request_base_url' )
 		url = base_url.format( endpoint )
 		response = requests.get( url )
-		response_json = response.json( )
-		self.log_debug( '\\\\\\ GATEWAY \\\\\\ URL: {}'.format( url )	 )
-		self.log_debug( '\\\\\\ GATEWAY \\\\\\ RESPONSE: {}'.format( response_json ) )
+
+		try:
+			response_json = response.json( )
+			self.log_debug( '\\\\\\ GATEWAY \\\\\\ URL: {}'.format( url )	 )
+			self.log_debug( '\\\\\\ GATEWAY \\\\\\ RESPONSE: {}'.format( response_json ) )
+		except Exception as ex:
+			self.log( 'Gateway error: {}'.format( ex ) )			
 
 		return response_json
 
