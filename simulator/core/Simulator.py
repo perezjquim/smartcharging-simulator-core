@@ -59,6 +59,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self._initialize_cars( )
 			self._initialize_plugs( )
 			self._initialize_datetime( )	
+			self._affluence_counts = { }
 			self._current_step = 1			
 			self.set_simulation_state( True )	
 			self._main_thread = threading.Thread( target = self.run )						
