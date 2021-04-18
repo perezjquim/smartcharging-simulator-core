@@ -1,29 +1,28 @@
-from peewee import *
+from pony.orm import *
 
 from base.SingletonMetaClass import SingletonMetaClass
 
 class DBHelper( metaclass = SingletonMetaClass ):
 
-	__FILE_PATH = 'db/energysim.db'
-	__PRAGMAS = { 'journal_mode' : 'wal' }
+	__PROVIDER = 'sqlite'
+	__FILE_PATH = '../../db/energysim.sqlite'
 
 	_db = None
 
 	def __init__( self ):
-		self._db = SqliteDatabase( DBHelper.__FILE_PATH, pragmas = DBHelper.__PRAGMAS )
+		self._db = Database( provider = DBHelper.__PROVIDER, filename = DBHelper.__FILE_PATH, create_db = True )	
 
 	def on_init( self ):
 		self._prepare( )
 
-	def _prepare( self ):
+	def _prepare( self ):			
 		from core.Car import Car
 		from core.Plug import Plug
-		from core.events.ChargingPeriod import ChargingPeriod
 		from core.events.Travel import Travel
+		from core.events.ChargingPeriod import ChargingPeriod
 
-		models = [ Car, Plug, ChargingPeriod, Travel ] 
+		self._db.generate_mapping( create_tables = True )
 
-		for m in models:
-			m._meta.set_database( self._db )
-
-		self._db.create_tables( models )
+	def get_entity_class( self ):		
+		entity = self._db.Entity
+		return entity

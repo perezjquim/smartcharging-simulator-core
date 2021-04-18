@@ -1,23 +1,29 @@
 import time
 from datetime import date, datetime, timedelta
-from peewee import *
+from pony.orm import *
 
-from .CarEvent import *
-from model.BaseModel import *
+from core.Car import Car
+from model.DBHelper import DBHelper
+from .CarEvent import CarEvent
 
-class Travel( CarEvent ):
+db_helper = DBHelper( )
+entity = db_helper.get_entity_class( )
+
+class Travel( entity, CarEvent ):
 
 	__counter = 0
 
-	_id = AutoField( column_name = 'id' )
-	_distance = FloatField( column_name = 'distance' )
-	_battery_consumption = FloatField( column_name = 'battery_consumption' )		
+	_car = Optional( 'Car', column = 'car_id' )
+	_distance = Optional( float, column = 'distance' )
+	_battery_consumption = Optional( float, column = 'battery_consumption' )		
 
 	def __init__( self, car ):
 		super( ).__init__( car )
 
 		Travel.__counter += 1
 		self._id  = Travel.__counter
+
+		self.save();
 
 	def reset_counter( ):
 		Travel.__counter = 0		

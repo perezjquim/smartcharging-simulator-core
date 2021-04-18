@@ -1,24 +1,30 @@
 import time
 from datetime import date, datetime, timedelta
-from peewee import *
+from pony.orm import *
 
-from .CarEvent import *
-from core.CarStatuses import *
-from core.Plug import *		
+from .CarEvent import CarEvent
+from model.DBHelper import DBHelper
+from core.CarStatuses import CarStatuses
+from core.Car import Car
+from core.Plug import Plug
 
-class ChargingPeriod( CarEvent ):
+db_helper = DBHelper( )
+entity = db_helper.get_entity_class( )
+
+class ChargingPeriod( entity, CarEvent ):
 
 	__counter = 0
 
-	_id = AutoField( column_name = 'id' )
-
-	_plug = None
+	_car = Optional( 'Car', column = 'car_id' )	
+	_plug = Optional( 'Plug', column = 'plug_id' )
 
 	def __init__( self, car ):
 		super( ).__init__( car )	
 
 		ChargingPeriod.__counter += 1
 		self._id = ChargingPeriod.__counter
+
+		self.save();
 
 	def reset_counter( ):
 		ChargingPeriod.__counter = 0		
@@ -87,35 +93,37 @@ class ChargingPeriod( CarEvent ):
 			minutes_per_sim_step = simulator.get_config_by_key( 'minutes_per_sim_step' )
 
 			ended_normally = False		
-			elapsed_time = 0			
+			elapsed_time = 0	
+
+			plug = self.get_plug( )		
 
 			while simulator.is_simulation_running( ):
 
 				if elapsed_time <= charging_period_duration:					
 
-					self._plug.lock( )				
+					plug.lock( )				
 
 					progress_perc = elapsed_time / charging_period_duration
 					progress_perc_formatted = progress_perc * 100        					
 
-					if self._plug.is_enabled( ):									
+					if plug.is_enabled( ):									
 
 						elapsed_time = elapsed_time + minutes_per_sim_step
 						charging_period_energy_spent_url = "charging_period/energy_spent/{}".format( progress_perc )
 						charging_period_energy_spent_res = simulator.fetch_gateway( charging_period_energy_spent_url )
 						charging_period_energy_spent = float( charging_period_energy_spent_res[ 'charging_period_energy_spent' ] )	
 
-						self._plug.set_energy_consumption( charging_period_energy_spent )
+						plug.set_energy_consumption( charging_period_energy_spent )
 						car.log_debug( 'Charging... ({} KW - {}% of {}%)'.format( charging_period_energy_spent, progress_perc_formatted, 100 ) )			
 
 					else:
 
 						charging_period_energy_spent = 0							
-						self._plug.set_energy_consumption( charging_period_energy_spent )
+						plug.set_energy_consumption( charging_period_energy_spent )
 
 						car.log_debug( 'Charging is pending!' )			
 
-					self._plug.unlock( )
+					plug.unlock( )
 
 				else:
 
@@ -143,7 +151,10 @@ class ChargingPeriod( CarEvent ):
 
 			simulator.unlock_current_step( )
 
-		self._plug.release_charging_plug(  )		
+		plug.release_charging_plug(  )	
+
+	def get_plug( self ):
+		return self._plug.rel_model	
 
 	def set_plug( self, new_plug ):
 		self._plug = new_plug	
@@ -152,8 +163,10 @@ class ChargingPeriod( CarEvent ):
 		data = super( ).get_data( )
 		
 		plug_id = ''
-		if self._plug:
-			plug_id = self._plug.get_id( )
+
+		plug = self.get_plug( )
+		if plug:
+			plug_id = plug.get_id( )
 
 		data.update({
 			'plug_id' : plug_id

@@ -1,20 +1,23 @@
 import threading
 import time
 from datetime import date, datetime, timedelta
-from peewee import *
+from pony.orm import *
 
-from model.BaseModel import *
+from core.Car import Car
 
-class CarEvent( BaseModel ):
+from model.DBHelper import DBHelper
 
-	_id = 0
+class CarEvent( ):
 
-	_car = None
-	_start_datetime = DateTimeField( column_name = 'start_datetime' )
-	_end_datetime = DateTimeField( column_name = 'end_datetime' )
+	_id = PrimaryKey( int, column = 'id' )
+
+	_start_datetime = Optional( datetime, column = 'start_datetime' )
+	_end_datetime = Optional( datetime, column = 'end_datetime' )
 	_thread = None
 
 	def __init__( self, car ):
+		super( ).__init__( )
+
 		self._car = car
 
 		self._thread = threading.Thread( target = self.run )
@@ -24,7 +27,7 @@ class CarEvent( BaseModel ):
 		raise NotImplementedError		
 
 	def get_car( self ):
-		return self._car
+		return self._car.rel_model
 
 	def get_start_datetime( self ):
 		return self._start_datetime
@@ -42,7 +45,7 @@ class CarEvent( BaseModel ):
 		self._thread.join( )
 
 	def get_data( self ):
-		car = self._car
+		car = self.get_car( )
 		car_id = car.get_id( )
 
 		start_datetime_str = ''

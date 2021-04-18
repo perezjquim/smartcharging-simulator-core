@@ -1,16 +1,18 @@
 import time
 import threading
-from peewee import *
+from pony.orm import *
 from datetime import timedelta
 
-from model.BaseModel import *
 from base.DebugHelper import *
-from .events.Travel import *
-from .events.ChargingPeriod import *
 from .CarStatuses import *		
 from data.Logger import *
 
-class Car( BaseModel ):
+from model.DBHelper import DBHelper
+
+db_helper = DBHelper( )
+entity = db_helper.get_entity_class( )
+
+class Car( entity ):
 
 	LOG_TEMPLATE = '»»»»»»»»»» Car {} --- {}'
 
@@ -18,25 +20,31 @@ class Car( BaseModel ):
 
 	__counter = 0
 
-	_id = AutoField( column_name = 'id' )
+	_id = PrimaryKey( int, column = 'id' )
 	_simulator = None
-	_status = CharField( column_name = 'status' )
-	_travels = [ ]
-	_charging_periods = [ ]
-	_battery_level = FloatField( column_name = 'battery_level' )
-	_plug = None
+	_status = Optional( str, column = 'status' )
+	_travels = Set( 'Travel', reverse = '_car' )
+	_charging_periods = Set( 'ChargingPeriod', reverse = '_car' )
+	_battery_level = Optional( float, column = 'battery_level' )
+	_plug = Optional( 'Plug', column = 'plug_id' )
 	_lock = None
 
 	def __init__( self, simulator ):
+		super( ).__init__( )
+
+		from .Plug import Plug
+
 		Car.__counter += 1				
 		self._id = Car.__counter
 		self._simulator = simulator
 		self._status = CarStatuses.STATUS_READY
-		self._travels = [ ]	
-		self._charging_periods = [ ]
+		#self._travels = [ ]	
+		#self._charging_periods = [ ]
 		self._battery_level = Car.DEFAULT_BATTERY_LEVEL		
-		self._plug = None
+		#self._plug = Optional( Plug, column = 'car_id' )
 		self._lock = threading.Lock( )
+
+		self.save();
 
 	def reset_counter( ):
 		Car.__counter = 0		
@@ -93,6 +101,8 @@ class Car( BaseModel ):
 		return self._plug
 
 	def start_travel( self ):	
+		from .events.Travel import Travel
+
 		new_travel = Travel( self )
 		self._travels.append( new_travel )
 		self.set_status( CarStatuses.STATUS_TRAVELING )
@@ -127,13 +137,16 @@ class Car( BaseModel ):
 		simulator.unlock_current_step( )																				
 
 	def _start_charging_period( self ):
+		from .events.ChargingPeriod import ChargingPeriod
+
 		new_charging_period = ChargingPeriod( self )
 		self._charging_periods.append( new_charging_period )
 
 	def end_charging_period( self, ended_normally ):
 		self.lock( )	
 
-		self._plug.set_energy_consumption( 0 )
+		plug = self.get_plug( )
+		plug.set_energy_consumption( 0 )
 
 		if ended_normally:
 
@@ -163,13 +176,15 @@ class Car( BaseModel ):
 		for c in self._charging_periods:
 			c.destroy( )
 
-	def get_data( self ):		
+	def get_data( self ):
 		plug_id = ''
 		plug_consumption = 0
+
+		plug = self.get_plug( )		
 		
-		if self._plug:
-			plug_id = self._plug.get_id( )
-			plug_consumption = self._plug.get_energy_consumption( )
+		if plug:
+			plug_id = plug.get_id( )
+			plug_consumption = plug.get_energy_consumption( )
 
 		return { 
 			"id" : self._id,

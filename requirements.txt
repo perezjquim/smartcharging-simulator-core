@@ -1,4 +1,4 @@
 websockets==8.1
 requests==2.18.4
-peewee==3.14.4
+pony==0.7.14
 Flask==0.12.2

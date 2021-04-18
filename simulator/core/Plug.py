@@ -1,36 +1,45 @@
 import threading
-from peewee import *
+from pony.orm import *
 
-from model.BaseModel import BaseModel
 from base.DebugHelper import DebugHelper
 from .PlugStatuses import PlugStatuses
 from data.Logger import Logger
 	
-class Plug( BaseModel ):
+from model.DBHelper import DBHelper
+
+db_helper = DBHelper( )
+entity = db_helper.get_entity_class( )
+
+class Plug( entity ):
 
 	LOG_TEMPLATE = '++++++++++ Plug {} --- {}'	
 
 	__counter = 0
 	__charging_plugs_semaphore = None		
 
-	_id = AutoField( column_name = 'id' )
+	_id = PrimaryKey( int, column = 'id' )
 
 	_simulator = None
-	_status = CharField( column_name = 'status' )	
+	_status = Optional( str, column = 'status' )	
 	
-	_plugged_car = None
-	_energy_consumption = FloatField( column_name = 'energy_consumption' )
+	_plugged_car = Optional( 'Car', column = 'car_id' )
+	_energy_consumption = Optional( float, column = 'energy_consumption' )
 
-	_charging_periods = [ ]
+	_charging_periods = Set( 'ChargingPeriod' )
 
 	_lock = None
 
 	def __init__( self, simulator ):
+		super( ).__init__( )
+
+		from .Car import Car
+
 		Plug.__counter += 1
 		self._id = Plug.__counter
 		self._charging_periods = [ ]
 		self._simulator = simulator
 		self._status = PlugStatuses.STATUS_ENABLED
+		#self._plugged_car = 
 		self._energy_consumption = 0	
 
 		if Plug.__charging_plugs_semaphore == None:
@@ -67,7 +76,8 @@ class Plug( BaseModel ):
 		self.log( 'New status: {}!'.format( new_status ) )		
 
 	def is_busy( self ):
-		return self._plugged_car != None
+		car = self.get_plugged_car( )
+		return car != None
 
 	def get_id( self ):
 		return self._id
@@ -77,7 +87,8 @@ class Plug( BaseModel ):
 			self._plugged_car = car
 
 	def unplug_car( self ):
-		self._plugged_car.set_plug( None )
+		car = self.get_plugged_car( )
+		car.set_plug( None )
 		self._plugged_car = None
 
 	def get_plugged_car( self ):
@@ -125,7 +136,7 @@ class Plug( BaseModel ):
 		pass
 
 	def get_data( self ):
-		plugged_car = self._plugged_car
+		plugged_car = self.get_plugged_car( )
 		plugged_car_id = ''
 		if plugged_car:
 			plugged_car.lock( )
