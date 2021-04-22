@@ -1,6 +1,6 @@
 import time
 from datetime import date, datetime, timedelta
-from pony.orm import *
+from sqlobject import *
 
 from core.Car import Car
 from model.DBHelper import DBHelper
@@ -9,21 +9,26 @@ from .CarEvent import CarEvent
 db_helper = DBHelper( )
 entity = db_helper.get_entity_class( )
 
-class Travel( entity, CarEvent ):
+class Travel( CarEvent ):
 
 	__counter = 0
 
-	_car = Optional( 'Car', column = 'car_id' )
-	_distance = Optional( float, column = 'distance' )
-	_battery_consumption = Optional( float, column = 'battery_consumption' )		
+	#_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )
+	_distance = FloatCol( default = None, dbName = 'distance' )
+	_battery_consumption = FloatCol( default = None, dbName = 'battery_consumption' )
+
+
+	#_start_datetime = StringCol( default = '', dbName = 'start_datetime' )
+	#_end_datetime = StringCol( default = '', dbName = 'end_datetime' )		
 
 	def __init__( self, car ):
 		super( ).__init__( car )
+		self.prepare( )
 
-		Travel.__counter += 1
-		self._id  = Travel.__counter
+		#Travel.__counter += 1
+		#self.id  = Travel.__counter
 
-		self.save();
+		#self.save();
 
 	def reset_counter( ):
 		Travel.__counter = 0		

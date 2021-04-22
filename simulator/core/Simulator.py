@@ -2,6 +2,7 @@ import time
 import threading
 import requests
 from datetime import date, datetime, timedelta
+from sqlobject import *
 
 from base.SingletonMetaClass import SingletonMetaClass
 from config.ConfigurationHelper import ConfigurationHelper
@@ -117,6 +118,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 			command_name = message_value[ 'command_name' ]
 			command_args = message_value[ 'command_args' ]
 
+			#with db_session( strict = False ):
+
 			if command_name == 'START-SIMULATION':
 
 				self.on_start( )
@@ -145,6 +148,10 @@ class Simulator( metaclass = SingletonMetaClass ):
 			else:
 
 				self.log( 'Unknown command received - {}'.format( message_value ) )
+
+				#commit( )
+
+				#flush( )
 
 	def log( self, message ):
 		Logger.log( message )
@@ -253,6 +260,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		while self.is_simulation_running( ):
 
+			#with db_session( strict = False ):
+
 			number_of_busy_cars = 0
 			total_plug_consumption = 0
 
@@ -306,6 +315,10 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 				self._end_simulation( False )
 
+				#commit( )	
+
+				#flush( )				
+
 			self._send_sim_data_to_clients( )
 
 			time.sleep( sim_sampling_rate / 1000 )	
@@ -318,6 +331,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.lock_current_datetime( )
 
 		simulation_data = self._data_exporter.prepare_simulation_data( self )
+
 		self._socket_helper.send_message_to_clients( 'data', simulation_data, client )		
 
 		self.unlock_current_datetime( )

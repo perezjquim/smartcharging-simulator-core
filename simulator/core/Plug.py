@@ -1,5 +1,5 @@
 import threading
-from pony.orm import *
+from sqlobject import *
 
 from base.DebugHelper import DebugHelper
 from .PlugStatuses import PlugStatuses
@@ -17,15 +17,15 @@ class Plug( entity ):
 	__counter = 0
 	__charging_plugs_semaphore = None		
 
-	_id = PrimaryKey( int, column = 'id' )
+	#_id = PrimaryKey( int, default = None, defaultSQL = None, dbName = 'id', auto = True )
 
 	_simulator = None
-	_status = Optional( str, column = 'status' )	
+	_status = StringCol( default = '', dbName = 'status' )	
 	
-	_plugged_car = Optional( 'Car', column = 'car_id' )
-	_energy_consumption = Optional( float, column = 'energy_consumption' )
+	_plugged_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )
+	_energy_consumption = FloatCol( default = None, dbName = 'energy_consumption' )
 
-	_charging_periods = Set( 'ChargingPeriod' )
+	_charging_periods = MultipleJoin( 'ChargingPeriod' )
 
 	_lock = None
 
@@ -34,9 +34,9 @@ class Plug( entity ):
 
 		from .Car import Car
 
-		Plug.__counter += 1
-		self._id = Plug.__counter
-		self._charging_periods = [ ]
+		#Plug.__counter += 1
+		#self.id = Plug.__counter
+		#self._charging_periods = [ ]
 		self._simulator = simulator
 		self._status = PlugStatuses.STATUS_ENABLED
 		#self._plugged_car = 
@@ -80,7 +80,7 @@ class Plug( entity ):
 		return car != None
 
 	def get_id( self ):
-		return self._id
+		return self.id
 
 	def plug_car( self, car ):
 		if self.is_enabled( ):
@@ -126,10 +126,10 @@ class Plug( entity ):
 		Logger.log_debug( Plug.LOG_TEMPLATE.format( '', message ) )	
 
 	def log( self, message ):
-		Logger.log( Plug.LOG_TEMPLATE.format( self._id, message ) )
+		Logger.log( Plug.LOG_TEMPLATE.format( self.id, message ) )
 
 	def log_debug( self, message ):
-		Logger.log_debug( Plug.LOG_TEMPLATE.format( self._id, message ) )				
+		Logger.log_debug( Plug.LOG_TEMPLATE.format( self.id, message ) )				
 
 	def destroy( self ):
 		#NOP
@@ -144,7 +144,7 @@ class Plug( entity ):
 			plugged_car.unlock( )
 
 		return {
-			'id' : self._id,
+			'id' : self.id,
 			'status' : self._status,
 			'plugged_car_id' : plugged_car_id,
 			'energy_consumption' : self._energy_consumption,

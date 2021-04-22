@@ -1,6 +1,6 @@
 import time
 import threading
-from pony.orm import *
+from sqlobject import *
 from datetime import timedelta
 
 from base.DebugHelper import *
@@ -20,13 +20,13 @@ class Car( entity ):
 
 	__counter = 0
 
-	_id = PrimaryKey( int, column = 'id' )
+	#_id = PrimaryKey( int, default = None, defaultSQL = None, dbName = 'id', auto = True )
 	_simulator = None
-	_status = Optional( str, column = 'status' )
-	_travels = Set( 'Travel', reverse = '_car' )
-	_charging_periods = Set( 'ChargingPeriod', reverse = '_car' )
-	_battery_level = Optional( float, column = 'battery_level' )
-	_plug = Optional( 'Plug', column = 'plug_id' )
+	_status = StringCol( default = '', dbName = 'status' )
+	_travels = MultipleJoin( 'Travel' )
+	_charging_periods = MultipleJoin( 'ChargingPeriod' )
+	_battery_level = FloatCol( default = None, dbName = 'battery_level' )
+	_plug = ForeignKey( 'Plug', default = None, dbName = 'plug_id' )
 	_lock = None
 
 	def __init__( self, simulator ):
@@ -34,23 +34,25 @@ class Car( entity ):
 
 		from .Plug import Plug
 
-		Car.__counter += 1				
-		self._id = Car.__counter
+		#Car.__counter += 1				
+		#elf._id = Car.__counter
 		self._simulator = simulator
 		self._status = CarStatuses.STATUS_READY
 		#self._travels = [ ]	
 		#self._charging_periods = [ ]
 		self._battery_level = Car.DEFAULT_BATTERY_LEVEL		
-		#self._plug = Optional( Plug, column = 'car_id' )
+		#self._plug = Optional( Plug, default = None, defaultSQL = None, dbName = 'car_id' )
 		self._lock = threading.Lock( )
 
-		self.save();
+		self.get_plug( )
+
+		#self.save();
 
 	def reset_counter( ):
 		Car.__counter = 0		
 
 	def get_id( self ):
-		return self._id
+		return self.id
 
 	def get_simulator( self ):
 		return self._simulator
@@ -164,10 +166,10 @@ class Car( entity ):
 		self.unlock( )		
 
 	def log( self, message ):
-		Logger.log( Car.LOG_TEMPLATE.format( self._id, message ) )
+		Logger.log( Car.LOG_TEMPLATE.format( self.id, message ) )
 
 	def log_debug( self, message ):
-		Logger.log_debug( Car.LOG_TEMPLATE.format( self._id, message ) )		
+		Logger.log_debug( Car.LOG_TEMPLATE.format( self.id, message ) )		
 
 	def destroy( self ):
 		for t in self._travels:
@@ -177,6 +179,9 @@ class Car( entity ):
 			c.destroy( )
 
 	def get_data( self ):
+
+		#with db_session( strict = False ):
+
 		plug_id = ''
 		plug_consumption = 0
 
@@ -187,7 +192,7 @@ class Car( entity ):
 			plug_consumption = plug.get_energy_consumption( )
 
 		return { 
-			"id" : self._id,
+			"id" : self.id,
 			"status" : self.get_status( ),
 			"travels" : [ t.get_data( ) for t in self._travels ],
 			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ],

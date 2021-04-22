@@ -1,6 +1,6 @@
 import time
 from datetime import date, datetime, timedelta
-from pony.orm import *
+from sqlobject import *
 
 from .CarEvent import CarEvent
 from model.DBHelper import DBHelper
@@ -11,20 +11,24 @@ from core.Plug import Plug
 db_helper = DBHelper( )
 entity = db_helper.get_entity_class( )
 
-class ChargingPeriod( entity, CarEvent ):
+class ChargingPeriod( CarEvent ):
 
 	__counter = 0
 
-	_car = Optional( 'Car', column = 'car_id' )	
-	_plug = Optional( 'Plug', column = 'plug_id' )
+	#_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )	
+	_plug = ForeignKey( 'Plug', default = None, dbName = 'plug_id' )
+
+	#_start_datetime = StringCol( default = '', dbName = 'start_datetime' )
+	#_end_datetime = StringCol( default = '', dbName = 'end_datetime' )	
 
 	def __init__( self, car ):
-		super( ).__init__( car )	
+		super( ).__init__( car )
+		self.prepare( )	
 
-		ChargingPeriod.__counter += 1
-		self._id = ChargingPeriod.__counter
+		#ChargingPeriod.__counter += 1
+		#self.id = ChargingPeriod.__counter
 
-		self.save();
+		#self.save();
 
 	def reset_counter( ):
 		ChargingPeriod.__counter = 0		
@@ -154,7 +158,7 @@ class ChargingPeriod( entity, CarEvent ):
 		plug.release_charging_plug(  )	
 
 	def get_plug( self ):
-		return self._plug.rel_model	
+		return self._plug	
 
 	def set_plug( self, new_plug ):
 		self._plug = new_plug	

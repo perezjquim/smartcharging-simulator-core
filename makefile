@@ -95,10 +95,10 @@ stop-docker-simulator:
 run-simulator: prep-simulator start-simulator
 
 prep-simulator:
-	@until nc -z $(GATEWAY_HOST) $(GATEWAY_PORT); do \
-	echo "$$(date) - waiting for gateway..."; \
-	sleep 2; \
-	done
+	#@until nc -z $(GATEWAY_HOST) $(GATEWAY_PORT); do \
+	#echo "$$(date) - waiting for gateway..."; \
+	#sleep 2; \
+	#done
 
 start-simulator:
 	@FLASK_APP=simulator/main.py \
@@ -111,7 +111,7 @@ start-simulator:
 clean-db:
 	@echo '$(PATTERN_BEGIN) CLEANING DB VOLUME...'
 
-	@docker volume rm $(DB_VOLUME) --force
+	@docker volume rm $(DB_VOLUME_NAME)
 
 	@echo '$(PATTERN_END) DB VOLUME CLEANED UP!'	
 

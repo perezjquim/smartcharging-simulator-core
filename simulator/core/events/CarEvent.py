@@ -1,23 +1,29 @@
 import threading
 import time
 from datetime import date, datetime, timedelta
-from pony.orm import *
+from sqlobject import *
 
 from core.Car import Car
 
 from model.DBHelper import DBHelper
 
-class CarEvent( ):
+db_helper = DBHelper( )
+entity = db_helper.get_entity_class( )
 
-	_id = PrimaryKey( int, column = 'id' )
 
-	_start_datetime = Optional( datetime, column = 'start_datetime' )
-	_end_datetime = Optional( datetime, column = 'end_datetime' )
+class CarEvent( entity ):
+
+	#_id = PrimaryKey( int, default = None, defaultSQL = None, dbName = 'id', auto = True )
+
+	_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )	
+	_start_datetime = StringCol( default = '', dbName = 'start_datetime' )
+	_end_datetime = StringCol( default = '', dbName = 'end_datetime' )
 	_thread = None
 
 	def __init__( self, car ):
 		super( ).__init__( )
 
+	def prepare( self ):
 		self._car = car
 
 		self._thread = threading.Thread( target = self.run )
@@ -27,7 +33,7 @@ class CarEvent( ):
 		raise NotImplementedError		
 
 	def get_car( self ):
-		return self._car.rel_model
+		return self._car
 
 	def get_start_datetime( self ):
 		return self._start_datetime
@@ -59,7 +65,7 @@ class CarEvent( ):
 				end_datetime_str = self._end_datetime.isoformat( )
 
 		return {
-			'id' : self._id,
+			'id' : self.id,
 			'car_id' : car_id,
 			'start_datetime' : start_datetime_str,
 			'end_datetime' : end_datetime_str

@@ -2,7 +2,7 @@ from flask import Blueprint, Response
 import json
 
 from base.SingletonMetaClass import *
-from .DataExporter import *		
+from data.DataExporter import *		
 
 api = Blueprint( "DataServer", __name__ )
 

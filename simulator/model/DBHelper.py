@@ -1,16 +1,22 @@
-from pony.orm import *
+from sqlobject import *
+import os
 
 from base.SingletonMetaClass import SingletonMetaClass
 
 class DBHelper( metaclass = SingletonMetaClass ):
 
 	__PROVIDER = 'sqlite'
-	__FILE_PATH = '../../db/energysim.sqlite'
+	__FILE_PATH = 'db/energysim.db'
+	__OPTIONS = '?debug=1&debugOutput=1&cache=0'
 
 	_db = None
 
 	def __init__( self ):
-		self._db = Database( provider = DBHelper.__PROVIDER, filename = DBHelper.__FILE_PATH, create_db = True )	
+		db_filename = os.path.abspath( DBHelper.__FILE_PATH )	
+		connection_string = '{}:{}{}'.format( DBHelper.__PROVIDER, db_filename, DBHelper.__OPTIONS )
+		print( connection_string )
+		connection = connectionForURI( connection_string )	
+		sqlhub.processConnection = connection
 
 	def on_init( self ):
 		self._prepare( )
@@ -21,8 +27,10 @@ class DBHelper( metaclass = SingletonMetaClass ):
 		from core.events.Travel import Travel
 		from core.events.ChargingPeriod import ChargingPeriod
 
-		self._db.generate_mapping( create_tables = True )
+		Car.createTable( ifNotExists = True )
+		Plug.createTable( ifNotExists = True )
+		Travel.createTable( ifNotExists = True )
+		ChargingPeriod.createTable( ifNotExists = True )
 
 	def get_entity_class( self ):		
-		entity = self._db.Entity
-		return entity
+		return SQLObject
