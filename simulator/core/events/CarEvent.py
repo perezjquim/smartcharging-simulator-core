@@ -16,24 +16,22 @@ class CarEvent( entity ):
 	#_id = PrimaryKey( int, default = None, defaultSQL = None, dbName = 'id', auto = True )
 
 	_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )	
-	_start_datetime = StringCol( default = '', dbName = 'start_datetime' )
-	_end_datetime = StringCol( default = '', dbName = 'end_datetime' )
+	_start_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'start_datetime' )
+	_end_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'end_datetime' )
 	_thread = None
 
-	def __init__( self, car ):
-		super( ).__init__( )
-
-	def prepare( self ):
-		self._car = car
-
+	def start( self ):
 		self._thread = threading.Thread( target = self.run )
-		self._thread.start( )		
+		self._thread.start( )	
 
 	def run( self ):
 		raise NotImplementedError		
 
 	def get_car( self ):
 		return self._car
+
+	def set_car( self, car ):
+		self._car = car
 
 	def get_start_datetime( self ):
 		return self._start_datetime
@@ -60,7 +58,7 @@ class CarEvent( entity ):
 		if self._start_datetime:
 			start_datetime_str = self._start_datetime.isoformat( )
 
-		if not self._thread.is_alive( ):			
+		if self._thread and not self._thread.is_alive( ):			
 			if self._end_datetime:
 				end_datetime_str = self._end_datetime.isoformat( )
 

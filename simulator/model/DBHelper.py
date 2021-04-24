@@ -7,14 +7,13 @@ class DBHelper( metaclass = SingletonMetaClass ):
 
 	__PROVIDER = 'sqlite'
 	__FILE_PATH = 'db/energysim.db'
-	__OPTIONS = '?debug=1&debugOutput=1&cache=0'
+	__OPTIONS = '?check_same_thread=0&timeout=15'
 
 	_db = None
 
 	def __init__( self ):
 		db_filename = os.path.abspath( DBHelper.__FILE_PATH )	
 		connection_string = '{}:{}{}'.format( DBHelper.__PROVIDER, db_filename, DBHelper.__OPTIONS )
-		print( connection_string )
 		connection = connectionForURI( connection_string )	
 		sqlhub.processConnection = connection
 

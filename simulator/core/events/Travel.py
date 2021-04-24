@@ -21,9 +21,8 @@ class Travel( CarEvent ):
 	#_start_datetime = StringCol( default = '', dbName = 'start_datetime' )
 	#_end_datetime = StringCol( default = '', dbName = 'end_datetime' )		
 
-	def __init__( self, car ):
-		super( ).__init__( car )
-		self.prepare( )
+	#def __init__( self, car ):
+	#	super( ).__init__( car )
 
 		#Travel.__counter += 1
 		#self.id  = Travel.__counter

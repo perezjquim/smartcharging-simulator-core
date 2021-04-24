@@ -105,7 +105,9 @@ class Car( entity ):
 	def start_travel( self ):	
 		from .events.Travel import Travel
 
-		new_travel = Travel( self )
+		new_travel = Travel( )
+		new_travel.set_car( self )
+		new_travel.start( )
 		self._travels.append( new_travel )
 		self.set_status( CarStatuses.STATUS_TRAVELING )
 
@@ -141,7 +143,9 @@ class Car( entity ):
 	def _start_charging_period( self ):
 		from .events.ChargingPeriod import ChargingPeriod
 
-		new_charging_period = ChargingPeriod( self )
+		new_charging_period = ChargingPeriod( )
+		new_charging_period.set_car( self )
+		new_charging_period.start( )
 		self._charging_periods.append( new_charging_period )
 
 	def end_charging_period( self, ended_normally ):
