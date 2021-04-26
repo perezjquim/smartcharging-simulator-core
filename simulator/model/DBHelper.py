@@ -7,20 +7,26 @@ class DBHelper( metaclass = SingletonMetaClass ):
 
 	__PROVIDER = 'sqlite'
 	__FILE_PATH = 'db/energysim.db'
-	__OPTIONS = '?check_same_thread=0&timeout=15'
+	__OPTIONS = '?timeout=15'
 
 	_db = None
 
 	def __init__( self ):
 		db_filename = os.path.abspath( DBHelper.__FILE_PATH )	
 		connection_string = '{}:{}{}'.format( DBHelper.__PROVIDER, db_filename, DBHelper.__OPTIONS )
-		connection = connectionForURI( connection_string )	
+		connection = connectionForURI( connection_string )
+		self._prepare( connection )
 		sqlhub.processConnection = connection
 
 	def on_init( self ):
-		self._prepare( )
+		self._prepare_tables( )
 
-	def _prepare( self ):			
+	def _prepare( self, connection ):
+		connection.query( 'pragma journal_mode = wal;' )
+		connection.query( 'pragma synchronous = normal;' )
+		connection.query( 'pragma temp_store = memory;' )
+
+	def _prepare_tables( self ):			
 		from core.Car import Car
 		from core.Plug import Plug
 		from core.events.Travel import Travel
@@ -30,6 +36,3 @@ class DBHelper( metaclass = SingletonMetaClass ):
 		Plug.createTable( ifNotExists = True )
 		Travel.createTable( ifNotExists = True )
 		ChargingPeriod.createTable( ifNotExists = True )
-
-	def get_entity_class( self ):		
-		return SQLObject

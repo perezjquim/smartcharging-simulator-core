@@ -12,6 +12,8 @@ from data.SocketHelper import SocketHelper
 from base.DebugHelper import DebugHelper
 from .Car import Car
 from .Plug import Plug
+from .events.Travel import Travel
+from .events.ChargingPeriod import ChargingPeriod
 
 class Simulator( metaclass = SingletonMetaClass ):
 

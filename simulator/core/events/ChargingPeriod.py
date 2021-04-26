@@ -3,31 +3,15 @@ from datetime import date, datetime, timedelta
 from sqlobject import *
 
 from .CarEvent import CarEvent
-from model.DBHelper import DBHelper
 from core.CarStatuses import CarStatuses
 from core.Car import Car
 from core.Plug import Plug
-
-db_helper = DBHelper( )
-entity = db_helper.get_entity_class( )
 
 class ChargingPeriod( CarEvent ):
 
 	__counter = 0
 
-	#_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )	
 	_plug = ForeignKey( 'Plug', default = None, dbName = 'plug_id' )
-
-	#_start_datetime = StringCol( default = '', dbName = 'start_datetime' )
-	#_end_datetime = StringCol( default = '', dbName = 'end_datetime' )	
-
-	#def __init__( self, car, **kw ):
-	#	super( ).__init__( car )
-
-		#ChargingPeriod.__counter += 1
-		#self.id = ChargingPeriod.__counter
-
-		#self.save();
 
 	def reset_counter( ):
 		ChargingPeriod.__counter = 0		
@@ -66,6 +50,8 @@ class ChargingPeriod( CarEvent ):
 
 		simulator.lock_current_step( )
 
+		plug = self.get_plug( )			
+
 		if simulator.can_simulate_new_actions( ):
 
 			car.lock( )
@@ -96,9 +82,7 @@ class ChargingPeriod( CarEvent ):
 			minutes_per_sim_step = simulator.get_config_by_key( 'minutes_per_sim_step' )
 
 			ended_normally = False		
-			elapsed_time = 0	
-
-			plug = self.get_plug( )		
+			elapsed_time = 0		
 
 			while simulator.is_simulation_running( ):
 

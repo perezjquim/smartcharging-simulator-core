@@ -5,15 +5,7 @@ from sqlobject import *
 
 from core.Car import Car
 
-from model.DBHelper import DBHelper
-
-db_helper = DBHelper( )
-entity = db_helper.get_entity_class( )
-
-
-class CarEvent( entity ):
-
-	#_id = PrimaryKey( int, default = None, defaultSQL = None, dbName = 'id', auto = True )
+class CarEvent( SQLObject ):
 
 	_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )	
 	_start_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'start_datetime' )

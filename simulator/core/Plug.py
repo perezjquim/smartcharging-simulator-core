@@ -5,19 +5,12 @@ from base.DebugHelper import DebugHelper
 from .PlugStatuses import PlugStatuses
 from data.Logger import Logger
 	
-from model.DBHelper import DBHelper
-
-db_helper = DBHelper( )
-entity = db_helper.get_entity_class( )
-
-class Plug( entity ):
+class Plug( SQLObject ):
 
 	LOG_TEMPLATE = '++++++++++ Plug {} --- {}'	
 
 	__counter = 0
 	__charging_plugs_semaphore = None		
-
-	#_id = PrimaryKey( int, default = None, defaultSQL = None, dbName = 'id', auto = True )
 
 	_simulator = None
 	_status = StringCol( default = '', dbName = 'status' )	
@@ -34,12 +27,9 @@ class Plug( entity ):
 
 		from .Car import Car
 
-		#Plug.__counter += 1
-		#self.id = Plug.__counter
-		#self._charging_periods = [ ]
 		self._simulator = simulator
 		self._status = PlugStatuses.STATUS_ENABLED
-		#self._plugged_car = 
+
 		self._energy_consumption = 0	
 
 		if Plug.__charging_plugs_semaphore == None:

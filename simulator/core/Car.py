@@ -7,12 +7,7 @@ from base.DebugHelper import *
 from .CarStatuses import *		
 from data.Logger import *
 
-from model.DBHelper import DBHelper
-
-db_helper = DBHelper( )
-entity = db_helper.get_entity_class( )
-
-class Car( entity ):
+class Car( SQLObject ):
 
 	LOG_TEMPLATE = '»»»»»»»»»» Car {} --- {}'
 
@@ -20,7 +15,6 @@ class Car( entity ):
 
 	__counter = 0
 
-	#_id = PrimaryKey( int, default = None, defaultSQL = None, dbName = 'id', auto = True )
 	_simulator = None
 	_status = StringCol( default = '', dbName = 'status' )
 	_travels = MultipleJoin( 'Travel' )
@@ -34,19 +28,14 @@ class Car( entity ):
 
 		from .Plug import Plug
 
-		#Car.__counter += 1				
-		#elf._id = Car.__counter
 		self._simulator = simulator
 		self._status = CarStatuses.STATUS_READY
-		#self._travels = [ ]	
-		#self._charging_periods = [ ]
+
 		self._battery_level = Car.DEFAULT_BATTERY_LEVEL		
-		#self._plug = Optional( Plug, default = None, defaultSQL = None, dbName = 'car_id' )
+
 		self._lock = threading.Lock( )
 
 		self.get_plug( )
-
-		#self.save();
 
 	def reset_counter( ):
 		Car.__counter = 0		
