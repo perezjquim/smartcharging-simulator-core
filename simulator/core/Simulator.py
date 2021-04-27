@@ -88,11 +88,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 		if wait_for_main_thread:					
 			self._main_thread.join( )
 
-		Car.reset_counter( )
-		Plug.reset_counter( )
-		Travel.reset_counter( )
-		ChargingPeriod.reset_counter( )
-
 		self._send_sim_data_to_clients( )
 
 	def on_client_connected( self, client ):		
