@@ -2,11 +2,13 @@ import time
 import threading
 import requests
 from datetime import date, datetime, timedelta
+from sqlobject import *
+
 from base.SingletonMetaClass import SingletonMetaClass
 from config.ConfigurationHelper import ConfigurationHelper
 from data.Logger import Logger
-from data.SocketHelper import SocketHelper
 from data.DataExporter import DataExporter
+from data.SocketHelper import SocketHelper
 from base.DebugHelper import DebugHelper
 from .Car import Car
 from .Plug import Plug
@@ -16,6 +18,9 @@ from .events.ChargingPeriod import ChargingPeriod
 class Simulator( metaclass = SingletonMetaClass ):
 
 	MAIN_LOG_PREFIX = '============================'
+
+	__counter = 0
+	_current_simulation_id = 0
 
 	_socket_helper = None
 	_data_exporter = None
@@ -36,7 +41,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 	_is_simulation_running = False
 	_is_simulation_running_lock = None	
 
-	def on_init( self ):
+	def on_init( self ):		
 		self._socket_helper = SocketHelper( )
 		self._socket_helper.on_init( )	
 
@@ -55,6 +60,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self.log( 'Simulation cannot be started (it is already running)!' )
 		else:
 			self.log_main( 'Starting simulation...' )
+			Simulator.__counter += 1
+			self._current_simulation_id = Simulator.__counter
 			self._data_exporter.on_init( )
 			self._initialize_cars( )
 			self._initialize_plugs( )
@@ -301,7 +308,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			else:
 
-				self._end_simulation( False )
+				self._end_simulation( False )		
 
 			self._send_sim_data_to_clients( )
 
@@ -315,6 +322,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		self.lock_current_datetime( )
 
 		simulation_data = self._data_exporter.prepare_simulation_data( self )
+
 		self._socket_helper.send_message_to_clients( 'data', simulation_data, client )		
 
 		self.unlock_current_datetime( )
@@ -409,4 +417,3 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self.log( 'Gateway error: {}'.format( ex ) )			
 
 		return response_json
-

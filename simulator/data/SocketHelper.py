@@ -1,4 +1,3 @@
-from base.SingletonMetaClass import SingletonMetaClass
 import asyncio
 import websockets
 import os
@@ -6,6 +5,8 @@ import threading
 import json
 import traceback
 
+from base.SingletonMetaClass import *
+    
 class SocketHelper( metaclass = SingletonMetaClass ):
 
     _ws_clients = [ ]

@@ -1,6 +1,7 @@
 import json
 import threading
-from base.SingletonMetaClass import SingletonMetaClass
+
+from base.SingletonMetaClass import *
 
 class ConfigurationHelper( metaclass = SingletonMetaClass ):
 

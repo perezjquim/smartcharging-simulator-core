@@ -1,45 +1,37 @@
 import time
 import threading
+from sqlobject import *
 from datetime import timedelta
-from data.Logger import Logger
-from base.DebugHelper import DebugHelper
-from .events.Travel import Travel
-from .events.ChargingPeriod import ChargingPeriod
-from .CarStatuses import CarStatuses
 
-class Car:
+from base.DebugHelper import *
+from .CarStatuses import *		
+from data.Logger import *
+
+class Car( SQLObject ):
 
 	LOG_TEMPLATE = '»»»»»»»»»» Car {} --- {}'
 
 	DEFAULT_BATTERY_LEVEL = 10
 
-	__counter = 0
-
-	_id = 0
 	_simulator = None
-	_status = None
-	_travels = [ ]
-	_charging_periods = [ ]
-	_battery_level = 0
-	_plug = None
+	_status = StringCol( default = CarStatuses.STATUS_READY, dbName = 'status' )
+	_travels = MultipleJoin( 'Travel' )
+	_charging_periods = MultipleJoin( 'ChargingPeriod' )
+	_battery_level = FloatCol( default = None, dbName = 'battery_level' )
+	_plug = ForeignKey( 'Plug', default = None, dbName = 'plug_id' )
 	_lock = None
 
 	def __init__( self, simulator ):
-		Car.__counter += 1				
-		self._id = Car.__counter
-		self._simulator = simulator
-		self._status = CarStatuses.STATUS_READY
-		self._travels = [ ]	
-		self._charging_periods = [ ]
-		self._battery_level = Car.DEFAULT_BATTERY_LEVEL		
-		self._plug = None
-		self._lock = threading.Lock( )
+		super( ).__init__( )
 
-	def reset_counter( ):
-		Car.__counter = 0		
+		self._simulator = simulator	
+
+		self._battery_level = Car.DEFAULT_BATTERY_LEVEL
+
+		self._lock = threading.Lock( )	
 
 	def get_id( self ):
-		return self._id
+		return self.id
 
 	def get_simulator( self ):
 		return self._simulator
@@ -90,7 +82,11 @@ class Car:
 		return self._plug
 
 	def start_travel( self ):	
-		new_travel = Travel( self )
+		from .events.Travel import Travel
+
+		new_travel = Travel( )
+		new_travel.set_car( self )
+		new_travel.start( )
 		self._travels.append( new_travel )
 		self.set_status( CarStatuses.STATUS_TRAVELING )
 
@@ -124,13 +120,18 @@ class Car:
 		simulator.unlock_current_step( )																				
 
 	def _start_charging_period( self ):
-		new_charging_period = ChargingPeriod( self )
+		from .events.ChargingPeriod import ChargingPeriod
+
+		new_charging_period = ChargingPeriod( )
+		new_charging_period.set_car( self )
+		new_charging_period.start( )
 		self._charging_periods.append( new_charging_period )
 
 	def end_charging_period( self, ended_normally ):
 		self.lock( )	
 
-		self._plug.set_energy_consumption( 0 )
+		plug = self.get_plug( )
+		plug.set_energy_consumption( 0 )
 
 		if ended_normally:
 
@@ -148,10 +149,10 @@ class Car:
 		self.unlock( )		
 
 	def log( self, message ):
-		Logger.log( Car.LOG_TEMPLATE.format( self._id, message ) )
+		Logger.log( Car.LOG_TEMPLATE.format( self.id, message ) )
 
 	def log_debug( self, message ):
-		Logger.log_debug( Car.LOG_TEMPLATE.format( self._id, message ) )		
+		Logger.log_debug( Car.LOG_TEMPLATE.format( self.id, message ) )		
 
 	def destroy( self ):
 		for t in self._travels:
@@ -160,16 +161,18 @@ class Car:
 		for c in self._charging_periods:
 			c.destroy( )
 
-	def get_data( self ):		
+	def get_data( self ):
 		plug_id = ''
 		plug_consumption = 0
+
+		plug = self.get_plug( )		
 		
-		if self._plug:
-			plug_id = self._plug.get_id( )
-			plug_consumption = self._plug.get_energy_consumption( )
+		if plug:
+			plug_id = plug.get_id( )
+			plug_consumption = plug.get_energy_consumption( )
 
 		return { 
-			"id" : self._id,
+			"id" : self.id,
 			"status" : self.get_status( ),
 			"travels" : [ t.get_data( ) for t in self._travels ],
 			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ],

@@ -1,7 +1,7 @@
 import json
-from base.SingletonMetaClass import SingletonMetaClass
-from config.ConfigurationHelper import ConfigurationHelper
-from .SocketHelper import SocketHelper
+
+from config.ConfigurationHelper import *
+from .SocketHelper import *		
 
 class Logger( ):
 

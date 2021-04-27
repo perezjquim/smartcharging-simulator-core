@@ -1,43 +1,36 @@
 import threading
-from data.Logger import Logger
+from sqlobject import *
+
 from base.DebugHelper import DebugHelper
 from .PlugStatuses import PlugStatuses
-
-class Plug:
+from data.Logger import Logger
+	
+class Plug( SQLObject ):
 
 	LOG_TEMPLATE = '++++++++++ Plug {} --- {}'	
 
-	__counter = 0
 	__charging_plugs_semaphore = None		
 
-	_id = 0
-
 	_simulator = None
-	_status = None	
+	_status = StringCol( default = PlugStatuses.STATUS_ENABLED, dbName = 'status' )	
 	
-	_plugged_car = None
-	_energy_consumption = 0
+	_plugged_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )
+	_energy_consumption = FloatCol( default = None, dbName = 'energy_consumption' )
 
-	_charging_periods = [ ]
+	_charging_periods = MultipleJoin( 'ChargingPeriod' )
 
 	_lock = None
 
 	def __init__( self, simulator ):
-		Plug.__counter += 1
-		self._id = Plug.__counter
-		self._charging_periods = [ ]
+		super( ).__init__( )
+
 		self._simulator = simulator
-		self._status = PlugStatuses.STATUS_ENABLED
-		self._energy_consumption = 0	
 
 		if Plug.__charging_plugs_semaphore == None:
 			number_of_charging_plugs = self._simulator.get_config_by_key( 'number_of_charging_plugs' )
 			Plug.__charging_plugs_semaphore = threading.Semaphore( number_of_charging_plugs )	
 
 		self._lock = threading.Lock( )
-
-	def reset_counter( ):
-		Plug.__counter = 0
 
 	def acquire_charging_plug( car, charging_period ):
 		caller = DebugHelper.get_caller( )		
@@ -64,17 +57,19 @@ class Plug:
 		self.log( 'New status: {}!'.format( new_status ) )		
 
 	def is_busy( self ):
-		return self._plugged_car != None
+		car = self.get_plugged_car( )
+		return car != None
 
 	def get_id( self ):
-		return self._id
+		return self.id
 
 	def plug_car( self, car ):
 		if self.is_enabled( ):
 			self._plugged_car = car
 
 	def unplug_car( self ):
-		self._plugged_car.set_plug( None )
+		car = self.get_plugged_car( )
+		car.set_plug( None )
 		self._plugged_car = None
 
 	def get_plugged_car( self ):
@@ -112,17 +107,17 @@ class Plug:
 		Logger.log_debug( Plug.LOG_TEMPLATE.format( '', message ) )	
 
 	def log( self, message ):
-		Logger.log( Plug.LOG_TEMPLATE.format( self._id, message ) )
+		Logger.log( Plug.LOG_TEMPLATE.format( self.id, message ) )
 
 	def log_debug( self, message ):
-		Logger.log_debug( Plug.LOG_TEMPLATE.format( self._id, message ) )				
+		Logger.log_debug( Plug.LOG_TEMPLATE.format( self.id, message ) )				
 
 	def destroy( self ):
 		#NOP
 		pass
 
 	def get_data( self ):
-		plugged_car = self._plugged_car
+		plugged_car = self.get_plugged_car( )
 		plugged_car_id = ''
 		if plugged_car:
 			plugged_car.lock( )
@@ -130,7 +125,7 @@ class Plug:
 			plugged_car.unlock( )
 
 		return {
-			'id' : self._id,
+			'id' : self.id,
 			'status' : self._status,
 			'plugged_car_id' : plugged_car_id,
 			'energy_consumption' : self._energy_consumption,

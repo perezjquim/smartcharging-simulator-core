@@ -1,27 +1,29 @@
 import threading
 import time
 from datetime import date, datetime, timedelta
+from sqlobject import *
 
-class CarEvent:
+from core.Car import Car
 
-	_id = 0
+class CarEvent( SQLObject ):
 
-	_car = None
-	_start_datetime = None
-	_end_datetime = None
+	_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )	
+	_start_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'start_datetime' )
+	_end_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'end_datetime' )
 	_thread = None
 
-	def __init__( self, car ):
-		self._car = car
-
+	def start( self ):
 		self._thread = threading.Thread( target = self.run )
-		self._thread.start( )		
+		self._thread.start( )	
 
 	def run( self ):
 		raise NotImplementedError		
 
 	def get_car( self ):
 		return self._car
+
+	def set_car( self, car ):
+		self._car = car
 
 	def get_start_datetime( self ):
 		return self._start_datetime
@@ -36,10 +38,11 @@ class CarEvent:
 		self._end_datetime = end_datetime
 
 	def destroy( self ):
-		self._thread.join( )
+		if self._thread:
+			self._thread.join( )
 
 	def get_data( self ):
-		car = self._car
+		car = self.get_car( )
 		car_id = car.get_id( )
 
 		start_datetime_str = ''
@@ -48,12 +51,12 @@ class CarEvent:
 		if self._start_datetime:
 			start_datetime_str = self._start_datetime.isoformat( )
 
-		if not self._thread.is_alive( ):			
+		if self._thread and not self._thread.is_alive( ):			
 			if self._end_datetime:
 				end_datetime_str = self._end_datetime.isoformat( )
 
 		return {
-			'id' : self._id,
+			'id' : self.id,
 			'car_id' : car_id,
 			'start_datetime' : start_datetime_str,
 			'end_datetime' : end_datetime_str
