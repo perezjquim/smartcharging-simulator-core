@@ -17,7 +17,7 @@ class Car( SQLObject ):
 	_status = StringCol( default = CarStatuses.STATUS_READY, dbName = 'status' )
 	_travels = MultipleJoin( 'Travel' )
 	_charging_periods = MultipleJoin( 'ChargingPeriod' )
-	_battery_level = FloatCol( default = Car.DEFAULT_BATTERY_LEVEL, dbName = 'battery_level' )
+	_battery_level = FloatCol( default = None, dbName = 'battery_level' )
 	_plug = ForeignKey( 'Plug', default = None, dbName = 'plug_id' )
 	_lock = None
 
@@ -25,6 +25,8 @@ class Car( SQLObject ):
 		super( ).__init__( )
 
 		self._simulator = simulator	
+
+		self._battery_level = Car.DEFAULT_BATTERY_LEVEL
 
 		self._lock = threading.Lock( )	
 

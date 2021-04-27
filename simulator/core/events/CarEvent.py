@@ -38,7 +38,8 @@ class CarEvent( SQLObject ):
 		self._end_datetime = end_datetime
 
 	def destroy( self ):
-		self._thread.join( )
+		if self._thread:
+			self._thread.join( )
 
 	def get_data( self ):
 		car = self.get_car( )

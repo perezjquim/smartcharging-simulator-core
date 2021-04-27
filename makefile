@@ -92,15 +92,7 @@ stop-docker-simulator:
 # < DOCKER-SIMULATOR
 
 # > SIMULATOR
-run-simulator: prep-simulator start-simulator
-
-prep-simulator:
-	#@until nc -z $(GATEWAY_HOST) $(GATEWAY_PORT); do \
-	#echo "$$(date) - waiting for gateway..."; \
-	#sleep 2; \
-	#done
-
-start-simulator:
+run-simulator:
 	@FLASK_APP=simulator/main.py \
 	python3 -m flask run \
 	--host=$(SIMULATOR_HOST) \
