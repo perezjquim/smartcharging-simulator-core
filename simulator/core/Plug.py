@@ -15,7 +15,7 @@ class Plug( SQLObject ):
 	_status = StringCol( default = PlugStatuses.STATUS_ENABLED, dbName = 'status' )	
 	
 	_plugged_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )
-	_energy_consumption = FloatCol( default = None, dbName = 'energy_consumption' )
+	_energy_consumption = FloatCol( default = 0, dbName = 'energy_consumption' )
 
 	_charging_periods = MultipleJoin( 'ChargingPeriod' )
 
