@@ -9,14 +9,13 @@ class Plug( SQLObject ):
 
 	LOG_TEMPLATE = '++++++++++ Plug {} --- {}'	
 
-	__counter = 0
 	__charging_plugs_semaphore = None		
 
 	_simulator = None
-	_status = StringCol( default = '', dbName = 'status' )	
+	_status = StringCol( default = PlugStatuses.STATUS_ENABLED, dbName = 'status' )	
 	
 	_plugged_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )
-	_energy_consumption = FloatCol( default = None, dbName = 'energy_consumption' )
+	_energy_consumption = FloatCol( default = 0, dbName = 'energy_consumption' )
 
 	_charging_periods = MultipleJoin( 'ChargingPeriod' )
 
@@ -25,21 +24,13 @@ class Plug( SQLObject ):
 	def __init__( self, simulator ):
 		super( ).__init__( )
 
-		from .Car import Car
-
 		self._simulator = simulator
-		self._status = PlugStatuses.STATUS_ENABLED
-
-		self._energy_consumption = 0	
 
 		if Plug.__charging_plugs_semaphore == None:
 			number_of_charging_plugs = self._simulator.get_config_by_key( 'number_of_charging_plugs' )
 			Plug.__charging_plugs_semaphore = threading.Semaphore( number_of_charging_plugs )	
 
 		self._lock = threading.Lock( )
-
-	def reset_counter( ):
-		Plug.__counter = 0
 
 	def acquire_charging_plug( car, charging_period ):
 		caller = DebugHelper.get_caller( )		

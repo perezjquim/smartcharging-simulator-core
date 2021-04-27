@@ -22,9 +22,9 @@ class DBHelper( metaclass = SingletonMetaClass ):
 		self._prepare_tables( )
 
 	def _prepare( self, connection ):
-		connection.query( 'pragma journal_mode = wal;' )
-		connection.query( 'pragma synchronous = normal;' )
-		connection.query( 'pragma temp_store = memory;' )
+		connection.queryAll( 'pragma journal_mode = wal;' )
+		connection.queryAll( 'pragma synchronous = normal;' )
+		connection.queryAll( 'pragma temp_store = memory;' )
 
 	def _prepare_tables( self ):			
 		from core.Car import Car

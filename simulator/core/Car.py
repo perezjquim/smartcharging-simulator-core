@@ -13,32 +13,20 @@ class Car( SQLObject ):
 
 	DEFAULT_BATTERY_LEVEL = 10
 
-	__counter = 0
-
 	_simulator = None
-	_status = StringCol( default = '', dbName = 'status' )
+	_status = StringCol( default = CarStatuses.STATUS_READY, dbName = 'status' )
 	_travels = MultipleJoin( 'Travel' )
 	_charging_periods = MultipleJoin( 'ChargingPeriod' )
-	_battery_level = FloatCol( default = None, dbName = 'battery_level' )
+	_battery_level = FloatCol( default = Car.DEFAULT_BATTERY_LEVEL, dbName = 'battery_level' )
 	_plug = ForeignKey( 'Plug', default = None, dbName = 'plug_id' )
 	_lock = None
 
 	def __init__( self, simulator ):
 		super( ).__init__( )
 
-		from .Plug import Plug
+		self._simulator = simulator	
 
-		self._simulator = simulator
-		self._status = CarStatuses.STATUS_READY
-
-		self._battery_level = Car.DEFAULT_BATTERY_LEVEL		
-
-		self._lock = threading.Lock( )
-
-		self.get_plug( )
-
-	def reset_counter( ):
-		Car.__counter = 0		
+		self._lock = threading.Lock( )	
 
 	def get_id( self ):
 		return self.id
@@ -172,9 +160,6 @@ class Car( SQLObject ):
 			c.destroy( )
 
 	def get_data( self ):
-
-		#with db_session( strict = False ):
-
 		plug_id = ''
 		plug_consumption = 0
 

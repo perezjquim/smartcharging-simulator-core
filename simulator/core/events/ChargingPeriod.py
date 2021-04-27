@@ -9,12 +9,7 @@ from core.Plug import Plug
 
 class ChargingPeriod( CarEvent ):
 
-	__counter = 0
-
 	_plug = ForeignKey( 'Plug', default = None, dbName = 'plug_id' )
-
-	def reset_counter( ):
-		ChargingPeriod.__counter = 0		
 
 	def run( self ):
 		car = self.get_car( )

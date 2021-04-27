@@ -7,13 +7,8 @@ from .CarEvent import CarEvent
 
 class Travel( CarEvent ):
 
-	__counter = 0
-
 	_distance = FloatCol( default = None, dbName = 'distance' )
-	_battery_consumption = FloatCol( default = None, dbName = 'battery_consumption' )
-
-	def reset_counter( ):
-		Travel.__counter = 0		
+	_battery_consumption = FloatCol( default = None, dbName = 'battery_consumption' )	
 
 	def run( self ):
 		car = self.get_car( )

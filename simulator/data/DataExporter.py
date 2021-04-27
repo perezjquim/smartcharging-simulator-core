@@ -15,8 +15,6 @@ class DataExporter( metaclass = SingletonMetaClass ):
 
 		plugs_sim_data = [ ]				
 
-		#with db_session( strict = False ):
-
 		plugs = simulator.get_charging_plugs( )
 
 		for p in plugs:
@@ -29,17 +27,11 @@ class DataExporter( metaclass = SingletonMetaClass ):
 
 		plugs_sim_data.sort( key = lambda x : x[ 'id' ] )
 
-			#commit( )
-
-			#flush( )
-
 		return plugs_sim_data
 
 	def get_cars_data( self, simulator ):
 
 		cars_sim_data = [ ]
-
-		#with db_session( strict = False ):		
 
 		cars = simulator.get_cars( )
 
@@ -53,16 +45,11 @@ class DataExporter( metaclass = SingletonMetaClass ):
 
 		cars_sim_data.sort( key = lambda x : x[ 'id' ] )
 
-			#commit( )
-			#flush( )
-
 		return cars_sim_data			
 	
 	def get_travel_data( self, simulator ):
 
 		travels_sim_data = [ ]
-
-		#with db_session( strict = False ):
 
 		cars = simulator.get_cars( )
 
@@ -78,16 +65,11 @@ class DataExporter( metaclass = SingletonMetaClass ):
 
 		travels_sim_data.sort( key = lambda x : x[ 'id' ] )			
 
-			#commit( )
-			#flush( )
-
 		return travels_sim_data
 
 	def get_charging_period_data( self, simulator ):
 
 		charging_periods_sim_data = [ ]
-
-		#with db_session( strict = False ):
 
 		cars = simulator.get_cars( )
 
@@ -102,10 +84,7 @@ class DataExporter( metaclass = SingletonMetaClass ):
 			c.unlock( )	
 			
 		charging_periods_sim_data.sort( key = lambda x : x[ 'id' ] )	
-
-		#commit( )
-		#flush( )
-
+		
 		return charging_periods_sim_data				
 
 	def prepare_simulation_data( self, simulator ):	

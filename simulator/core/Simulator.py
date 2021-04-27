@@ -120,8 +120,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 			command_name = message_value[ 'command_name' ]
 			command_args = message_value[ 'command_args' ]
 
-			#with db_session( strict = False ):
-
 			if command_name == 'START-SIMULATION':
 
 				self.on_start( )
@@ -150,10 +148,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 			else:
 
 				self.log( 'Unknown command received - {}'.format( message_value ) )
-
-				#commit( )
-
-				#flush( )
 
 	def log( self, message ):
 		Logger.log( message )
@@ -262,8 +256,6 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		while self.is_simulation_running( ):
 
-			#with db_session( strict = False ):
-
 			number_of_busy_cars = 0
 			total_plug_consumption = 0
 
@@ -315,11 +307,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			else:
 
-				self._end_simulation( False )
-
-				#commit( )	
-
-				#flush( )				
+				self._end_simulation( False )		
 
 			self._send_sim_data_to_clients( )
 
