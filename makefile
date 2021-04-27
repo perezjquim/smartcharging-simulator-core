@@ -92,7 +92,7 @@ stop-docker-simulator:
 # < DOCKER-SIMULATOR
 
 # > SIMULATOR
-run-simulator: start-simulator
+run-simulator:
 	@FLASK_APP=simulator/main.py \
 	python3 -m flask run \
 	--host=$(SIMULATOR_HOST) \
