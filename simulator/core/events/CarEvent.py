@@ -51,9 +51,8 @@ class CarEvent( SQLObject ):
 		if self._start_datetime:
 			start_datetime_str = self._start_datetime.isoformat( )
 
-		if self._thread and not self._thread.is_alive( ):			
-			if self._end_datetime:
-				end_datetime_str = self._end_datetime.isoformat( )
+		if self._end_datetime is not datetime( 1, 1, 1 ):
+			end_datetime_str = self._end_datetime.isoformat( )
 
 		return {
 			'id' : self.id,
