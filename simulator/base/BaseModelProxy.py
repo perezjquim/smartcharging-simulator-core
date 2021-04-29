@@ -4,10 +4,10 @@ class BaseModelProxy( ):
 
 	_model = None
 
-	def __init__( self, model_path, model_class_name ):
+	def __init__( self, model_class_path, model_class_name ):
 		super( ).__init__( )
 
-		model_class = getattr( importlib.import_module( model_path ), class_name )
+		model_class = getattr( importlib.import_module( model_class_path ), model_class_name )
 		model_instance = model_class( )
 		self.set_model( model_instance )
 

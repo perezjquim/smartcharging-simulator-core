@@ -12,8 +12,8 @@ class CarEvent( BaseModelProxy ):
 
 	_thread = None
 
-	def __init__( self, model_path, model_class_name, car ):
-		super( ).__init__( model_path, model_class_name )
+	def __init__( self, model_class_path, model_class_name, car ):
+		super( ).__init__( model_class_path, model_class_name )
 
 		self.set_car( car )
 
@@ -62,7 +62,7 @@ class CarEvent( BaseModelProxy ):
 			end_datetime_str = self._end_datetime.isoformat( )
 
 		return {
-			'id' : self.id,
+			'id' : self.get_id( ),
 			'car_id' : car_id,
 			'start_datetime' : start_datetime_str,
 			'end_datetime' : end_datetime_str

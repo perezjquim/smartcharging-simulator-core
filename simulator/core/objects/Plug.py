@@ -106,10 +106,10 @@ class Plug( SimulationObject ):
 		Logger.log_debug( Plug.LOG_TEMPLATE.format( '', message ) )	
 
 	def log( self, message ):
-		Logger.log( Plug.LOG_TEMPLATE.format( self.id, message ) )
+		Logger.log( Plug.LOG_TEMPLATE.format( self.get_id( ), message ) )
 
 	def log_debug( self, message ):
-		Logger.log_debug( Plug.LOG_TEMPLATE.format( self.id, message ) )				
+		Logger.log_debug( Plug.LOG_TEMPLATE.format( self.get_id( ), message ) )				
 
 	def destroy( self ):
 		#NOP
@@ -124,7 +124,7 @@ class Plug( SimulationObject ):
 			plugged_car.unlock( )
 
 		return {
-			'id' : self.id,
+			'id' : self.get_id( ),
 			'status' : self._status,
 			'plugged_car_id' : plugged_car_id,
 			'energy_consumption' : self._energy_consumption,

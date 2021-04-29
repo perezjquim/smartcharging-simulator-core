@@ -180,11 +180,13 @@ class Simulation( BaseModelProxy ):
 
 			if self._affluence_counts[ current_datetime_str ] > 0:		
 
+				simulator = self._simulator
+
 				for c in self._cars:
 
 					c.lock( )
 
-					car_can_travel = ( self.is_simulation_running( ) and not c.is_busy( ) )		
+					car_can_travel = ( simulator.is_simulation_running( ) and not c.is_busy( ) )		
 					if car_can_travel:
 						c.start_travel( )	
 						self._affluence_counts[ current_datetime_str ] -= 1	

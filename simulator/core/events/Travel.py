@@ -10,8 +10,8 @@ class Travel( CarEvent ):
 	_distance = FloatCol( default = 0, dbName = 'distance' )
 	_battery_consumption = FloatCol( default = 0, dbName = 'battery_consumption' )	
 
-	def __init__( self ):
-		super( ).__init__( 'model.events.TravelModel', 'TravelModel' )
+	def __init__( self, car ):
+		super( ).__init__( 'model.events.TravelModel', 'TravelModel', car )
 
 	def run( self ):
 		car = self.get_car( )

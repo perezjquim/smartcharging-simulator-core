@@ -1,7 +1,8 @@
 from datetime import date, datetime, timedelta
-from sqlobject import *
 
-class CarEventModel( SQLObject ):
+from base.BaseModel import *
+
+class CarEventModel( BaseModel ):
 
 	_car = ForeignKey( 'CarModel', default = None, dbName = 'car_id' )	
 	_start_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'start_datetime' )
@@ -9,6 +10,9 @@ class CarEventModel( SQLObject ):
 
 	def get_car( self ):
 		return self._car
+
+	def set_car( self, car ):
+		self._car = car
 
 	def get_start_datetime( self ):
 		return self._start_datetime

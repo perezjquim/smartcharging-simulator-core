@@ -4,8 +4,8 @@ class SimulationObject( BaseModelProxy ):
 
 	_simulation = None
 
-	def __init__( self, model_path, model_class_name, simulation ):
-		super( ).__init__( model_path, model_class_name )
+	def __init__( self, model_class_path, model_class_name, simulation ):
+		super( ).__init__( model_class_path, model_class_name )
 
 		self.set_simulation( simulation )
 

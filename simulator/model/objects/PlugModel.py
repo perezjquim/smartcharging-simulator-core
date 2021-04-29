@@ -1,5 +1,3 @@
-from sqlobject import *
-
 from core.constants.PlugConstants import *
 from .SimulationObjectModel import *
 	
@@ -19,17 +17,11 @@ class PlugModel( SimulationObjectModel ):
 	def set_status( self, new_status ):
 		self._status = new_status
 
-	def plug_car( self, car ):
-		if self.is_enabled( ):
-			self._plugged_car = car
-
-	def unplug_car( self ):
-		car = self.get_plugged_car( )
-		car.set_plug( None )
-		self._plugged_car = None
-
 	def get_plugged_car( self ):
 		return self._plugged_car
+
+	def set_plugged_car( self, car ):
+		self._plugged_car = car
 
 	def get_energy_consumption( self ):
 		return self._energy_consumption

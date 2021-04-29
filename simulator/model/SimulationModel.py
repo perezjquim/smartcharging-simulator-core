@@ -1,6 +1,6 @@
-from sqlobject import *
+from base.BaseModel import *
 
-class SimulationModel( SQLObject ):
+class SimulationModel( BaseModel ):
 
 	class sqlmeta:
 		table = 'Simulations'	

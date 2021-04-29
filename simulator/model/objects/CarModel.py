@@ -1,5 +1,3 @@
-from sqlobject import *
-
 from core.constants.CarConstants import *	
 from .SimulationObjectModel import *	
 
@@ -36,14 +34,7 @@ class CarModel( SimulationObjectModel ):
 		return self._battery_level
 
 	def set_battery_level( self, battery_level ):
-		if battery_level >= 0 and battery_level <= 10:
-			self._battery_level = battery_level
-		elif battery_level < 0:
-			self._battery_level = 0
-		elif battery_level > 10:
-			self._battery_level = 10
-		else:
-			self.log( 'Invalid battery level given!' )
+		self._battery_level = battery_level
 
 	def get_plug( self ):
 		return self._plug			

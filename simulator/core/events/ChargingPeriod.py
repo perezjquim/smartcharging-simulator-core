@@ -11,8 +11,8 @@ class ChargingPeriod( CarEvent ):
 
 	_plug = ForeignKey( 'PlugModel', default = None, dbName = 'plug_id' )
 
-	def __init__( self ):
-		super( ).__init__( 'model.events.ChargingPeriodModel', 'ChargingPeriodModel' )
+	def __init__( self, car ):
+		super( ).__init__( 'model.events.ChargingPeriodModel', 'ChargingPeriodModel', car )
 
 	def run( self ):
 		car = self.get_car( )

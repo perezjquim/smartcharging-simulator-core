@@ -1,6 +1,6 @@
-from sqlobject import *
+from base.BaseModel import *
 
-class SimulationObjectModel( SQLObject ):
+class SimulationObjectModel( BaseModel ):
 	
 	_simulation = ForeignKey( 'SimulationModel', default = None, dbName = 'simulation_id' )
 

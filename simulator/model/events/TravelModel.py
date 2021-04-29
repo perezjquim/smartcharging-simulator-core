@@ -1,5 +1,3 @@
-from sqlobject import *
-
 from .CarEventModel import *
 
 class TravelModel( CarEventModel ):

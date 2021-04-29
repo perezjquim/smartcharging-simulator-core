@@ -1,5 +1,4 @@
 import threading
-from sqlobject import *
 
 from base.SingletonMetaClass import SingletonMetaClass
 from config.ConfigurationHelper import ConfigurationHelper

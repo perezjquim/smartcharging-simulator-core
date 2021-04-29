@@ -1,5 +1,3 @@
-from sqlobject import *
-
 from .SimulationObjectModel import *
 
 class LogModel( SimulationObjectModel ):
@@ -11,3 +9,6 @@ class LogModel( SimulationObjectModel ):
 
 	def get_message( self ):
 		return self._message
+
+	def set_message( self, message ):
+		self._message = message

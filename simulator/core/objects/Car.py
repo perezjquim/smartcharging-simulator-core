@@ -85,7 +85,7 @@ class Car( SimulationObject ):
 		return is_busy
 
 	def start_travel( self ):	
-		from .events.Travel import Travel
+		from core.events.Travel import Travel
 
 		new_travel = Travel( self )
 		self._travels.append( new_travel )
@@ -121,7 +121,7 @@ class Car( SimulationObject ):
 		simulation.unlock_current_step( )																				
 
 	def _start_charging_period( self ):
-		from .events.ChargingPeriod import ChargingPeriod
+		from core.events.ChargingPeriod import ChargingPeriod
 
 		new_charging_period = ChargingPeriod( self )
 		self._charging_periods.append( new_charging_period )
@@ -148,10 +148,10 @@ class Car( SimulationObject ):
 		self.unlock( )		
 
 	def log( self, message ):
-		Logger.log( Car.LOG_TEMPLATE.format( self.id, message ) )
+		Logger.log( Car.LOG_TEMPLATE.format( self.get_id( ), message ) )
 
 	def log_debug( self, message ):
-		Logger.log_debug( Car.LOG_TEMPLATE.format( self.id, message ) )		
+		Logger.log_debug( Car.LOG_TEMPLATE.format( self.get_id( ), message ) )		
 
 	def destroy( self ):
 		for t in self._travels:
@@ -171,7 +171,7 @@ class Car( SimulationObject ):
 			plug_consumption = plug.get_energy_consumption( )
 
 		return { 
-			"id" : self.id,
+			"id" : self.get_id( ),
 			"status" : self.get_status( ),
 			"travels" : [ t.get_data( ) for t in self._travels ],
 			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ],
