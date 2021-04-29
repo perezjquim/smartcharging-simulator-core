@@ -1,40 +1,74 @@
 import time
 import threading
-from sqlobject import *
 from datetime import timedelta
 
-from base.DebugHelper import *
-from .CarStatuses import *		
-from data.Logger import *
+from .SimulationObject import *
 
-class Car( SQLObject ):
+from base.DebugHelper import *
+from core.constants.CarConstants import *
+from data.Logger import *
+from model.objects.CarModel import *
+
+class Car( SimulationObject ):
 
 	LOG_TEMPLATE = '»»»»»»»»»» Car {} --- {}'
 
-	DEFAULT_BATTERY_LEVEL = 10
-
-	_simulator = None
-	_status = StringCol( default = CarStatuses.STATUS_READY, dbName = 'status' )
-	_travels = MultipleJoin( 'Travel' )
-	_charging_periods = MultipleJoin( 'ChargingPeriod' )
-	_battery_level = FloatCol( default = 0, dbName = 'battery_level' )
-	_plug = ForeignKey( 'Plug', default = None, dbName = 'plug_id' )
 	_lock = None
 
-	def __init__( self, simulator ):
-		super( ).__init__( )
+	_travels = [ ]
+	_charging_periods = [ ]
+	_plug = None
 
-		self._simulator = simulator	
-
-		self._battery_level = Car.DEFAULT_BATTERY_LEVEL
-
+	def __init__( self, simulation ):
+		super( ).__init__( 'model.objects.CarModel', 'CarModel', simulation )
+		
 		self._lock = threading.Lock( )	
 
-	def get_id( self ):
-		return self.id
+	def get_status( self ):
+		model = self.get_model( )
+		return model.get_status( )
 
-	def get_simulator( self ):
-		return self._simulator
+	def set_status( self, new_status ):
+		model = self.get_model( )
+		model.set_status( new_status )
+
+	def get_travels( self ):
+		return self._travels
+
+	def add_travel( self, new_travel ):
+		self._travels.append( new_travel )
+
+	def get_charging_periods( self ):
+		return self._charging_periods
+
+	def add_charging_period( self, new_charging_period ):
+		self._charging_periods.append( new_charging_period )
+
+	def get_battery_level( self ):
+		model = self.get_model( )
+		return model.get_battery_level( )
+
+	def set_battery_level( self, battery_level ):
+		model = self.get_model( )
+
+		if battery_level >= 0 and battery_level <= 10:
+			model.set_battery_level( battery_level )
+		elif battery_level < 0:
+			model.set_battery_level( 0 )
+		elif battery_level > 10:
+			model.set_battery_level( 10 )
+		else:
+			self.log( 'Invalid battery level given!' )
+
+	def get_plug( self ):
+		return self._plug
+
+	def set_plug( self, new_plug ):
+		self._plug = new_plug	
+		new_plug_model = new_plug.get_model( )
+
+		model = self.get_model( )
+		model.set_plug( new_plug_model )	
 
 	def lock( self ):
 		caller = DebugHelper.get_caller( )
@@ -47,48 +81,15 @@ class Car( SQLObject ):
 		self._lock.release( )
 
 	def is_busy( self ):
-		is_busy = self._status != CarStatuses.STATUS_READY
+		is_busy = self.get_status( ) != CarConstants.STATUS_READY
 		return is_busy
-
-	def get_status( self ):
-		return self._status
-
-	def set_status( self, new_status ):
-		self._status = new_status
-
-	def get_travels( self ):
-		return self._travels
-
-	def get_charging_periods( self ):
-		return self._charging_periods
-
-	def get_battery_level( self ):
-		return self._battery_level
-
-	def set_battery_level( self, battery_level ):
-		if battery_level >= 0 and battery_level <= 10:
-			self._battery_level = battery_level
-		elif battery_level < 0:
-			self._battery_level = 0
-		elif battery_level > 10:
-			self._battery_level = 10
-		else:
-			self.log( 'Invalid battery level given!' )
-
-	def set_plug( self, new_plug ):
-		self._plug = new_plug
-
-	def get_plug( self ):
-		return self._plug
 
 	def start_travel( self ):	
 		from .events.Travel import Travel
 
-		new_travel = Travel( )
-		new_travel.set_car( self )
-		new_travel.start( )
+		new_travel = Travel( self )
 		self._travels.append( new_travel )
-		self.set_status( CarStatuses.STATUS_TRAVELING )
+		self.set_status( CarConstants.STATUS_TRAVELING )
 
 	def end_travel( self ):
 		self.lock( )		
@@ -103,10 +104,10 @@ class Car( SQLObject ):
 
 		self.unlock( )			
 
-		simulator = self._simulator
-		simulator.lock_current_step( )
+		simulation = self.get_simulation( )
+		simulation.lock_current_step( )
 
-		if simulator.can_simulate_new_actions( ) and new_battery_level < 2:
+		if simulation.can_simulate_new_actions( ) and new_battery_level < 2:
 
 			self.log( 'Car reached <20% battery! Waiting for a available charging plug..' )										
 			self._start_charging_period( )		
@@ -114,17 +115,15 @@ class Car( SQLObject ):
 		else:
 
 			self.lock( )
-			self.set_status( CarStatuses.STATUS_READY )
+			self.set_status( CarConstants.STATUS_READY )
 			self.unlock( )
 
-		simulator.unlock_current_step( )																				
+		simulation.unlock_current_step( )																				
 
 	def _start_charging_period( self ):
 		from .events.ChargingPeriod import ChargingPeriod
 
-		new_charging_period = ChargingPeriod( )
-		new_charging_period.set_car( self )
-		new_charging_period.start( )
+		new_charging_period = ChargingPeriod( self )
 		self._charging_periods.append( new_charging_period )
 
 	def end_charging_period( self, ended_normally ):
@@ -142,7 +141,7 @@ class Car( SQLObject ):
 			#TODO
 			pass
 			
-		self.set_status( CarStatuses.STATUS_READY )			
+		self.set_status( CarConstants.STATUS_READY )			
 
 		self.log( 'Charging period ended!' )
 

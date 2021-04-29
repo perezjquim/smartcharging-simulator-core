@@ -1,4 +1,4 @@
-class PlugStatuses:		
+class PlugConstants:		
 
 	def __init__( ):
 		raise NotSupportedError

@@ -1,18 +1,22 @@
 import threading
 import time
 from datetime import date, datetime, timedelta
-from sqlobject import *
 
-from core.Car import Car
+from base.BaseModelProxy import *
 
-class CarEvent( SQLObject ):
+from core.objects.Car import *
 
-	_car = ForeignKey( 'Car', default = None, dbName = 'car_id' )	
-	_start_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'start_datetime' )
-	_end_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'end_datetime' )
+class CarEvent( BaseModelProxy ):
+
+	_car = None
+
 	_thread = None
 
-	def start( self ):
+	def __init__( self, model_path, model_class_name, car ):
+		super( ).__init__( model_path, model_class_name )
+
+		self.set_car( car )
+
 		self._thread = threading.Thread( target = self.run )
 		self._thread.start( )	
 
@@ -24,6 +28,9 @@ class CarEvent( SQLObject ):
 
 	def set_car( self, car ):
 		self._car = car
+		car_model = car.get_model( )
+		model = self.get_model( )
+		model.set_car( car )
 
 	def get_start_datetime( self ):
 		return self._start_datetime

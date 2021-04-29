@@ -1,14 +1,17 @@
 import time
 from datetime import date, datetime, timedelta
-from sqlobject import *
 
-from core.Car import Car
-from .CarEvent import CarEvent
+from .CarEvent import *
+
+from core.objects.Car import *
 
 class Travel( CarEvent ):
 
 	_distance = FloatCol( default = 0, dbName = 'distance' )
 	_battery_consumption = FloatCol( default = 0, dbName = 'battery_consumption' )	
+
+	def __init__( self ):
+		super( ).__init__( 'model.events.TravelModel', 'TravelModel' )
 
 	def run( self ):
 		car = self.get_car( )

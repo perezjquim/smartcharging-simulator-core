@@ -27,12 +27,16 @@ class DBHelper( metaclass = SingletonMetaClass ):
 		connection.queryAll( 'pragma temp_store = memory;' )
 
 	def _prepare_tables( self ):			
-		from core.Car import Car
-		from core.Plug import Plug
-		from core.events.Travel import Travel
-		from core.events.ChargingPeriod import ChargingPeriod
+		from .SimulationModel import SimulationModel
+		from .objects.CarModel import CarModel
+		from .objects.PlugModel import PlugModel
+		from .objects.LogModel import LogModel
+		from .events.TravelModel import TravelModel
+		from .events.ChargingPeriodModel import ChargingPeriodModel
 
-		Car.createTable( ifNotExists = True )
-		Plug.createTable( ifNotExists = True )
-		Travel.createTable( ifNotExists = True )
-		ChargingPeriod.createTable( ifNotExists = True )
+		SimulationModel.createTable( ifNotExists = True )
+		CarModel.createTable( ifNotExists = True )
+		PlugModel.createTable( ifNotExists = True )
+		LogModel.createTable( ifNotExists = True )
+		TravelModel.createTable( ifNotExists = True )
+		ChargingPeriodModel.createTable( ifNotExists = True )

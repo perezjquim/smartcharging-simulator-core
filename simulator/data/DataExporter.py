@@ -1,7 +1,5 @@
-from pony.orm import *
-
-from base.SingletonMetaClass import *
-from stats.StatsHelper import *		
+from base.SingletonMetaClass import SingletonMetaClass
+from stats.StatsHelper import StatsHelper	
 
 class DataExporter( metaclass = SingletonMetaClass ):
 
@@ -88,7 +86,7 @@ class DataExporter( metaclass = SingletonMetaClass ):
 		return charging_periods_sim_data				
 
 	def prepare_simulation_data( self, simulator ):	
-		cars_sim_data = self.get_cars_data( simulator )
+		"""cars_sim_data = self.get_cars_data( simulator )
 		travels_sim_data = self.get_travel_data( simulator )
 		charging_periods_sim_data = self.get_charging_period_data( simulator )
 		plugs_sim_data = self.get_plugs_data( simulator )	
@@ -109,6 +107,6 @@ class DataExporter( metaclass = SingletonMetaClass ):
 		self._stats_helper.update_stats( data_to_export )
 		stats = self._stats_helper.get_stats( )
 
-		data_to_export.update( stats )
+		data_to_export.update( stats )"""
 
-		return data_to_export
+		return {}

@@ -1,7 +1,7 @@
 import random
 
-from base.SingletonMetaClass import *
-from core.CarStatuses import *		
+from base.SingletonMetaClass import SingletonMetaClass
+from core.constants.CarConstants import CarConstants
 
 class StatsHelper( metaclass = SingletonMetaClass ):
 
@@ -43,7 +43,7 @@ class StatsHelper( metaclass = SingletonMetaClass ):
 				plug_stats_data = plug_stats_datasets[ i ][ 'data' ]
 				plug_stats_data.append( plug_energy_consumption )	
 
-			number_of_traveling_cars = len( [ c for c in cars if c[ 'status' ] ==  CarStatuses.STATUS_TRAVELING ] )
+			number_of_traveling_cars = len( [ c for c in cars if c[ 'status' ] ==  CarConstants.STATUS_TRAVELING ] )
 			travel_stats_datasets = self._travel_stats[ 'datasets' ]
 			travel_stats_data = travel_stats_datasets[ 0 ][ 'data' ]
 			travel_stats_data.append( number_of_traveling_cars )	

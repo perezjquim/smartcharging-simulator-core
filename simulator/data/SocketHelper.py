@@ -5,7 +5,7 @@ import threading
 import json
 import traceback
 
-from base.SingletonMetaClass import *
+from base.SingletonMetaClass import SingletonMetaClass
     
 class SocketHelper( metaclass = SingletonMetaClass ):
 
