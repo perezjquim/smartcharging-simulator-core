@@ -18,3 +18,18 @@ class SimulationObject( BaseModelProxy ):
 
 		model = self.get_model( )
 		model.set_simulation( simulation_model )
+
+	def get_data( self ):
+		data = super( ).get_data( )
+
+		simulation_id = ''
+		simulation = self.get_simulation( )		
+		
+		if simulation:
+			simulation_id = simulation.get_id( )
+
+		data.update({
+			"simulation_id" : simulation_id
+		})
+
+		return data

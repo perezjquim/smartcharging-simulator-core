@@ -19,3 +19,8 @@ class BaseModelProxy( ):
 
 	def get_id( self ):
 		return self._model.get_id( )
+
+	def get_data( self ):
+		return {
+			'id' : self.get_id( )
+		}

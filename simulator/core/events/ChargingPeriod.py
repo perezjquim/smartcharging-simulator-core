@@ -9,15 +9,16 @@ from core.objects.Plug import *
 
 class ChargingPeriod( CarEvent ):
 
-	_plug = ForeignKey( 'PlugModel', default = None, dbName = 'plug_id' )
+	_plug = None
 
 	def __init__( self, car ):
-		super( ).__init__( 'model.events.ChargingPeriodModel', 'ChargingPeriodModel', car )
+		super( ).__init__( 'model.events.ChargingPeriodModel', 'ChargingPeriodModel', car )		
 
 	def run( self ):
 		car = self.get_car( )
 
 		simulation = car.get_simulation( )
+		simulator = simulation.get_simulator( )
 
 		car.lock( )
 		car.set_status( CarConstants.STATUS_WAITING_TO_CHARGE )
@@ -76,8 +77,8 @@ class ChargingPeriod( CarEvent ):
 
 			simulation.unlock_current_step( )
 
-			sim_sampling_rate = simulation.get_config_by_key( 'sim_sampling_rate' )
-			minutes_per_sim_step = simulation.get_config_by_key( 'minutes_per_sim_step' )
+			sim_sampling_rate = simulator.get_config_by_key( 'sim_sampling_rate' )
+			minutes_per_sim_step = simulator.get_config_by_key( 'minutes_per_sim_step' )
 
 			ended_normally = False		
 			elapsed_time = 0		
@@ -141,8 +142,10 @@ class ChargingPeriod( CarEvent ):
 	def get_plug( self ):
 		return self._plug	
 
-	def set_plug( self, new_plug ):
-		self._plug = new_plug	
+	def set_plug( self, plug ):
+		self._plug = plug
+		model = self.get_model( )
+		model.set_plug( plug )
 
 	def get_data( self ):
 		data = super( ).get_data( )

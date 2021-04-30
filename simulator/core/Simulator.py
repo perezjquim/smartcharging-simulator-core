@@ -3,7 +3,6 @@ import threading
 from base.SingletonMetaClass import SingletonMetaClass
 from config.ConfigurationHelper import ConfigurationHelper
 from data.Logger import Logger
-from data.DataExporter import DataExporter
 from data.SocketHelper import SocketHelper
 from base.DebugHelper import DebugHelper
 from .Simulation import Simulation
@@ -13,53 +12,55 @@ class Simulator( metaclass = SingletonMetaClass ):
 	MAIN_LOG_PREFIX = '============================'
 
 	_socket_helper = None
-	_data_exporter = None
 
 	_current_simulation = None
-
-	_is_simulation_running = False
-	_is_simulation_running_lock = None	
 
 	def on_init( self ):		
 		self._socket_helper = SocketHelper( )
 		self._socket_helper.on_init( )	
 
-		self._data_exporter = DataExporter( )
-		self._data_exporter.on_init( )		
-
-		self._is_simulation_running_lock = threading.Lock( )
-
 		self._socket_helper.attach_on_client_connected( self.on_client_connected )	
 		self._socket_helper.attach_on_client_message_received( self.on_client_message_received )		
 
 	def on_start( self ):
-		if self.is_simulation_running( ):			
+		current_simulation = self._current_simulation
+
+		if current_simulation and current_simulation.is_simulation_running( ):			
 			self.log( 'Simulation cannot be started (it is already running)!' )
 		else:
 			self.log_main( 'Starting simulation...' )
-			self._current_simulation = Simulation( self )
-			self._data_exporter.on_init( )		
+
+			self._current_simulation = Simulation( self )			
 			self._current_simulation.on_start( )
-			self.set_simulation_state( True )	
 
 			self.log_main( 'Starting simulation... done!' )				
 
 	def on_stop( self ):
-		if self.is_simulation_running( ):			
+		current_simulation = self._current_simulation
+
+		if current_simulation and current_simulation.is_simulation_running( ):			
 			self.log_main( 'Stopping simulation!' )
-			self._current_simulation.on_stop( )	
-			self.set_simulation_state( False )
+			current_simulation.on_stop( )	
 		else:
 			self.log( 'Simulation cannot be stopped (it is not running)!' )		
 
+	def get_current_simulation( self ):
+		return self._current_simulation
+
 	def on_client_connected( self, client ):		
-		self._send_sim_state_to_clients( client )
+		self.send_sim_state_to_clients( client )
 		self.send_sim_data_to_clients( client )		
 
-	def _send_sim_state_to_clients( self, client = None ):
+	def send_sim_state_to_clients( self, client = None ):
 		self.log_debug( '////// SENDING SIM STATE... //////' )
 
-		is_sim_running = self.is_simulation_running( )
+		current_simulation = self._current_simulation
+
+		is_sim_running = False
+		
+		if current_simulation:
+			is_sim_running = current_simulation.is_simulation_running( )
+		
 		config = self.get_config( )
 		message = { 'is_sim_running' : is_sim_running, 'config' : config }
 		self._socket_helper.send_message_to_clients( 'state', message )
@@ -87,9 +88,12 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			elif command_name == 'SET-PLUG-STATUS':
 
-				plug_id = command_args[ 'plug_id' ]
-				plug_new_status = command_args[ 'plug_new_status' ]
-				self.set_charging_plug_status( plug_id, plug_new_status )
+				current_simulation = self._current_simulation
+
+				if current_simulation:					
+					plug_id = command_args[ 'plug_id' ]
+					plug_new_status = command_args[ 'plug_new_status' ]
+					current_simulation.set_charging_plug_status( plug_id, plug_new_status )
 
 			elif command_name == 'SET-CONFIG':
 
@@ -142,32 +146,10 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			current_simulation.lock_current_datetime( )
 
-			simulation_data = self._data_exporter.prepare_simulation_data( self )
+			simulation_data = current_simulation.get_simulation_data( )
 
 			self._socket_helper.send_message_to_clients( 'data', simulation_data, client )		
 
 			current_simulation.unlock_current_datetime( )
 
 		self.log_debug( '////// SENDING SIM DATA... done! //////' )			
-
-	def lock_simulation( self ):
-		caller = DebugHelper.get_caller( )
-		self.log_debug( 'LOCKING SIMULATION... (by {})'.format( caller ) )
-		self._is_simulation_running_lock.acquire( )		
-
-	def unlock_simulation( self ):
-		caller = DebugHelper.get_caller( )
-		self.log_debug( 'UNLOCKING SIMULATION... (by {})'.format( caller ) )
-		self._is_simulation_running_lock.release( )			
-
-	def is_simulation_running( self ):
-		self.lock_simulation( )
-		is_simulation_running = self._is_simulation_running
-		self.unlock_simulation( )
-		return is_simulation_running
-
-	def set_simulation_state( self, new_value ):
-		self.lock_simulation( )
-		self._is_simulation_running = new_value
-		self.unlock_simulation( )
-		self._send_sim_state_to_clients( )

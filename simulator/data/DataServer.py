@@ -2,7 +2,6 @@ from flask import Blueprint, Response
 import json
 
 from base.SingletonMetaClass import SingletonMetaClass
-from data.DataExporter import DataExporter
 
 api = Blueprint( "DataServer", __name__ )
 
@@ -18,16 +17,21 @@ class DataServer( metaclass = SingletonMetaClass ):
 
 	@api.route( '/plugs' )
 	def get_plugs( ):
-		data_exporter = DataExporter( )
-		plugs_sim_data = data_exporter.get_plugs_data( DataServer.__simulator )
+		simulator = DataServer.__simulator
+		current_simulation = simulator.get_current_simulation( )
+
+		plugs_sim_data = current_simulation.get_plugs_data( )
 
 		response = Response( json.dumps( plugs_sim_data ), mimetype = 'application/json' )		
 		return response
 
-	def _get_plug_by_id( plug_id ):
-		data_exporter = DataExporter( )
-		plugs_sim_data = data_exporter.get_plugs_data( DataServer.__simulator )
-		selected_plug = list( filter( lambda p: p[ 'id' ] == plug_id, plugs_sim_data ) )
+	def _get_plug_by_id( plug_id ):		
+		simulator = DataServer.__simulator
+		current_simulation = simulator.get_current_simulation( )
+
+		plugs_sim_data = current_simulation.get_plugs_data( )
+
+		selected_plug = [ p for p in plugs_sim_data if p[ 'id' ] == plug_id ]
 		if len( selected_plug ) > 0:
 			return selected_plug[ 0 ]
 
@@ -51,7 +55,9 @@ class DataServer( metaclass = SingletonMetaClass ):
 		response = None
 
 		if selected_plug:
-			DataServer.__simulator.set_charging_plug_status( plug_id, new_status )
+			simulator = DataServer.__simulator
+			current_simulation = simulator.get_current_simulation( )			
+			current_simulation.set_charging_plug_status( plug_id, new_status )
 			response = Response( 'OK', status = 200 )
 		else:
 			response = Response( 'NOK', status = 404 )					

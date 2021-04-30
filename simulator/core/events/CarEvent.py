@@ -32,37 +32,49 @@ class CarEvent( BaseModelProxy ):
 		model.set_car( car )
 
 	def get_start_datetime( self ):
-		return self._start_datetime
+		model = self.get_model( )		
+		return model.get_start_datetime( )
 
 	def get_end_datetime( self ):
-		return self._end_datetime
+		model = self.get_model( )		
+		return model.get_end_datetime( )
 
 	def set_start_datetime( self, start_datetime ):
-		self._start_datetime = start_datetime
+		model = self.get_model( )
+		model.set_start_datetime( start_datetime )
 
 	def set_end_datetime( self, end_datetime ):
-		self._end_datetime = end_datetime
+		model = self.get_model( )
+		model.set_end_datetime( end_datetime )		
 
 	def destroy( self ):
 		if self._thread:
 			self._thread.join( )
 
+	def _is_date_valid( self, date ):
+		return date is not datetime( 1, 1, 1 )
+
 	def get_data( self ):
+		data = super( ).get_data( )
+
 		car = self.get_car( )
 		car_id = car.get_id( )
 
 		start_datetime_str = ''
 		end_datetime_str = ''
 		
-		if self._start_datetime:
-			start_datetime_str = self._start_datetime.isoformat( )
+		start_datetime = self.get_start_datetime( )
+		if self._is_date_valid( start_datetime ):
+			start_datetime_str = start_datetime.isoformat( )
 
-		if self._end_datetime is not datetime( 1, 1, 1 ):
-			end_datetime_str = self._end_datetime.isoformat( )
+		end_datetime = self.get_end_datetime( )
+		if self._is_date_valid( end_datetime ):
+			end_datetime_str = end_datetime.isoformat( )
 
-		return {
-			'id' : self.get_id( ),
+		data.update({
 			'car_id' : car_id,
 			'start_datetime' : start_datetime_str,
 			'end_datetime' : end_datetime_str
-		}
+		})
+
+		return data

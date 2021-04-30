@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 
 from base.BaseModelProxy import *
 
+from stats.StatsHelper import *
 from data.Logger import *
 from base.DebugHelper import *
 from .objects.Car import *
@@ -32,18 +33,27 @@ class Simulation( BaseModelProxy ):
 	_current_datetime = None	
 	_current_datetime_lock = None
 
+	_is_simulation_running = False
+	_is_simulation_running_lock = None		
+
 	_simulator = None	
 	_thread = None	
+
+	_stats_helper = None
 
 	def __init__( self, simulator ):
 		super( ).__init__( 'model.SimulationModel', 'SimulationModel' )	
 
-		self._simulator = simulator
+		self._simulator = simulator		
 
 		self._current_step = 1
-
 		self._current_step_lock = threading.Lock( )
+
 		self._current_datetime_lock = threading.Lock( )
+
+		self._is_simulation_running_lock = threading.Lock( )		
+
+		self._stats_helper = StatsHelper( self )
 
 	def get_simulator( self ):
 		return self._simulator
@@ -52,6 +62,8 @@ class Simulation( BaseModelProxy ):
 		self.initialize_cars( )
 		self.initialize_plugs( )
 		self.initialize_datetime( )
+
+		self.set_simulation_state( True )		
 
 		self._thread = threading.Thread( target = self.run )						
 		self._thread.start( )	
@@ -102,7 +114,7 @@ class Simulation( BaseModelProxy ):
 		sim_sampling_rate = simulator.get_config_by_key( 'sim_sampling_rate' )		
 		number_of_steps = simulator.get_config_by_key( 'number_of_steps' )
 
-		while simulator.is_simulation_running( ):
+		while self.is_simulation_running( ):
 
 			number_of_busy_cars = 0
 			total_plug_consumption = 0
@@ -189,7 +201,7 @@ class Simulation( BaseModelProxy ):
 
 					c.lock( )
 
-					car_can_travel = ( simulator.is_simulation_running( ) and not c.is_busy( ) )		
+					car_can_travel = ( self.is_simulation_running( ) and not c.is_busy( ) )		
 					if car_can_travel:
 						c.start_travel( )	
 						self._affluence_counts[ current_datetime_str ] -= 1	
@@ -206,7 +218,7 @@ class Simulation( BaseModelProxy ):
 	def can_simulate_new_actions( self ):
 		simulator = self._simulator
 		number_of_steps = simulator.get_config_by_key( 'number_of_steps' )
-		can_simulate_new_actions = simulator.is_simulation_running( ) and ( self._current_step <= number_of_steps )
+		can_simulate_new_actions = self.is_simulation_running( ) and ( self._current_step <= number_of_steps )
 		return can_simulate_new_actions
 
 	def lock_current_datetime( self ):
@@ -241,9 +253,8 @@ class Simulation( BaseModelProxy ):
 	def set_current_step( self, new_step ):
 		self._current_step = new_step				
 
-	def _end_simulation( self, wait_for_thread ):
-		simulator = self._simulator		
-		simulator.set_simulation_state( False )
+	def _end_simulation( self, wait_for_thread ):	
+		self.set_simulation_state( False )
 
 		for c in self._cars:
 			c.destroy( )	
@@ -251,6 +262,7 @@ class Simulation( BaseModelProxy ):
 		if wait_for_thread:					
 			self._thread.join( )
 
+		simulator = self._simulator
 		simulator.send_sim_data_to_clients( )
 
 	def log( self, message ):
@@ -273,6 +285,9 @@ class Simulation( BaseModelProxy ):
 	def get_charging_plugs( self ):
 		return self._charging_plugs
 
+	def get_logs( self ):
+		return self._logs
+
 	def set_charging_plug_status( self, plug_id, plug_new_status ):
 		plug = list( filter( lambda p : p.get_id( ) == plug_id, self._charging_plugs ) )
 		plug = plug[ 0 ]
@@ -288,7 +303,31 @@ class Simulation( BaseModelProxy ):
 	def release_charging_plug( self ):
 		caller = DebugHelper.get_caller( )			
 		self.log_debug( 'RELEASING CHARGING PLUGS SEMAPHORE... (by {})'.format( caller ) )		
-		self._charging_plugs_semaphore.release( )		
+		self._charging_plugs_semaphore.release( )	
+
+	def lock_simulation( self ):
+		caller = DebugHelper.get_caller( )
+		self.log_debug( 'LOCKING SIMULATION... (by {})'.format( caller ) )
+		self._is_simulation_running_lock.acquire( )		
+
+	def unlock_simulation( self ):
+		caller = DebugHelper.get_caller( )
+		self.log_debug( 'UNLOCKING SIMULATION... (by {})'.format( caller ) )
+		self._is_simulation_running_lock.release( )			
+
+	def is_simulation_running( self ):
+		self.lock_simulation( )
+		is_simulation_running = self._is_simulation_running
+		self.unlock_simulation( )
+		return is_simulation_running
+
+	def set_simulation_state( self, new_value ):
+		self.lock_simulation( )
+		self._is_simulation_running = new_value
+		self.unlock_simulation( )
+
+		simulator = self._simulator
+		simulator.send_sim_state_to_clients( )			
 
 	def fetch_gateway( self, endpoint ):
 		simulator = self._simulator
@@ -300,4 +339,129 @@ class Simulation( BaseModelProxy ):
 		self.log_debug( '\\\\\\ GATEWAY \\\\\\ URL: {}'.format( url )	 )
 		self.log_debug( '\\\\\\ GATEWAY \\\\\\ RESPONSE: {}'.format( response_json ) )
 
-		return response_json				
+		return response_json		
+
+	def get_plugs_data( self ):
+
+		plugs_sim_data = [ ]				
+
+		plugs = self.get_charging_plugs( )
+
+		for p in plugs:
+			p.lock( )
+
+			plug_data = p.get_data( )
+			plugs_sim_data.append( plug_data )
+
+			p.unlock( )
+
+		plugs_sim_data.sort( key = lambda x : x[ 'id' ] )
+
+		return plugs_sim_data
+
+	def get_cars_data( self ):
+
+		cars_sim_data = [ ]
+
+		cars = self.get_cars( )
+
+		for c in cars:
+			c.lock( )
+			
+			car_data = c.get_data( )
+			cars_sim_data.append( car_data )
+
+			c.unlock( )
+
+		cars_sim_data.sort( key = lambda x : x[ 'id' ] )
+
+		return cars_sim_data			
+	
+	def get_travel_data( self ):
+
+		travels_sim_data = [ ]
+
+		cars = self.get_cars( )
+
+		for c in cars:
+			c.lock( )
+			
+			car_data = c.get_data( )
+
+			travel_data = car_data[ 'travels' ]
+			travels_sim_data += travel_data	
+
+			c.unlock( )
+
+		travels_sim_data.sort( key = lambda x : x[ 'id' ] )			
+
+		return travels_sim_data
+
+	def get_charging_period_data( self ):
+
+		charging_periods_sim_data = [ ]
+
+		cars = self.get_cars( )
+
+		for c in cars:
+			c.lock( )
+			
+			car_data = c.get_data( )
+
+			charging_period_data = car_data[ 'charging_periods' ]
+			charging_periods_sim_data += charging_period_data		
+
+			c.unlock( )	
+			
+		charging_periods_sim_data.sort( key = lambda x : x[ 'id' ] )	
+		
+		return charging_periods_sim_data	
+
+	def get_logs_data( self ):
+		logs_sim_data = [ ]
+
+		logs = self.get_logs( )
+
+		for l in logs:
+			log_data = l.get_data( )
+			logs_sim_data.append( log_data )
+			
+		logs_sim_data.sort( key = lambda x : x[ 'id' ] )	
+		
+		return logs_sim_data			
+
+	def get_simulation_stats( self ):
+		stats_helper = self._stats_helper
+		return stats_helper.get_stats( )	
+
+	def update_simulation_stats( self, simulation_data ):
+		stats_helper = self._stats_helper
+		stats_helper.update_stats( simulation_data )			
+
+	def get_simulation_data( self ):	
+		cars_sim_data = self.get_cars_data( )
+		travels_sim_data = self.get_travel_data( )
+		charging_periods_sim_data = self.get_charging_period_data( )
+		plugs_sim_data = self.get_plugs_data( )
+		logs_sim_data = self.get_logs_data( )	
+
+		sim_datetime = self.get_current_datetime( )
+		sim_datetime_str = '' 
+		if sim_datetime:
+			sim_datetime_str = sim_datetime.isoformat( )
+
+		simulation_data = {
+			'sim_datetime': sim_datetime_str,
+			'cars': cars_sim_data, 
+			'travels': travels_sim_data, 
+			'charging_periods': charging_periods_sim_data,
+			'plugs': plugs_sim_data,
+			'logs': logs_sim_data
+		}		
+
+		self.update_simulation_stats( simulation_data )
+
+		simulation_stats = self.get_simulation_stats( )
+		simulation_data.update( simulation_stats )	
+
+		return simulation_data

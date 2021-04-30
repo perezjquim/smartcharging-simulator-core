@@ -16,3 +16,12 @@ class Log( SimulationObject ):
 	def set_message( self, message ):
 		model = self.get_model( )
 		model.set_message( message )
+
+	def get_data( self ):
+		data = super( ).get_data( )
+
+		data.update({
+			'message' : self.get_message( )
+		})
+
+		return data

@@ -65,9 +65,13 @@ class Car( SimulationObject ):
 
 	def set_plug( self, new_plug ):
 		self._plug = new_plug	
-		new_plug_model = new_plug.get_model( )
 
 		model = self.get_model( )
+
+		new_plug_model = None
+		if new_plug:
+			new_plug_model = new_plug.get_model( )		
+			
 		model.set_plug( new_plug_model )	
 
 	def lock( self ):
@@ -134,7 +138,7 @@ class Car( SimulationObject ):
 
 		if ended_normally:
 
-			self.set_battery_level( Car.DEFAULT_BATTERY_LEVEL )
+			self.set_battery_level( CarConstants.DEFAULT_BATTERY_LEVEL )
 
 		else:
 
@@ -161,6 +165,8 @@ class Car( SimulationObject ):
 			c.destroy( )
 
 	def get_data( self ):
+		data = super( ).get_data( )
+
 		plug_id = ''
 		plug_consumption = 0
 
@@ -170,12 +176,13 @@ class Car( SimulationObject ):
 			plug_id = plug.get_id( )
 			plug_consumption = plug.get_energy_consumption( )
 
-		return { 
-			"id" : self.get_id( ),
+		data.update({
 			"status" : self.get_status( ),
 			"travels" : [ t.get_data( ) for t in self._travels ],
 			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ],
 			"battery_level" : self.get_battery_level( ),
 			"plug_id": plug_id,
 			"plug_consumption" : plug_consumption
-		}
+		})
+
+		return data

@@ -66,9 +66,13 @@ class Plug( SimulationObject ):
 
 	def set_plugged_car( self, car ):
 		self._plugged_car = car
-		plugged_car_model = plugged_car.get_model( )
 
 		model = self.get_model( )
+
+		plugged_car_model = None
+		if car:
+			plugged_car_model = car.get_model( )
+			
 		model.set_plugged_car( plugged_car_model )
 
 	def get_energy_consumption( self ):
@@ -116,6 +120,8 @@ class Plug( SimulationObject ):
 		pass
 
 	def get_data( self ):
+		data = super( ).get_data( )
+
 		plugged_car = self.get_plugged_car( )
 		plugged_car_id = ''
 		if plugged_car:
@@ -123,10 +129,11 @@ class Plug( SimulationObject ):
 			plugged_car_id = plugged_car.get_id( )
 			plugged_car.unlock( )
 
-		return {
-			'id' : self.get_id( ),
-			'status' : self._status,
+		data.update({
+			'status' : self.get_status( ),
 			'plugged_car_id' : plugged_car_id,
-			'energy_consumption' : self._energy_consumption,
+			'energy_consumption' : self.get_energy_consumption( ),
 			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ]
-		}		
+		})
+
+		return data

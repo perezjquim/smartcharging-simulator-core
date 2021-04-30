@@ -18,18 +18,20 @@ class Travel( CarEvent ):
 
 		travel_distance_url = "travel/distance"
 		travel_distance_res = simulation.fetch_gateway( travel_distance_url )
-		self._distance = float( travel_distance_res[ 'travel_distance' ] )
+		distance = float( travel_distance_res[ 'travel_distance' ] )
+		self.set_distance( distance )
 
 		travel_duration_url = "travel/duration"
 		travel_duration_res = simulation.fetch_gateway( travel_duration_url )
 		travel_duration = float( travel_duration_res[ 'travel_duration' ] )		
 
 		initial_battery_level = car.get_battery_level( )	
-		final_battery_level_url = "travel/final_battery_level/{}/{}".format( initial_battery_level, self._distance )
+		final_battery_level_url = "travel/final_battery_level/{}/{}".format( initial_battery_level, distance )
 		final_battery_level_res = simulation.fetch_gateway( final_battery_level_url )
 		final_battery_level = float( final_battery_level_res[ 'final_battery_level' ] )
 
-		self._battery_consumption = initial_battery_level - final_battery_level
+		battery_consumption = initial_battery_level - final_battery_level
+		self.set_battery_consumption( battery_consumption )
 
 		simulation.lock_current_datetime( )
 
@@ -41,7 +43,7 @@ class Travel( CarEvent ):
 		end_datetime = start_datetime + timedelta( minutes = travel_duration )
 		self.set_end_datetime( end_datetime )
 
-		car.log( 'Travel started: designed to go from {} to {}, with a battery consumption of {} and a distance of {} km'.format( start_datetime, end_datetime, self._battery_consumption, self._distance ) )				
+		car.log( 'Travel started: designed to go from {} to {}, with a battery consumption of {} and a distance of {} km'.format( start_datetime, end_datetime, battery_consumption, distance ) )				
 
 		simulation.unlock_current_datetime( )
 
@@ -50,7 +52,7 @@ class Travel( CarEvent ):
 
 		elapsed_time = 0		
 	
-		while simulator.is_simulation_running( ):
+		while simulation.is_simulation_running( ):
 
 			if elapsed_time <= travel_duration:
 
@@ -80,10 +82,18 @@ class Travel( CarEvent ):
 		model = self.get_model( )
 		return model.get_battery_consumption( )
 
+	def set_distance( self, distance ):
+		model = self.get_model( )
+		model.set_distance( distance )
+
+	def set_battery_consumption( self, battery_consumption ):
+		model = self.get_model( )
+		model.set_battery_consumption( battery_consumption )		
+
 	def get_data( self ):
 		data = super( ).get_data( )
 		data.update({
-			'distance' : self._distance,
-			'battery_consumption' : self._battery_consumption
+			'distance' : self.get_distance( ),
+			'battery_consumption' : self.get_battery_consumption( )
 		})
 		return data

@@ -27,10 +27,7 @@ class PlugModel( SimulationObjectModel ):
 		return self._energy_consumption
 
 	def set_energy_consumption( self, new_energy_consumption ):
-		if self.is_enabled( ):
-			self._energy_consumption = new_energy_consumption	
-		else:
-			self._energy_consumption = 0
+		self._energy_consumption = new_energy_consumption	
 
 	def get_charging_periods( self ):
 		return self._charging_periods			

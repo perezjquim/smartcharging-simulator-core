@@ -1,9 +1,10 @@
 import random
 
-from base.SingletonMetaClass import SingletonMetaClass
 from core.constants.CarConstants import CarConstants
 
-class StatsHelper( metaclass = SingletonMetaClass ):
+class StatsHelper( ):
+
+	_simulation = None
 
 	_last_datetime_str = ''
 
@@ -11,8 +12,21 @@ class StatsHelper( metaclass = SingletonMetaClass ):
 	_travel_stats = { }
 	_plug_stats = { }
 
-	def on_init( self ):
-		self.clean_up( )	
+	def __init__( self, simulation ):
+		self._simulation = simulation
+
+		self._car_stats = {
+	                'labels' : [ ],
+	                'datasets' : [ ]
+            	}
+		self._travel_stats = {
+	                'labels' : [ ],
+	                'datasets' : [ ]
+		}
+		self._plug_stats = {
+	                'labels' : [ ],
+	                'datasets' : [ ]
+		}		
 
 	def update_stats( self, sim_data ):
 		cars = sim_data[ 'cars' ]
@@ -54,21 +68,7 @@ class StatsHelper( metaclass = SingletonMetaClass ):
 			'plug_stats' : self._plug_stats,
 			'travel_stats' : self._travel_stats
 		}
-
-	def clean_up( self ):
-		self._car_stats = {
-	                'labels' : [ ],
-	                'datasets' : [ ]
-            	}
-		self._travel_stats = {
-	                'labels' : [ ],
-	                'datasets' : [ ]
-		}
-		self._plug_stats = {
-	                'labels' : [ ],
-	                'datasets' : [ ]
-		}
-
+		
 	def _prepare_datasets( self, cars, plugs ):
 		car_stats_datasets = self._car_stats[ 'datasets' ]
 		if len( car_stats_datasets ) == 0:
