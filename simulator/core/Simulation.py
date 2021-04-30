@@ -45,6 +45,9 @@ class Simulation( BaseModelProxy ):
 		self._current_step_lock = threading.Lock( )
 		self._current_datetime_lock = threading.Lock( )
 
+	def get_simulator( self ):
+		return self._simulator
+
 	def on_start( self ):
 		self.initialize_cars( )
 		self.initialize_plugs( )
@@ -239,13 +242,15 @@ class Simulation( BaseModelProxy ):
 		self._current_step = new_step				
 
 	def _end_simulation( self, wait_for_thread ):
+		simulator = self._simulator		
+		simulator.set_simulation_state( False )
+
 		for c in self._cars:
 			c.destroy( )	
 
 		if wait_for_thread:					
 			self._thread.join( )
 
-		simulator = self._simulator
 		simulator.send_sim_data_to_clients( )
 
 	def log( self, message ):

@@ -28,7 +28,6 @@ class CarEvent( BaseModelProxy ):
 
 	def set_car( self, car ):
 		self._car = car
-		car_model = car.get_model( )
 		model = self.get_model( )
 		model.set_car( car )
 
