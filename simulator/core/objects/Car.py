@@ -22,7 +22,11 @@ class Car( SimulationObject ):
 	def __init__( self, simulation ):
 		super( ).__init__( 'model.objects.CarModel', 'CarModel', simulation )
 		
-		self._lock = threading.Lock( )	
+		self._lock = threading.Lock( )
+
+		self._travels = [ ]
+		self._charging_periods = [ ]
+		self._plug = None
 
 	def get_status( self ):
 		model = self.get_model( )

@@ -18,10 +18,11 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def on_init( self ):		
 		self._socket_helper = SocketHelper( )
 		self._socket_helper.on_init( )	
-
 		self._socket_helper.attach_on_client_connected( self.on_client_connected )	
-		self._socket_helper.attach_on_client_message_received( self.on_client_message_received )		
+		self._socket_helper.attach_on_client_message_received( self.on_client_message_received )
 
+		self._current_simulation = None
+		
 	def on_start( self ):
 		current_simulation = self._current_simulation
 
@@ -30,6 +31,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 		else:
 			self.log_main( 'Starting simulation...' )
 
+			self._current_simulation = None
 			self._current_simulation = Simulation( self )			
 			self._current_simulation.on_start( )
 

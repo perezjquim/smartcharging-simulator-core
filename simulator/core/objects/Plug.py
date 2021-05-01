@@ -12,15 +12,18 @@ class Plug( SimulationObject ):
 
 	LOG_TEMPLATE = '++++++++++ Plug {} --- {}'	
 
+	_lock = None
+
 	_plugged_car = None
 	_charging_periods = [ ]
-
-	_lock = None
 
 	def __init__( self, simulation ):
 		super( ).__init__( 'model.objects.PlugModel', 'PlugModel', simulation )
 
 		self._lock = threading.Lock( )
+
+		self._plugged_car = None
+		self._charging_periods = [ ]
 
 	def get_status( self ):
 		model = self.get_model( )

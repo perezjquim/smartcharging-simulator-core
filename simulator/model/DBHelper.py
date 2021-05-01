@@ -9,8 +9,6 @@ class DBHelper( metaclass = SingletonMetaClass ):
 	__FILE_PATH = 'db/energysim.db'
 	__OPTIONS = '?timeout=15'
 
-	_db = None
-
 	def __init__( self ):
 		db_filename = os.path.abspath( DBHelper.__FILE_PATH )	
 		connection_string = '{}:{}{}'.format( DBHelper.__PROVIDER, db_filename, DBHelper.__OPTIONS )

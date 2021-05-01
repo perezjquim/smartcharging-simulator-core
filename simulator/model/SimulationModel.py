@@ -13,6 +13,9 @@ class SimulationModel( BaseModel ):
 	def get_description( self ):
 		return self._description
 
+	def set_description( self, description ):
+		self._description = description
+
 	def get_cars( self ):
 		return self._cars
 

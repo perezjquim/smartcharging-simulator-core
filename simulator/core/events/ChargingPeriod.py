@@ -14,6 +14,8 @@ class ChargingPeriod( CarEvent ):
 	def __init__( self, car ):
 		super( ).__init__( 'model.events.ChargingPeriodModel', 'ChargingPeriodModel', car )		
 
+		self._plug = None
+
 	def run( self ):
 		car = self.get_car( )
 

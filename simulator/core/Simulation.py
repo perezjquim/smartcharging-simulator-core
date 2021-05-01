@@ -44,19 +44,44 @@ class Simulation( BaseModelProxy ):
 	def __init__( self, simulator ):
 		super( ).__init__( 'model.SimulationModel', 'SimulationModel' )	
 
-		self._simulator = simulator		
+		self._cars = [ ]
+		self._charging_plugs = [ ]
+		self._logs = [ ]
+
+		self._affluence_counts = { }
+
+		self._charging_plugs_semaphore = None
 
 		self._current_step = 1
 		self._current_step_lock = threading.Lock( )
 
+		self._current_datetime = None
 		self._current_datetime_lock = threading.Lock( )
 
-		self._is_simulation_running_lock = threading.Lock( )		
+		self._is_simulation_running = False
+		self._is_simulation_running_lock = threading.Lock( )
 
-		self._stats_helper = StatsHelper( self )
+		self._simulator = simulator		
+
+		self._thread = threading.Thread( target = self.run )		
+
+		self._stats_helper = StatsHelper( self )	
+
+		simulation_id = self.get_id( )
+		current_datetime = datetime.now( )	
+		description = 'Simulation #{} - {}'.format( simulation_id, current_datetime )
+		self.set_description( description )			
 
 	def get_simulator( self ):
 		return self._simulator
+
+	def get_description( self ):
+		model = self.get_model( )
+		return model.get_description( )
+
+	def set_description( self, description ):
+		model = self.get_model( )
+		return model.set_description( description )
 
 	def on_start( self ):
 		self.initialize_cars( )
@@ -64,8 +89,7 @@ class Simulation( BaseModelProxy ):
 		self.initialize_datetime( )
 
 		self.set_simulation_state( True )		
-
-		self._thread = threading.Thread( target = self.run )						
+						
 		self._thread.start( )	
 
 	def initialize_cars( self ):

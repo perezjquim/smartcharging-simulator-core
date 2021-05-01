@@ -15,6 +15,8 @@ class StatsHelper( ):
 	def __init__( self, simulation ):
 		self._simulation = simulation
 
+		self._last_datetime_str = ''
+
 		self._car_stats = {
 	                'labels' : [ ],
 	                'datasets' : [ ]
