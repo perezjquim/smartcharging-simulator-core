@@ -1,18 +1,41 @@
 import random
 
-from base.SingletonMetaClass import *
-from core.CarStatuses import *		
+from core.constants.CarConstants import *
 
-class StatsHelper( metaclass = SingletonMetaClass ):
+from core.objects.Stat import *
+
+class StatsHelper( ):
+
+	_simulation = None
 
 	_last_datetime_str = ''
 
-	_car_stats = { }
-	_travel_stats = { }
-	_plug_stats = { }
+	_car_stats = None
+	_travel_stats = None
+	_plug_stats = None
 
-	def on_init( self ):
-		self.clean_up( )	
+	def __init__( self, simulation ):
+		self._simulation = simulation
+
+		self._last_datetime_str = ''
+
+		self._car_stats = Stat( simulation, 'car-stats' )
+		self._car_stats.set_data({
+	                'labels' : [ ],
+	                'datasets' : [ ]
+            	})
+
+		self._travel_stats = Stat( simulation, 'travel-stats' )
+		self._travel_stats.set_data({
+	                'labels' : [ ],
+	                'datasets' : [ ]
+            	})
+
+		self._plug_stats = Stat( simulation, 'plug-stats' )
+		self._plug_stats.set_data({
+	                'labels' : [ ],
+	                'datasets' : [ ]
+            	})
 
 	def update_stats( self, sim_data ):
 		cars = sim_data[ 'cars' ]
@@ -31,46 +54,39 @@ class StatsHelper( metaclass = SingletonMetaClass ):
 				car = cars[ i ]
 				car_battery_level = car[ 'battery_level' ]
 
-				car_stats_datasets = self._car_stats[ 'datasets' ]
+				car_stats = self._car_stats.get_data( )
+				car_stats_datasets = car_stats[ 'datasets' ]
 				car_stats_data = car_stats_datasets[ i ][ 'data' ]
 				car_stats_data.append( car_battery_level )
+				self._car_stats.set_data( car_stats )
 			
 			for i in range( len( plugs ) ):
 				plug = plugs[ i ]
 				plug_energy_consumption = plug[ 'energy_consumption' ]
 
-				plug_stats_datasets = self._plug_stats[ 'datasets' ]
+				plug_stats = self._plug_stats.get_data( )
+				plug_stats_datasets = plug_stats[ 'datasets' ]
 				plug_stats_data = plug_stats_datasets[ i ][ 'data' ]
 				plug_stats_data.append( plug_energy_consumption )	
+				self._plug_stats.set_data( plug_stats )
 
-			number_of_traveling_cars = len( [ c for c in cars if c[ 'status' ] ==  CarStatuses.STATUS_TRAVELING ] )
-			travel_stats_datasets = self._travel_stats[ 'datasets' ]
+			number_of_traveling_cars = len( [ c for c in cars if c[ 'status' ] ==  CarConstants.STATUS_TRAVELING ] )
+			travel_stats = self._travel_stats.get_data( )
+			travel_stats_datasets = travel_stats[ 'datasets' ]
 			travel_stats_data = travel_stats_datasets[ 0 ][ 'data' ]
 			travel_stats_data.append( number_of_traveling_cars )	
+			self._travel_stats.set_data( travel_stats )
 
-	def get_stats( self ):
+	def get_data( self ):
 		return {
-			'car_stats' : self._car_stats,
-			'plug_stats' : self._plug_stats,
-			'travel_stats' : self._travel_stats
+			'car_stats' : self._car_stats.get_data( ),
+			'plug_stats' : self._plug_stats.get_data( ),
+			'travel_stats' : self._travel_stats.get_data( )
 		}
-
-	def clean_up( self ):
-		self._car_stats = {
-	                'labels' : [ ],
-	                'datasets' : [ ]
-            	}
-		self._travel_stats = {
-	                'labels' : [ ],
-	                'datasets' : [ ]
-		}
-		self._plug_stats = {
-	                'labels' : [ ],
-	                'datasets' : [ ]
-		}
-
+		
 	def _prepare_datasets( self, cars, plugs ):
-		car_stats_datasets = self._car_stats[ 'datasets' ]
+		car_stats = self._car_stats.get_data( )
+		car_stats_datasets = car_stats[ 'datasets' ]
 		if len( car_stats_datasets ) == 0:
 
 			for c in cars:
@@ -84,7 +100,10 @@ class StatsHelper( metaclass = SingletonMetaClass ):
 					'data': [ ]
 				} )
 
-		plug_stats_datasets = self._plug_stats[ 'datasets' ]
+			self._car_stats.set_data( car_stats )
+
+		plug_stats = self._plug_stats.get_data( )
+		plug_stats_datasets = plug_stats[ 'datasets' ]
 		if len( plug_stats_datasets ) == 0:
 
 			for p in plugs:
@@ -98,7 +117,10 @@ class StatsHelper( metaclass = SingletonMetaClass ):
 					'data': [ ]
 				} )	
 
-		travel_stats_datasets = self._travel_stats[ 'datasets' ]
+			self._plug_stats.set_data( plug_stats )				
+
+		travel_stats = self._travel_stats.get_data( )
+		travel_stats_datasets = travel_stats[ 'datasets' ]
 		if len( travel_stats_datasets ) == 0:
 
 			label = 'No. of traveling cars'
@@ -109,17 +131,25 @@ class StatsHelper( metaclass = SingletonMetaClass ):
 				'borderColor': color,
 				'fill': False,
 				'data': [ ]
-			} )					
+			} )			
+
+			self._travel_stats.set_data( travel_stats )				
 
 	def _update_labels( self, sim_datetime_str ):
-		car_stats_labels = self._car_stats[ 'labels' ]			
+		car_stats = self._car_stats.get_data( )
+		car_stats_labels = car_stats[ 'labels' ]			
 		car_stats_labels.append( sim_datetime_str )
+		self._car_stats.set_data( car_stats )
 
-		plug_stats_labels = self._plug_stats[ 'labels' ]
+		plug_stats = self._plug_stats.get_data( )
+		plug_stats_labels = plug_stats[ 'labels' ]
 		plug_stats_labels.append( sim_datetime_str )
+		self._plug_stats.set_data( plug_stats )
 
-		travel_stats_labels = self._travel_stats[ 'labels' ]			
+		travel_stats = self._travel_stats.get_data( )
+		travel_stats_labels = travel_stats[ 'labels' ]			
 		travel_stats_labels.append( sim_datetime_str )	
+		self._travel_stats.set_data( travel_stats )
 
 	def _generate_color( self ):
 		color_hex = hex( random.randint( 0, 0xFFFFFF ) )[ 2: ]

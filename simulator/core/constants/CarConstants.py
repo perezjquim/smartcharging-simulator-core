@@ -1,7 +1,9 @@
-class CarStatuses:		
+class CarConstants:		
 
 	def __init__( ):
 		raise NotSupportedError
+
+	DEFAULT_BATTERY_LEVEL = 10
 
 	STATUS_READY = 'ready'
 
