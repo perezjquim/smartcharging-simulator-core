@@ -1,5 +1,6 @@
 from flask import Blueprint, Response
 import json
+from datetime import datetime 
 
 from base.SingletonMetaClass import SingletonMetaClass
 
@@ -82,7 +83,14 @@ class DataServer( metaclass = SingletonMetaClass ):
 
 		if exported_data:
 
-			response = Response( exported_data, mimetype = 'application/octet-stream', status = 200 )	
+			current_datetime = datetime.now( )
+			current_datetime_str = current_datetime.isoformat( )
+			zip_filename = 'ENERGYSIM - DATA - {}.zip'.format( current_datetime_str )
+
+			content_disposition = "attachment; filename={};".format( zip_filename )
+			response_headers = { "Content-Disposition" : content_disposition }			
+
+			response = Response( exported_data, mimetype = 'application/octet-stream', status = 200, headers = response_headers )	
 
 		else:
 
