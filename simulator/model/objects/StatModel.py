@@ -5,8 +5,8 @@ class StatModel( SimulationObjectModel ):
 	class sqlmeta:
 		table = 'SimulationStats'	
 
-	_type = StringCol( default = '', dbName = 'type' )
-	_data = JSONCol( default = { }, dbName = 'data' )	
+	_type = StringCol( default = '', dbName = 'type', title = 'type' )
+	_data = JSONCol( default = { }, dbName = 'data', title = 'data' )	
 
 	def get_type( self ):
 		return self._type

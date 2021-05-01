@@ -5,7 +5,7 @@ class SimulationModel( BaseModel ):
 	class sqlmeta:
 		table = 'Simulations'	
 
-	_description = StringCol( default = '', dbName = 'description' )
+	_description = StringCol( default = '', dbName = 'description', title = 'description' )
 	_cars = MultipleJoin( 'CarModel' )
 	_charging_plugs = MultipleJoin( 'PlugModel' )
 	_logs = MultipleJoin( 'LogModel' )

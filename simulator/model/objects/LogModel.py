@@ -5,7 +5,7 @@ class LogModel( SimulationObjectModel ):
 	class sqlmeta:
 		table = 'Logs'
 	
-	_message = StringCol( default = '', dbName = 'message' )
+	_message = StringCol( default = '', dbName = 'message', title = 'message' )
 
 	def get_message( self ):
 		return self._message

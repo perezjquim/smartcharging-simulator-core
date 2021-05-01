@@ -5,7 +5,7 @@ class ChargingPeriodModel( CarEventModel ):
 	class sqlmeta:
 		table = 'ChargingPeriods'	
 
-	_plug = ForeignKey( 'PlugModel', default = None, dbName = 'plug_id' )
+	_plug = ForeignKey( 'PlugModel', default = None, dbName = 'plug_id', title = 'plug_id' )
 
 	def get_plug( self ):
 		return self._plug	

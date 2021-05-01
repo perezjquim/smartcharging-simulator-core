@@ -5,8 +5,8 @@ class TravelModel( CarEventModel ):
 	class sqlmeta:
 		table = 'Travels'	
 
-	_distance = FloatCol( default = 0, dbName = 'distance' )
-	_battery_consumption = FloatCol( default = 0, dbName = 'battery_consumption' )	
+	_distance = FloatCol( default = 0, dbName = 'distance', title = 'distance' )
+	_battery_consumption = FloatCol( default = 0, dbName = 'battery_consumption', title = 'battery_consumption' )	
 
 	def get_distance( self ):
 		return self._distance

@@ -4,9 +4,9 @@ from base.BaseModel import *
 
 class CarEventModel( BaseModel ):
 
-	_car = ForeignKey( 'CarModel', default = None, dbName = 'car_id' )	
-	_start_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'start_datetime' )
-	_end_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'end_datetime' )
+	_car = ForeignKey( 'CarModel', default = None, dbName = 'car_id', title = 'car_id'  )	
+	_start_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'start_datetime', title = 'start_datetime' )
+	_end_datetime = DateTimeCol( default = datetime( 1, 1, 1 ), dbName = 'end_datetime', title = 'end_datetime' )
 
 	def get_car( self ):
 		return self._car

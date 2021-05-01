@@ -6,9 +6,9 @@ class PlugModel( SimulationObjectModel ):
 	class sqlmeta:
 		table = 'Plugs'	
 
-	_status = StringCol( default = PlugConstants.STATUS_ENABLED, dbName = 'status' )	
-	_plugged_car = ForeignKey( 'CarModel', default = None, dbName = 'car_id' )
-	_energy_consumption = FloatCol( default = 0, dbName = 'energy_consumption' )
+	_status = StringCol( default = PlugConstants.STATUS_ENABLED, dbName = 'status', title = 'status' )	
+	_plugged_car = ForeignKey( 'CarModel', default = None, dbName = 'car_id', title = 'car_id' )
+	_energy_consumption = FloatCol( default = 0, dbName = 'energy_consumption', title = 'energy_consumption' )
 	_charging_periods = MultipleJoin( 'ChargingPeriodModel' )
 
 	def get_status( self ):

@@ -20,20 +20,29 @@ class DataServer( metaclass = SingletonMetaClass ):
 		simulator = DataServer.__simulator
 		current_simulation = simulator.get_current_simulation( )
 
-		plugs_sim_data = current_simulation.get_plugs_data( )
+		response = None
 
-		response = Response( json.dumps( plugs_sim_data ), mimetype = 'application/json' )		
+		if current_simulation:
+
+			plugs_sim_data = current_simulation.get_plugs_data( )
+			response = Response( json.dumps( plugs_sim_data ), mimetype = 'application/json', status = 200 )		
+
+		else:
+			response = Response( 'No simulation available!', status = 404 )				
+		
 		return response
 
 	def _get_plug_by_id( plug_id ):		
 		simulator = DataServer.__simulator
 		current_simulation = simulator.get_current_simulation( )
 
-		plugs_sim_data = current_simulation.get_plugs_data( )
+		if current_simulation:
 
-		selected_plug = [ p for p in plugs_sim_data if p[ 'id' ] == plug_id ]
-		if len( selected_plug ) > 0:
-			return selected_plug[ 0 ]
+			plugs_sim_data = current_simulation.get_plugs_data( )
+
+			selected_plug = [ p for p in plugs_sim_data if p[ 'id' ] == plug_id ]
+			if len( selected_plug ) > 0:
+				return selected_plug[ 0 ]
 
 	@api.route( '/plugs/<int:plug_id>' )
 	def get_plug_by_id( plug_id ):
@@ -62,4 +71,21 @@ class DataServer( metaclass = SingletonMetaClass ):
 		else:
 			response = Response( 'NOK', status = 404 )					
 			
+		return response
+
+	@api.route( '/export' )
+	def export_data( ):
+		simulator = DataServer.__simulator
+		exported_data = simulator.export_data( )
+
+		response = None
+
+		if exported_data:
+
+			response = Response( exported_data, mimetype = 'application/octet-stream', status = 200 )	
+
+		else:
+
+			response = Response( 'NOK', status = 500 )
+
 		return response

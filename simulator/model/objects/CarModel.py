@@ -6,11 +6,11 @@ class CarModel( SimulationObjectModel ):
 	class sqlmeta:
 		table = 'Cars'
 
-	_status = StringCol( default = CarConstants.STATUS_READY, dbName = 'status' )
+	_status = StringCol( default = CarConstants.STATUS_READY, dbName = 'status', title = 'status' )
 	_travels = MultipleJoin( 'TravelModel' )
 	_charging_periods = MultipleJoin( 'ChargingPeriodModel' )
-	_battery_level = FloatCol( default = CarConstants.DEFAULT_BATTERY_LEVEL, dbName = 'battery_level' )
-	_plug = ForeignKey( 'PlugModel', default = None, dbName = 'plug_id' )
+	_battery_level = FloatCol( default = CarConstants.DEFAULT_BATTERY_LEVEL, dbName = 'battery_level', title = 'battery_level' )
+	_plug = ForeignKey( 'PlugModel', default = None, dbName = 'plug_id', title = 'plug_id' )
 
 	def get_status( self ):
 		return self._status

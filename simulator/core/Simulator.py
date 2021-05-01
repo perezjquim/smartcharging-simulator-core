@@ -6,6 +6,7 @@ from data.Logger import Logger
 from data.SocketHelper import SocketHelper
 from base.DebugHelper import DebugHelper
 from .Simulation import Simulation
+from model.DBHelper import *
 
 class Simulator( metaclass = SingletonMetaClass ):
 
@@ -155,3 +156,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 			current_simulation.unlock_current_datetime( )
 
 		self.log_debug( '////// SENDING SIM DATA... done! //////' )			
+
+	def export_data( self ):
+		db_helper = DBHelper( )
+		exported_data = db_helper.export_data( )
+		return exported_data

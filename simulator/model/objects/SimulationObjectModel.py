@@ -2,7 +2,7 @@ from base.BaseModel import *
 
 class SimulationObjectModel( BaseModel ):
 	
-	_simulation = ForeignKey( 'SimulationModel', default = None, dbName = 'simulation_id' )
+	_simulation = ForeignKey( 'SimulationModel', default = None, dbName = 'simulation_id', title = 'simulation_id' )
 
 	def get_simulation( self ):
 		return self._simulation
