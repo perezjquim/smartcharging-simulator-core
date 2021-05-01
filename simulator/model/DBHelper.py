@@ -31,6 +31,7 @@ class DBHelper( metaclass = SingletonMetaClass ):
 		from .objects.LogModel import LogModel
 		from .events.TravelModel import TravelModel
 		from .events.ChargingPeriodModel import ChargingPeriodModel
+		from .objects.StatModel import StatModel
 
 		SimulationModel.createTable( ifNotExists = True )
 		CarModel.createTable( ifNotExists = True )
@@ -38,3 +39,4 @@ class DBHelper( metaclass = SingletonMetaClass ):
 		LogModel.createTable( ifNotExists = True )
 		TravelModel.createTable( ifNotExists = True )
 		ChargingPeriodModel.createTable( ifNotExists = True )
+		StatModel.createTable( ifNotExists = True )

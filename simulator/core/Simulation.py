@@ -456,7 +456,7 @@ class Simulation( BaseModelProxy ):
 
 	def get_simulation_stats( self ):
 		stats_helper = self._stats_helper
-		return stats_helper.get_stats( )	
+		return stats_helper.get_data( )	
 
 	def update_simulation_stats( self, simulation_data ):
 		stats_helper = self._stats_helper
