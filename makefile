@@ -103,7 +103,7 @@ run-simulator:
 clean-db:
 	@echo '$(PATTERN_BEGIN) CLEANING DB VOLUME...'
 
-	@docker volume rm $(DB_VOLUME_NAME)
+	@docker exec -it $(SIMULATOR_CONTAINER_NAME) bash -c "rm -rf $(DB_PATH)/energysim.db*"
 
 	@echo '$(PATTERN_END) DB VOLUME CLEANED UP!'	
 
