@@ -106,17 +106,15 @@ class Plug( SimulationObject ):
 		self.log_debug( 'UNLOCKING... (by {})'.format( caller ) )
 		self._lock.release( )		
 
-	def static_log( message ):
-		Logger.log( Plug.LOG_TEMPLATE.format( '', message ) )
-
-	def static_log_debug( message ):
-		Logger.log_debug( Plug.LOG_TEMPLATE.format( '', message ) )	
-
 	def log( self, message ):
-		Logger.log( Plug.LOG_TEMPLATE.format( self.get_id( ), message ) )
+		message_formatted = Plug.LOG_TEMPLATE.format( self.get_id( ), message )
+		simulation = self.get_simulation( )
+		simulation.log( message_formatted )
 
 	def log_debug( self, message ):
-		Logger.log_debug( Plug.LOG_TEMPLATE.format( self.get_id( ), message ) )				
+		message_formatted = Plug.LOG_TEMPLATE.format( self.get_id( ), message )
+		simulation = self.get_simulation( )
+		simulation.log_debug( message_formatted )			
 
 	def destroy( self ):
 		#NOP
