@@ -2,6 +2,7 @@ from .CarEventModel import *
 
 class ChargingPeriodModel( CarEventModel ):
 
+	csvFilename = 'ChargingPeriods'
 	class sqlmeta:
 		table = 'ChargingPeriods'	
 

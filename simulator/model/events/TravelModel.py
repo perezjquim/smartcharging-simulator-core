@@ -2,6 +2,7 @@ from .CarEventModel import *
 
 class TravelModel( CarEventModel ):
 
+	csvFilename = 'Travels'
 	class sqlmeta:
 		table = 'Travels'	
 

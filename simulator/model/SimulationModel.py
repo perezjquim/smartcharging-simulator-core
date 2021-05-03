@@ -2,6 +2,7 @@ from base.BaseModel import *
 
 class SimulationModel( BaseModel ):
 
+	csvFilename = 'Simulations'
 	class sqlmeta:
 		table = 'Simulations'	
 
