@@ -156,10 +156,14 @@ class Car( SimulationObject ):
 		self.unlock( )		
 
 	def log( self, message ):
-		Logger.log( Car.LOG_TEMPLATE.format( self.get_id( ), message ) )
+		message_formatted = Car.LOG_TEMPLATE.format( self.get_id( ), message )
+		simulation = self.get_simulation( )
+		simulation.log( message_formatted )
 
 	def log_debug( self, message ):
-		Logger.log_debug( Car.LOG_TEMPLATE.format( self.get_id( ), message ) )		
+		message_formatted = Car.LOG_TEMPLATE.format( self.get_id( ), message )
+		simulation = self.get_simulation( )
+		simulation.log_debug( message_formatted )	
 
 	def destroy( self ):
 		for t in self._travels:
