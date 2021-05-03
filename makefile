@@ -103,6 +103,7 @@ run-simulator:
 clean-db:
 	@echo '$(PATTERN_BEGIN) CLEANING DB VOLUME...'
 
+	@rm ./db/!dummy
 	@docker volume rm $(DB_VOLUME_NAME)
 
 	@echo '$(PATTERN_END) DB VOLUME CLEANED UP!'	
