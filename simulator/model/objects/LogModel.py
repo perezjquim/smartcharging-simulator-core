@@ -2,6 +2,7 @@ from .SimulationObjectModel import *
 
 class LogModel( SimulationObjectModel ):
 
+	csvFilename = 'Logs'
 	class sqlmeta:
 		table = 'Logs'
 	

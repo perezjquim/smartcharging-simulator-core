@@ -2,6 +2,7 @@ from .SimulationObjectModel import *
 	
 class StatModel( SimulationObjectModel ):
 
+	csvFilename = 'SimulationStats'
 	class sqlmeta:
 		table = 'SimulationStats'	
 

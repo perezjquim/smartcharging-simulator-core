@@ -28,8 +28,10 @@ class CarEvent( BaseModelProxy ):
 
 	def set_car( self, car ):
 		self._car = car
+		car_model = car.get_model( )
+
 		model = self.get_model( )
-		model.set_car( car )
+		model.set_car( car_model )
 
 	def get_start_datetime( self ):
 		model = self.get_model( )		
@@ -52,7 +54,7 @@ class CarEvent( BaseModelProxy ):
 			self._thread.join( )
 
 	def _is_date_valid( self, date ):
-		return date is not datetime( 1, 1, 1 )
+		return date != datetime( 1, 1, 1 )
 
 	def get_data( self ):
 		data = super( ).get_data( )

@@ -3,6 +3,7 @@ from .SimulationObjectModel import *
 	
 class PlugModel( SimulationObjectModel ):
 
+	csvFilename = 'Plugs'
 	class sqlmeta:
 		table = 'Plugs'	
 

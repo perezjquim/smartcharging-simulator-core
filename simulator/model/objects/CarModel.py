@@ -3,6 +3,7 @@ from .SimulationObjectModel import *
 
 class CarModel( SimulationObjectModel ):
 
+	csvFilename = 'Cars'
 	class sqlmeta:
 		table = 'Cars'
 
