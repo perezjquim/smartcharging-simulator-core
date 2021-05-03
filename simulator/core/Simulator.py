@@ -155,95 +155,9 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 			current_simulation.unlock_current_datetime( )
 
-<<<<<<< HEAD
-	def lock_simulation( self ):
-		caller = DebugHelper.get_caller( )
-		self.log_debug( 'LOCKING SIMULATION... (by {})'.format( caller ) )
-		self._is_simulation_running_lock.acquire( )		
-
-	def unlock_simulation( self ):
-		caller = DebugHelper.get_caller( )
-		self.log_debug( 'UNLOCKING SIMULATION... (by {})'.format( caller ) )
-		self._is_simulation_running_lock.release( )			
-
-	def is_simulation_running( self ):
-		self.lock_simulation( )
-		is_simulation_running = self._is_simulation_running
-		self.unlock_simulation( )
-		return is_simulation_running
-
-	def set_simulation_state( self, new_value ):
-		self.lock_simulation( )
-		self._is_simulation_running = new_value
-		self.unlock_simulation( )
-		self._send_sim_state_to_clients( )		
-
-	def get_current_step( self ):
-		return self._current_step
-
-	def set_current_step( self, new_step ):
-		self._current_step = new_step
-
-	def on_step( self, current_datetime ):
-
-		if self.can_simulate_new_actions( ):
-
-			current_datetime_str = current_datetime.strftime( '%Y%m%d%H' )
-
-			if current_datetime_str in self._affluence_counts:
-
-				pass
-			
-			else:
-
-				current_hour_of_day = current_datetime.hour
-				affluence_url = "travel/affluence/{}".format( current_hour_of_day )
-				affluence_res = self.fetch_gateway( affluence_url )
-				affluence = int( affluence_res[ 'affluence' ] )
-
-				affluence_multiplier = self.get_config_by_key( 'travel_affluence_multiplier' )
-				affluence *= affluence_multiplier
-				
-				self._affluence_counts[ current_datetime_str ] = affluence			
-
-			if self._affluence_counts[ current_datetime_str ] > 0:		
-
-				for c in self._cars:
-
-					c.lock( )
-
-					car_can_travel = ( self.is_simulation_running( ) and not c.is_busy( ) )		
-					if car_can_travel:
-						c.start_travel( )	
-						self._affluence_counts[ current_datetime_str ] -= 1	
-
-					c.unlock( )
-
-					if self._affluence_counts[ current_datetime_str ] < 1:						
-						break					
-
-		else:
-			
-			self.log( '-- Simulation period ended: this step is only used to resume travels and/or charging periods! --' )
-
-	def fetch_gateway( self, endpoint ):
-		base_url = self.get_config_by_key( 'gateway_request_base_url' )
-		url = base_url.format( endpoint )
-		response = requests.get( url )
-
-		try:
-			response_json = response.json( )
-			self.log_debug( '\\\\\\ GATEWAY \\\\\\ URL: {}'.format( url )	 )
-			self.log_debug( '\\\\\\ GATEWAY \\\\\\ RESPONSE: {}'.format( response_json ) )
-		except Exception as ex:
-			self.log( 'Gateway error: {}'.format( ex ) )			
-
-		return response_json
-=======
 		self.log_debug( '////// SENDING SIM DATA... done! //////' )			
 
 	def export_data( self ):
 		db_helper = DBHelper( )
 		exported_data = db_helper.export_data( )
 		return exported_data
->>>>>>> dev/save_to_db
