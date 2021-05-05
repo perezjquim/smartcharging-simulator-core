@@ -29,6 +29,7 @@ class ConfigurationHelper( metaclass = SingletonMetaClass ):
 		self._lock.acquire( )		
 
 		self._config = new_config
+		self._save_config( )
 
 		self._lock.release( )
 
@@ -52,8 +53,14 @@ class ConfigurationHelper( metaclass = SingletonMetaClass ):
 
 		self._config[ config_key ] = config_value
 
+		self._save_config( )		
+
 		self._lock.release( )	
 
 	def _read_config( self ):
 		with open( ConfigurationHelper.CONFIG_FILE_NAME ) as file:
 	    		self._config = json.load( file )
+
+	 def _save_config( self ):
+		with open( ConfigurationHelper.CONFIG_FILE_NAME, 'w' ) as file:
+	    		json.dump( self._config, file)
