@@ -1,11 +1,11 @@
 import threading
 
-from base.SingletonMetaClass import SingletonMetaClass
-from config.ConfigurationHelper import ConfigurationHelper
-from data.Logger import Logger
-from data.SocketHelper import SocketHelper
-from base.DebugHelper import DebugHelper
-from .Simulation import Simulation
+from base.SingletonMetaClass import *
+from config.ConfigurationHelper import *
+from data.Logger import *
+from data.SocketHelper import *
+from base.DebugHelper import *
+from .Simulation import *
 from model.DBHelper import *
 
 class Simulator( metaclass = SingletonMetaClass ):
@@ -29,21 +29,25 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 		if current_simulation and current_simulation.is_simulation_running( ):			
 			self.log( 'Simulation cannot be started (it is already running)!' )
-		else:
+		else:			
 			self.log_main( 'Starting simulation...' )
 
 			self._current_simulation = None
 			self._current_simulation = Simulation( self )			
 			self._current_simulation.on_start( )
 
-			self.log_main( 'Starting simulation... done!' )				
+			self.log_main( 'Starting simulation... done!' )
 
 	def on_stop( self ):
 		current_simulation = self._current_simulation
 
-		if current_simulation and current_simulation.is_simulation_running( ):			
-			self.log_main( 'Stopping simulation!' )
+		if current_simulation and current_simulation.is_simulation_running( ):
+			self.log_main( 'Stopping simulation...' )
+
 			current_simulation.on_stop( )	
+
+			self.log_main( 'Stopping simulation... done!' )				
+
 		else:
 			self.log( 'Simulation cannot be stopped (it is not running)!' )		
 
