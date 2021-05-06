@@ -61,6 +61,6 @@ class ConfigurationHelper( metaclass = SingletonMetaClass ):
 		with open( ConfigurationHelper.CONFIG_FILE_NAME ) as file:
 	    		self._config = json.load( file )
 
-	 def _save_config( self ):
+	def _save_config( self ):
 		with open( ConfigurationHelper.CONFIG_FILE_NAME, 'w' ) as file:
 	    		json.dump( self._config, file)
