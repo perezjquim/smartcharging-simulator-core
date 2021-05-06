@@ -14,6 +14,7 @@ from .objects.Log import *
 from .events.Travel import *
 from .events.ChargingPeriod import *
 from model.SimulationModel import *
+from data.WebhookHelper import *
 
 class Simulation( BaseModelProxy ):
 
@@ -92,6 +93,8 @@ class Simulation( BaseModelProxy ):
 						
 		self._thread.start( )	
 
+		WebhookHelper.send_message( 'EnergySim - Simulation started!', 'INFO' )		
+
 	def initialize_cars( self ):
 		self.log( 'Initializing cars...' )
 
@@ -129,6 +132,8 @@ class Simulation( BaseModelProxy ):
 
 	def on_stop( self ):			
 		self._end_simulation( True )	
+
+		WebhookHelper.send_message( 'EnergySim - Simulation stopped!', 'INFO' )
 
 	def run( self ):
 		self.log_main( 'Simulating...' )		
@@ -193,11 +198,13 @@ class Simulation( BaseModelProxy ):
 
 				self._end_simulation( False )		
 
+				WebhookHelper.send_message( 'EnergySim - Simulation ended!', 'INFO' )					
+
 			simulator.send_sim_data_to_clients( )
 
 			time.sleep( sim_sampling_rate / 1000 )	
 							
-		self.log_main( 'Simulating... done!' )	
+		self.log_main( 'Simulating... done!' )
 
 	def on_step( self, current_datetime ):
 
