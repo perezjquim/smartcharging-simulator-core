@@ -72,6 +72,7 @@ start-docker-simulator:
 	@echo '$(PATTERN_BEGIN) STARTING SIMULATOR PACK...'
 
 	@docker run -d \
+	--rm \
 	--name $(SIMULATOR_CONTAINER_NAME) \
 	--network $(SIMULATOR_NETWORK_NAME) \
 	--volume $(DB_VOLUME) \
@@ -79,6 +80,7 @@ start-docker-simulator:
 	-p $(SIMULATOR_WS_PORT_EXTERNAL) \
 	-e SIMULATOR_HOST=$(SIMULATOR_HOST) \
 	-e SIMULATOR_WS_PORT=$(SIMULATOR_WS_PORT) \
+	-e FLASK_APP=simulator/main.py \
 	$(SIMULATOR_PACK_NAME)
 	
 	@echo '$(PATTERN_END) SIMULATOR PACK STARTED!'
@@ -86,15 +88,14 @@ start-docker-simulator:
 stop-docker-simulator:
 	@echo '$(PATTERN_BEGIN) STOPPING SIMULATOR PACK...'
 
-	@( docker rm -f $(SIMULATOR_CONTAINER_NAME) ) || true
+	@( docker stop $(SIMULATOR_CONTAINER_NAME) ) || true
 
 	@echo '$(PATTERN_END) SIMULATOR PACK STOPPED!'	
 # < DOCKER-SIMULATOR
 
 # > SIMULATOR
 run-simulator:
-	@FLASK_APP=simulator/main.py \
-	python3 -m flask run \
+	@python3 -m flask run \
 	--host=$(SIMULATOR_HOST) \
 	--port=$(SIMULATOR_FLASK_PORT)
 # < SIMULATOR
@@ -134,5 +135,12 @@ backup-db-import:
 		true
 
 	@echo '$(PATTERN_END) DB VOLUME BACKUP IMPORTED!'	
-
 # < DB VOLUME
+
+# > HELPERS
+logs:
+	@docker logs $(SIMULATOR_CONTAINER_NAME)
+
+access-container:
+	@docker exec -it $(SIMULATOR_CONTAINER_NAME) /bin/bash
+# < HELPERS
