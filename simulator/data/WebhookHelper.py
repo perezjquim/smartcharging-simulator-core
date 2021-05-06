@@ -1,7 +1,6 @@
 import requests
 import sys
 import traceback as tb
-import signal
 import threading
 import atexit
 
@@ -45,13 +44,6 @@ class WebhookHelper:
 	def attach_signals( ):
 		def on_exit( ):
 			WebhookHelper.send_message( 'Core container terminated!', 'ERROR' )
-		
-		signals = signal.Signals
-		for s in signals:
-			try:
-	       			signal.signal(s, on_exit)
-			except OSError:
-				pass
 
 		atexit.register( on_exit )
 
