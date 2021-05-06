@@ -7,5 +7,5 @@
 	"number_of_steps": 96,
 	"gateway_request_base_url": "http://cont_energysim_gateway:8000/{}",
 	"enable_debug_mode": false,
-	"webhook_url": "https://hooks.slack.com/services/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"
+	"webhook_url": "https://hooks.slack.com/services/XXXXXXXXXX"
 }
