@@ -16,6 +16,8 @@ class WebhookHelper:
 		'INFO': '#cccccc'		
 	}
 
+	__MESSAGE_TEMPLATE = '*EnergySim*:\n{}'
+
 	def attach( ):
 		WebhookHelper.attach_errors( )
 		WebhookHelper.attach_signals( )
@@ -25,7 +27,7 @@ class WebhookHelper:
 
 		def on_sys_exception( exctype, value, traceback ):
 			traceback_details = '\n'.join( tb.extract_tb( traceback ).format() )
-			WebhookHelper.send_message( traceback_details, 'ERROR' )
+			WebhookHelper.send_message( 'Error:\n{}'.format( traceback_details ), 'ERROR' )
 			sys_excepthook_orig( exctype, value, traceback )
 
 		sys.excepthook = on_sys_exception	
@@ -42,7 +44,7 @@ class WebhookHelper:
 
 	def attach_signals( ):
 		def on_exit( ):
-			WebhookHelper.send_message( 'EnergySim - Core container terminated!', 'ERROR' )
+			WebhookHelper.send_message( 'Core container terminated!', 'ERROR' )
 		
 		signals = signal.Signals
 		for s in signals:
@@ -71,7 +73,7 @@ class WebhookHelper:
 							"text": 
 							{
 								"type": "mrkdwn",
-								"text": message_text
+								"text": WebhookHelper.__MESSAGE_TEMPLATE.format( message_text )
 							}
 						}
 					]

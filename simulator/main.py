@@ -6,7 +6,7 @@ from core.Simulator import Simulator
 from data.DataServer import DataServer
 
 WebhookHelper.attach( )
-WebhookHelper.send_message( 'EnergySim - Core container turned on!', 'SUCCESS' )
+WebhookHelper.send_message( 'Core container turned on!', 'SUCCESS' )
 
 db_helper = DBHelper( )
 db_helper.on_init( )

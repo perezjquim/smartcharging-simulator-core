@@ -93,7 +93,7 @@ class Simulation( BaseModelProxy ):
 						
 		self._thread.start( )	
 
-		WebhookHelper.send_message( 'EnergySim - Simulation started!', 'INFO' )		
+		WebhookHelper.send_message( 'Simulation started!', 'INFO' )		
 
 	def initialize_cars( self ):
 		self.log( 'Initializing cars...' )
@@ -133,7 +133,7 @@ class Simulation( BaseModelProxy ):
 	def on_stop( self ):			
 		self._end_simulation( True )	
 
-		WebhookHelper.send_message( 'EnergySim - Simulation stopped!', 'INFO' )
+		WebhookHelper.send_message( 'Simulation stopped!', 'INFO' )
 
 	def run( self ):
 		self.log_main( 'Simulating...' )		
@@ -198,7 +198,7 @@ class Simulation( BaseModelProxy ):
 
 				self._end_simulation( False )		
 
-				WebhookHelper.send_message( 'EnergySim - Simulation ended!', 'INFO' )					
+				WebhookHelper.send_message( 'Simulation ended!', 'INFO' )					
 
 			simulator.send_sim_data_to_clients( )
 
