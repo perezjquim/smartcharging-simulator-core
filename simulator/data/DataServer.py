@@ -97,3 +97,50 @@ class DataServer( metaclass = SingletonMetaClass ):
 			response = Response( 'NOK', status = 500 )
 
 		return response
+
+	@api.route( '/is_simulation_running' )
+	def is_simulation_running( ):
+		simulator = DataServer.__simulator
+
+		current_simulation = simulator.get_current_simulation( )
+
+		response = None
+
+		if current_simulation:
+
+			is_simulation_running = current_simulation.is_simulation_running( )
+
+			response = Response( json.dumps( { "is_simulation_running": is_simulation_running } ), mimetype = 'application/json', status = 200 )
+
+		else:
+
+			response = Response( json.dumps( { "is_simulation_running" : False } ), mimetype = 'application/json', status = 200 )
+			
+		return response
+
+	@api.route( '/start_new_sim' )
+	def start_new_sim( ):
+		simulator = DataServer.__simulator
+
+		current_simulation = simulator.get_current_simulation( )
+
+		response = None
+
+		if current_simulation:
+
+			is_simulation_running = current_simulation.is_simulation_running( )
+
+			if is_simulation_running:
+
+				response = Response( 'NOK', status = 500 )
+
+			else:
+
+				simulator.on_start( )
+				response = Response( 'OK', status = 200 )
+
+		else:
+
+			response = Response( 'NOK', status = 500 )
+			
+		return response
