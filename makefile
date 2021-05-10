@@ -17,11 +17,11 @@ SIMULATOR_WS_PORT_EXTERNAL=9002:9001
 GATEWAY_HOST=cont_energysim_gateway
 GATEWAY_PORT=8000
 
-DB_VOLUME_NAME=vol_energysim
-DB_PATH=/app/vol
-DB_VOLUME=$(DB_VOLUME_NAME):$(DB_PATH)
-DB_VOLUME_BACKUP=$(DB_VOLUME_NAME)_BACKUP
-DB_VOLUME_BACKUP_FILENAME=$(DB_VOLUME_BACKUP).tar
+SIMULATOR_VOLUME_NAME=vol_energysim
+SIMULATOR_VOLUME_PATH=/app/vol
+SIMULATOR_VOLUME=$(SIMULATOR_VOLUME_NAME):$(SIMULATOR_VOLUME_PATH)
+SIMULATOR_VOLUME_BACKUP=$(SIMULATOR_VOLUME_NAME)_BACKUP
+SIMULATOR_VOLUME_BACKUP_FILENAME=$(SIMULATOR_VOLUME_BACKUP).tar
 
 UNIX_SUPRESS_OUTPUT=> /dev/null 2>&1
 # < CONSTANTS
@@ -74,7 +74,7 @@ start-docker-simulator:
 	@docker run -d \
 	--name $(SIMULATOR_CONTAINER_NAME) \
 	--network $(SIMULATOR_NETWORK_NAME) \
-	--volume $(DB_VOLUME) \
+	--volume $(SIMULATOR_VOLUME) \
 	-p $(SIMULATOR_FLASK_PORT_EXTERNAL) \
 	-p $(SIMULATOR_WS_PORT_EXTERNAL) \
 	-e SIMULATOR_HOST=$(SIMULATOR_HOST) \
@@ -100,39 +100,39 @@ run-simulator:
 # < SIMULATOR
 
 # > DB VOLUME
-clean-db:
-	@echo '$(PATTERN_BEGIN) CLEANING DB VOLUME...'
+clean-vol:
+	@echo '$(PATTERN_BEGIN) CLEANING VOLUME...'
 
-	@docker exec -it $(SIMULATOR_CONTAINER_NAME) bash -c "rm -rf $(DB_PATH)/energysim.db*"
+	@docker exec -it $(SIMULATOR_CONTAINER_NAME) bash -c "rm $(SIMULATOR_VOLUME_PATH)/*"
 
-	@echo '$(PATTERN_END) DB VOLUME CLEANED UP!'	
+	@echo '$(PATTERN_END) VOLUME CLEANED UP!'	
 
-backup-db-export:
-	@echo '$(PATTERN_BEGIN) EXPORTING DB VOLUME BACKUP...'
+backup-vol-export:
+	@echo '$(PATTERN_BEGIN) EXPORTING VOLUME BACKUP...'
 
 	@( docker run \
 		--rm \
-		--volume $(DB_VOLUME) \
+		--volume $(SIMULATOR_VOLUME) \
 		--volume $(shell pwd):/backup \
-		bash -c "cd $(DB_PATH) && tar -cvf /backup/$(DB_VOLUME_BACKUP_FILENAME) *" \
+		bash -c "cd $(SIMULATOR_VOLUME_PATH) && tar -cvf /backup/$(SIMULATOR_VOLUME_BACKUP_FILENAME) *" \
 		) \
 		|| \
 		true
 
-	@echo '$(PATTERN_END) DB VOLUME BACKUP EXPORTED (to $(DB_VOLUME_BACKUP_FILENAME))!'
+	@echo '$(PATTERN_END) VOLUME BACKUP EXPORTED (to $(SIMULATOR_VOLUME_BACKUP_FILENAME))!'
 
-backup-db-import: 
-	@echo '$(PATTERN_BEGIN) IMPORTING DB VOLUME BACKUP...'
+backup-vol-import: 
+	@echo '$(PATTERN_BEGIN) IMPORTING VOLUME BACKUP...'
 
 	@( docker run \
 		--rm \
-		--volume $(DB_VOLUME) \
+		--volume $(SIMULATOR_VOLUME) \
 		--volume $(shell pwd):/backup \
-		bash -c "cd $(DB_PATH) && tar -xvf /backup/$(DB_VOLUME_BACKUP_FILENAME)" \
+		bash -c "cd $(SIMULATOR_VOLUME_PATH) && tar -xvf /backup/$(SIMULATOR_VOLUME_BACKUP_FILENAME)" \
 		) \
 		|| \
 		true
 
-	@echo '$(PATTERN_END) DB VOLUME BACKUP IMPORTED!'	
+	@echo '$(PATTERN_END) VOLUME BACKUP IMPORTED!'	
 
 # < DB VOLUME
