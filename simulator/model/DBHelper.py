@@ -8,7 +8,7 @@ from base.SingletonMetaClass import SingletonMetaClass
 class DBHelper( metaclass = SingletonMetaClass ):
 
 	__PROVIDER = 'sqlite'
-	__FILE_PATH = 'db/energysim.db'
+	__FILE_PATH = 'vol/energysim.db'
 	__OPTIONS = '?timeout=15'
 
 	__MODELS_INFO = [

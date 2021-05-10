@@ -5,7 +5,7 @@ from base.SingletonMetaClass import *
 
 class ConfigurationHelper( metaclass = SingletonMetaClass ):
 
-	CONFIG_FILE_NAME = 'simulator/config.json'	
+	CONFIG_FILE_NAME = 'vol/config.json'	
 
 	_lock = None
 	_config = None
@@ -29,6 +29,7 @@ class ConfigurationHelper( metaclass = SingletonMetaClass ):
 		self._lock.acquire( )		
 
 		self._config = new_config
+		self._save_config( )		
 
 		self._lock.release( )
 
@@ -51,9 +52,14 @@ class ConfigurationHelper( metaclass = SingletonMetaClass ):
 			self._read_config( )
 
 		self._config[ config_key ] = config_value
+		self._save_config( )
 
 		self._lock.release( )	
 
 	def _read_config( self ):
 		with open( ConfigurationHelper.CONFIG_FILE_NAME ) as file:
 	    		self._config = json.load( file )
+
+	def _save_config( self ):
+		with open( ConfigurationHelper.CONFIG_FILE_NAME, 'w' ) as file:
+	    		json.dump( self._config, file )	
