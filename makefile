@@ -134,12 +134,7 @@ backup-vol-import:
 		|| \
 		true
 
-<<<<<<< HEAD
-	@echo '$(PATTERN_END) DB VOLUME BACKUP IMPORTED!'	
-# < DB VOLUME
-=======
-	@echo '$(PATTERN_END) VOLUME BACKUP IMPORTED!'	
->>>>>>> dev/config_save_fix
+	@echo '$(PATTERN_END) VOLUME BACKUP IMPORTED!'
 
 # > HELPERS
 logs:
