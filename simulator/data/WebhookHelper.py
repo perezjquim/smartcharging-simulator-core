@@ -8,6 +8,8 @@ from config.ConfigurationHelper import ConfigurationHelper
 
 class WebhookHelper:
 
+	__TIMEOUT = 2
+
 	__COLORS = {
 		'SUCCESS': '#00ff00',
 		'WARNING': '#ffaa00',
@@ -73,7 +75,10 @@ class WebhookHelper:
 			]
 		}
 
-		req = requests.post( webhook_url, json = webhook_data )
+		try:
+			req = requests.post( webhook_url, json = webhook_data, timeout = WebhookHelper.__TIMEOUT )
+		except:
+			pass
 
 	def _get_color( message_type = 'INFO' ):
 		message_color = WebhookHelper.__COLORS[ message_type ]
