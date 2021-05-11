@@ -43,10 +43,8 @@ class SocketHelper( metaclass = SingletonMetaClass ):
             while True:
                 message = await self._receive_message( client )
                 self.on_client_message_received( message )           
-                asyncio.sleep( SocketHelper.__SLEEP )                     
-        except:
-            print( 'EXCEPTION!' )
-            traceback.print_exc( )            
+                asyncio.sleep( SocketHelper.__SLEEP )  
+        except websockets.exceptions.ConnectionClosed:
             self.unregister_ws_client( client )
 
     async def _receive_message( self, client ):
@@ -98,9 +96,7 @@ class SocketHelper( metaclass = SingletonMetaClass ):
 
             try:
                 await asyncio.wait_for( client.send( message_str ), timeout = SocketHelper.__TIMEOUT )
-            except:
-                print( 'EXCEPTION!' )
-                traceback.print_exc( )                            
+            except websockets.exceptions.ConnectionClosed:                   
                 self.unregister_ws_client( client )
 
             asyncio.sleep( SocketHelper.__SLEEP )                
@@ -110,9 +106,7 @@ class SocketHelper( metaclass = SingletonMetaClass ):
             for c in self._ws_clients:
                 try:    
                     await asyncio.wait_for( c.send( message_str ), timeout = SocketHelper.__TIMEOUT )
-                except:
-                    print( 'EXCEPTION!' )
-                    traceback.print_exc( )                            
+                except websockets.exceptions.ConnectionClosed:                    
                     self.unregister_ws_client( c )
 
             asyncio.sleep( SocketHelper.__SLEEP )
