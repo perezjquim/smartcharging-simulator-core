@@ -1,5 +1,6 @@
 import requests
 import sys
+import traceback as tb
 import threading
 import atexit
 
@@ -26,7 +27,7 @@ class WebhookHelper:
 		sys_excepthook_orig = sys.excepthook
 
 		def on_sys_exception( exctype, value, traceback ):
-			traceback_details = '\n'.join( traceback.format_exc( ) )
+			traceback_details = '\n'.join( tb.format_exc( ) )
 			WebhookHelper.send_message( 'Error:\n{}'.format( traceback_details ), 'ERROR' )
 			sys_excepthook_orig( exctype, value, traceback )
 
