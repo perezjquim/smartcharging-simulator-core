@@ -27,7 +27,7 @@ class WebhookHelper:
 		sys_excepthook_orig = sys.excepthook
 
 		def on_sys_exception( exctype, value, traceback ):
-			traceback_details = '\n'.join( tb.format_exc( ) )
+			traceback_details = '\n'.join( tb.extract_stack( traceback ).format( ) )
 			WebhookHelper.send_message( 'Error:\n{}'.format( traceback_details ), 'ERROR' )
 			sys_excepthook_orig( exctype, value, traceback )
 
@@ -78,7 +78,8 @@ class WebhookHelper:
 		try:
 			req = requests.post( webhook_url, json = webhook_data, timeout = WebhookHelper.__TIMEOUT )
 		except:
-			pass
+            		print( 'EXCEPTION!' )
+            		traceback.print_exc( )
 
 	def _get_color( message_type = 'INFO' ):
 		message_color = WebhookHelper.__COLORS[ message_type ]
