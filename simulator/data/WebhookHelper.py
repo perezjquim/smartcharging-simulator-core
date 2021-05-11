@@ -1,6 +1,5 @@
 import requests
 import sys
-import traceback as tb
 import threading
 import atexit
 
@@ -8,7 +7,7 @@ from config.ConfigurationHelper import ConfigurationHelper
 
 class WebhookHelper:
 
-	__TIMEOUT = 2
+	__TIMEOUT = 3
 
 	__COLORS = {
 		'SUCCESS': '#00ff00',
@@ -27,7 +26,7 @@ class WebhookHelper:
 		sys_excepthook_orig = sys.excepthook
 
 		def on_sys_exception( exctype, value, traceback ):
-			traceback_details = '\n'.join( tb.extract_tb( traceback ).format() )
+			traceback_details = '\n'.join( traceback.format_exc( ) )
 			WebhookHelper.send_message( 'Error:\n{}'.format( traceback_details ), 'ERROR' )
 			sys_excepthook_orig( exctype, value, traceback )
 
