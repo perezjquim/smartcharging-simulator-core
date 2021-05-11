@@ -9,6 +9,9 @@ from base.SingletonMetaClass import SingletonMetaClass
     
 class SocketHelper( metaclass = SingletonMetaClass ):
 
+    __SLEEP = 1
+    __TIMEOUT = 5
+
     _ws_clients = [ ]
     _ws_client_connection_listeners = [ ]
     _ws_client_message_listeners = [ ]
@@ -35,12 +38,12 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         try:
             self.register_ws_client( client )                
             init_message_str = self._stringify_message( 'log', 'WS -- CONNECTED SUCCESSFULLY!' )
-            await client.send( init_message_str )
+            await asyncio.wait_for( client.send( init_message_str ), timeout = SocketHelper.__TIMEOUT )
             self.on_client_connected( client )
             while True:
                 message = await self._receive_message( client )
                 self.on_client_message_received( message )           
-                asyncio.sleep( 0 )                     
+                asyncio.sleep( SocketHelper.__SLEEP )                     
         except:
             print( 'EXCEPTION!' )
             traceback.print_exc( )            
@@ -52,10 +55,12 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         return message
 
     def register_ws_client( self, client ):
-        self._ws_clients.append( client )
+        if client not in self._ws_clients:
+            self._ws_clients.append( client )
 
-    def unregister_ws_client( self, client ):     
-        self._ws_clients.remove( client )             
+    def unregister_ws_client( self, client ):
+        if client in self._ws_clients:     
+            self._ws_clients.remove( client )             
 
     def attach_on_client_connected( self, listener ):    
         self._ws_client_connection_listeners.append( listener )              
@@ -92,20 +97,22 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         if client:
 
             try:
-                await client.send( message_str )
+                await asyncio.wait_for( client.send( message_str ), timeout = SocketHelper.__TIMEOUT )
             except:
                 print( 'EXCEPTION!' )
                 traceback.print_exc( )                            
                 self.unregister_ws_client( client )
 
+            asyncio.sleep( SocketHelper.__SLEEP )                
+
         else:                
             
             for c in self._ws_clients:
                 try:    
-                    await c.send( message_str )
+                    await asyncio.wait_for( c.send( message_str ), timeout = SocketHelper.__TIMEOUT )
                 except:
                     print( 'EXCEPTION!' )
                     traceback.print_exc( )                            
                     self.unregister_ws_client( c )
 
-        asyncio.sleep( 0 )
+            asyncio.sleep( SocketHelper.__SLEEP )
