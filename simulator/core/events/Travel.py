@@ -7,8 +7,8 @@ from core.objects.Car import *
 
 class Travel( CarEvent ):
 
-	def __init__( self, car ):
-		super( ).__init__( 'model.events.TravelModel', 'TravelModel', car )
+	def __init__( self, car = None, model_instance = None ):
+		super( ).__init__( 'model.events.TravelModel', 'TravelModel', model_instance, car )
 
 	def run( self ):
 		car = self.get_car( )
@@ -83,12 +83,14 @@ class Travel( CarEvent ):
 		return model.get_battery_consumption( )
 
 	def set_distance( self, distance ):
-		model = self.get_model( )
-		model.set_distance( distance )
+		if self.is_read_only( ):
+			model = self.get_model( )
+			model.set_distance( distance )
 
 	def set_battery_consumption( self, battery_consumption ):
-		model = self.get_model( )
-		model.set_battery_consumption( battery_consumption )		
+		if self.is_read_only( ):		
+			model = self.get_model( )
+			model.set_battery_consumption( battery_consumption )		
 
 	def get_data( self ):
 		data = super( ).get_data( )

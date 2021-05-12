@@ -36,6 +36,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 			self._current_simulation = Simulation( self )			
 			self._current_simulation.on_start( )
 
+			self.send_sim_list_to_clients( )
+
 			self.log_main( 'Starting simulation... done!' )
 
 	def on_stop( self ):
@@ -56,6 +58,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 
 	def on_client_connected( self, client ):		
 		self.send_sim_state_to_clients( client )
+		self.send_sim_list_to_clients( client )		
 		self.send_sim_data_to_clients( client )		
 
 	def send_sim_state_to_clients( self, client = None ):
@@ -144,6 +147,14 @@ class Simulator( metaclass = SingletonMetaClass ):
 		config_helper = ConfigurationHelper( )
 		config_helper.set_config_by_key( config_key, config_value )
 
+	def send_sim_list_to_clients( self, client = None ):
+		self.log_debug( '////// SENDING SIM LIST... //////' )		
+
+		sim_list = Simulation.get_sim_list( )
+		self._socket_helper.send_message_to_clients( 'sim_list', sim_list, client )		
+
+		self.log_debug( '////// SENDING SIM LIST... done! //////' )					
+
 	def send_sim_data_to_clients( self, client=None ):
 		self.log_debug( '////// SENDING SIM DATA... //////' )
 
@@ -165,3 +176,8 @@ class Simulator( metaclass = SingletonMetaClass ):
 		db_helper = DBHelper( )
 		exported_data = db_helper.export_data( )
 		return exported_data
+
+	def select_simulation( self, simulation_id ):
+		self._current_simulation = Simulation.get_by_id( simulation_id )
+		self.send_sim_state_to_clients( )		
+		self.send_sim_data_to_clients( )

@@ -4,23 +4,26 @@ from model.objects.StatModel import *
 
 class Stat( SimulationObject ):
 
-	def __init__( self, simulation, type ):
-		super( ).__init__( 'model.objects.StatModel', 'StatModel', simulation )
+	def __init__( self, simulation = None, stat_type = '', model_instance = None ):
+		super( ).__init__( 'model.objects.StatModel', 'StatModel', model_instance, simulation )
 
-		self.set_type( type )
+		if stat_type:
+			self.set_type( stat_type )
 
 	def get_type( self ):
 		model = self.get_model( )
 		return model.get_type( )
 
 	def set_type( self, new_type ):
-		model = self.get_model( )
-		model.set_type( new_type )
+		if not self.is_read_only( ):
+			model = self.get_model( )
+			model.set_type( new_type )
 
 	def get_data( self ):
 		model = self.get_model( )
 		return model.get_data( )
 
 	def set_data( self, data ):
-		model = self.get_model( )
-		model.set_data( data )
+		if not self.is_read_only( ):		
+			model = self.get_model( )
+			model.set_data( data )

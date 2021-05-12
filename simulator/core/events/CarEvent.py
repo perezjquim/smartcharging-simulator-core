@@ -12,13 +12,14 @@ class CarEvent( BaseModelProxy ):
 
 	_thread = None
 
-	def __init__( self, model_class_path, model_class_name, car ):
-		super( ).__init__( model_class_path, model_class_name )
+	def __init__( self, model_class_path = '', model_class_name = '', car = None, model_instance = None ):
+		super( ).__init__( model_class_path, model_class_name, model_instance )
 
 		self.set_car( car )
 
-		self._thread = threading.Thread( target = self.run )
-		self._thread.start( )	
+		if not self.is_read_only( ):
+			self._thread = threading.Thread( target = self.run )
+			self._thread.start( )	
 
 	def run( self ):
 		raise NotImplementedError		
@@ -28,10 +29,11 @@ class CarEvent( BaseModelProxy ):
 
 	def set_car( self, car ):
 		self._car = car
-		car_model = car.get_model( )
 
-		model = self.get_model( )
-		model.set_car( car_model )
+		if not self.is_read_only( ):
+			car_model = car.get_model( )
+			model = self.get_model( )
+			model.set_car( car_model )
 
 	def get_start_datetime( self ):
 		model = self.get_model( )		
@@ -42,12 +44,14 @@ class CarEvent( BaseModelProxy ):
 		return model.get_end_datetime( )
 
 	def set_start_datetime( self, start_datetime ):
-		model = self.get_model( )
-		model.set_start_datetime( start_datetime )
+		if not self.is_read_only( ):
+			model = self.get_model( )
+			model.set_start_datetime( start_datetime )
 
 	def set_end_datetime( self, end_datetime ):
-		model = self.get_model( )
-		model.set_end_datetime( end_datetime )		
+		if not self.is_read_only( ):		
+			model = self.get_model( )
+			model.set_end_datetime( end_datetime )		
 
 	def destroy( self ):
 		if self._thread:

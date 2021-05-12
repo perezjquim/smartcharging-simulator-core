@@ -19,8 +19,8 @@ class Car( SimulationObject ):
 	_charging_periods = [ ]
 	_plug = None
 
-	def __init__( self, simulation ):
-		super( ).__init__( 'model.objects.CarModel', 'CarModel', simulation )
+	def __init__( self, simulation = None, model_instance = None ):
+		super( ).__init__( 'model.objects.CarModel', 'CarModel', model_instance, simulation )
 		
 		self._lock = threading.Lock( )
 
@@ -33,8 +33,9 @@ class Car( SimulationObject ):
 		return model.get_status( )
 
 	def set_status( self, new_status ):
-		model = self.get_model( )
-		model.set_status( new_status )
+		if not self.is_read_only( ):		
+			model = self.get_model( )
+			model.set_status( new_status )
 
 	def get_travels( self ):
 		return self._travels
@@ -53,16 +54,17 @@ class Car( SimulationObject ):
 		return model.get_battery_level( )
 
 	def set_battery_level( self, battery_level ):
-		model = self.get_model( )
+		if not self.is_read_only( ):		
+			model = self.get_model( )
 
-		if battery_level >= 0 and battery_level <= 10:
-			model.set_battery_level( battery_level )
-		elif battery_level < 0:
-			model.set_battery_level( 0 )
-		elif battery_level > 10:
-			model.set_battery_level( 10 )
-		else:
-			self.log( 'Invalid battery level given!' )
+			if battery_level >= 0 and battery_level <= 10:
+				model.set_battery_level( battery_level )
+			elif battery_level < 0:
+				model.set_battery_level( 0 )
+			elif battery_level > 10:
+				model.set_battery_level( 10 )
+			else:
+				self.log( 'Invalid battery level given!' )
 
 	def get_plug( self ):
 		return self._plug
@@ -70,13 +72,14 @@ class Car( SimulationObject ):
 	def set_plug( self, new_plug ):
 		self._plug = new_plug	
 
-		model = self.get_model( )
+		if not self.is_read_only( ):		
+			model = self.get_model( )
 
-		new_plug_model = None
-		if new_plug:
-			new_plug_model = new_plug.get_model( )		
-			
-		model.set_plug( new_plug_model )	
+			new_plug_model = None
+			if new_plug:
+				new_plug_model = new_plug.get_model( )		
+				
+			model.set_plug( new_plug_model )	
 
 	def lock( self ):
 		caller = DebugHelper.get_caller( )

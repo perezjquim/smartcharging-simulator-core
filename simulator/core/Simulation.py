@@ -42,8 +42,8 @@ class Simulation( BaseModelProxy ):
 
 	_stats_helper = None
 
-	def __init__( self, simulator ):
-		super( ).__init__( 'model.SimulationModel', 'SimulationModel' )	
+	def __init__( self, simulator = None, model_instance = None ):
+		super( ).__init__( 'model.SimulationModel', 'SimulationModel', model_instance )	
 
 		self._cars = [ ]
 		self._charging_plugs = [ ]
@@ -81,8 +81,9 @@ class Simulation( BaseModelProxy ):
 		return model.get_description( )
 
 	def set_description( self, description ):
-		model = self.get_model( )
-		return model.set_description( description )
+		if not self.is_read_only( ):		
+			model = self.get_model( )
+			return model.set_description( description )
 
 	def on_start( self ):
 		self.initialize_cars( )
@@ -276,13 +277,15 @@ class Simulation( BaseModelProxy ):
 		return self._current_datetime
 
 	def set_current_datetime( self, new_datetime ):
-		self._current_datetime = new_datetime
+		if not self.is_read_only( ):		
+			self._current_datetime = 	new_datetime
 
 	def get_current_step( self ):
 		return self._current_step
 
 	def set_current_step( self, new_step ):
-		self._current_step = new_step				
+		if not self.is_read_only( ):		
+			self._current_step = new_step				
 
 	def _end_simulation( self, wait_for_thread ):	
 		self.set_simulation_state( False )
@@ -320,11 +323,12 @@ class Simulation( BaseModelProxy ):
 		return self._logs
 
 	def set_charging_plug_status( self, plug_id, plug_new_status ):
-		plug = list( filter( lambda p : p.get_id( ) == plug_id, self._charging_plugs ) )
-		plug = plug[ 0 ]
-		plug.lock( )
-		plug.set_status( plug_new_status )
-		plug.unlock( )		
+		if not self.is_read_only( ):		
+			plug = list( filter( lambda p : p.get_id( ) == plug_id, self._charging_plugs ) )
+			plug = plug[ 0 ]
+			plug.lock( )
+			plug.set_status( plug_new_status )
+			plug.unlock( )		
 
 	def acquire_charging_plug( self ):
 		caller = DebugHelper.get_caller( )		
@@ -353,12 +357,13 @@ class Simulation( BaseModelProxy ):
 		return is_simulation_running
 
 	def set_simulation_state( self, new_value ):
-		self.lock_simulation( )
-		self._is_simulation_running = new_value
-		self.unlock_simulation( )
+		if not self.is_read_only( ):		
+			self.lock_simulation( )
+			self._is_simulation_running = new_value
+			self.unlock_simulation( )
 
-		simulator = self._simulator
-		simulator.send_sim_state_to_clients( )			
+			simulator = self._simulator
+			simulator.send_sim_state_to_clients( )			
 
 	def fetch_gateway( self, endpoint ):
 		simulator = self._simulator
@@ -496,3 +501,75 @@ class Simulation( BaseModelProxy ):
 		simulation_data.update( simulation_stats )	
 
 		return simulation_data
+
+	def add_car( self, car ):
+		self._cars.append( car )
+
+	def add_charging_plug( self, charging_plug ):
+		self._charging_plugs.append( charging_plug )
+
+	def add_log( self, log ):
+		self._logs.append( log )
+
+	def get_by_id( simulation_id ):
+		simulation_model = SimulationModel.select( simulation_id )
+		simulation = Simulation( model_instance = simulation_model )
+
+		car_models = simulation_model.get_cars( )
+		for cm in car_models:
+			car = Car( model_instance = cm )
+
+			plug_model = cm.get_plug( )
+			plug = Plug( model_instance = plug_model )
+			car.set_plug( plug )			
+			
+			travel_models = cm.get_travels( )
+			for tm in travel_models:
+				travel = Travel( model_instance = tm )
+				car.add_travel( travel )
+
+			charging_period_models = cm.get_charging_periods( )
+			for cpm in charging_period_models:
+				charging_period = ChargingPeriod( model_instance = cpm )
+				car.add_charging_period( charging_period )
+
+			simulation.add_car( car )
+
+		charging_plug_models = simulation_model.get_charging_plugs( )
+		for pm in charging_plug_models:
+			plug = Plug( model_instance = pm )
+
+			plugged_car_model = pm.get_plugged_car( )
+			plugged_car = Car( model_instance = plugged_car_model )			
+			plug.set_plugged_car( plugged_car )			
+
+			charging_period_models = pm.get_charging_periods( )
+			for cpm in charging_period_models:
+				charging_period = ChargingPeriod( model_instance = cpm )
+				plug.add_charging_period( charging_period )			
+
+			simulation.add_charging_plug( plug )	
+
+		log_models = simulation_model.get_logs( )
+		for lm in log_models:
+			log = Log( model_instance = lm )
+
+			simulation.add_log( log )
+
+		return simulation
+
+	def get_data_by_id( simulation_id ):
+		simulation = Simulation.get_by_id( simulation_id )
+		return simulation.get_data( )
+
+	def get_sim_list( ):
+		simulations = SimulationModel.select( )
+		sim_list = [ ]
+
+		for s in simulations:
+			sim_list.append({
+				'id': s.get_id( ),
+				'description': s.get_description( )
+			})
+
+		return sim_list

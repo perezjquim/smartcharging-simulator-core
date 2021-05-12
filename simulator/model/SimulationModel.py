@@ -28,3 +28,6 @@ class SimulationModel( BaseModel ):
 
 	def add_charging_plug( self, new_charging_plug ):
 		self._charging_plugs.append( new_charging_plug )
+
+	def get_logs( self ):
+		return self._logs

@@ -17,8 +17,8 @@ class Plug( SimulationObject ):
 	_plugged_car = None
 	_charging_periods = [ ]
 
-	def __init__( self, simulation ):
-		super( ).__init__( 'model.objects.PlugModel', 'PlugModel', simulation )
+	def __init__( self, simulation = None, model_instance = None ):
+		super( ).__init__( 'model.objects.PlugModel', 'PlugModel', model_instance, simulation )
 
 		self._lock = threading.Lock( )
 
@@ -30,8 +30,9 @@ class Plug( SimulationObject ):
 		return model.get_status( )
 
 	def set_status( self, new_status ):
-		model = self.get_model( )
-		model.set_status( new_status )
+		if not self.is_read_only( ):
+			model = self.get_model( )
+			model.set_status( new_status )
 
 	def acquire_charging_plug( ):
 		simulation = self.get_simulation( )
@@ -55,11 +56,11 @@ class Plug( SimulationObject ):
 		car = self.get_plugged_car( )
 		return car != None
 
-	def plug_car( self, car ):
+	def plug_car( self, car ):	
 		if self.is_enabled( ):
 			self.set_plugged_car( car )
 
-	def unplug_car( self ):
+	def unplug_car( self ):	
 		car = self.get_plugged_car( )
 		car.set_plug( None )
 		self.set_plugged_car( None )
@@ -68,27 +69,29 @@ class Plug( SimulationObject ):
 		return self._plugged_car
 
 	def set_plugged_car( self, car ):
-		self._plugged_car = car
+		if not self.is_read_only( ):		
+			self._plugged_car = car
 
-		model = self.get_model( )
+			model = self.get_model( )
 
-		plugged_car_model = None
-		if car:
-			plugged_car_model = car.get_model( )
-			
-		model.set_plugged_car( plugged_car_model )
+			plugged_car_model = None
+			if car:
+				plugged_car_model = car.get_model( )
+				
+			model.set_plugged_car( plugged_car_model )
 
 	def get_energy_consumption( self ):
 		model = self.get_model( )
 		return model.get_energy_consumption( )
 
 	def set_energy_consumption( self, new_energy_consumption ):
-		model = self.get_model( )
+		if not self.is_read_only( ):		
+			model = self.get_model( )
 
-		if self.is_enabled( ):
-			model.set_energy_consumption( new_energy_consumption	)
-		else:
-			model.set_energy_consumption( 0	 )
+			if self.is_enabled( ):
+				model.set_energy_consumption( new_energy_consumption	)
+			else:
+				model.set_energy_consumption( 0	 )
 
 	def add_charging_period( self, new_charging_period ):
 		self._charging_periods.append( new_charging_period )		
