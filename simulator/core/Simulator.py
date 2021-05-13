@@ -176,8 +176,3 @@ class Simulator( metaclass = SingletonMetaClass ):
 		db_helper = DBHelper( )
 		exported_data = db_helper.export_data( )
 		return exported_data
-
-	def select_simulation( self, simulation_id ):
-		self._current_simulation = Simulation.get_by_id( simulation_id )
-		self.send_sim_state_to_clients( )		
-		self.send_sim_data_to_clients( )

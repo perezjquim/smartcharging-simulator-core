@@ -1,8 +1,10 @@
 from flask import Blueprint, Response
 import json
 from datetime import datetime 
+import sys
 
 from base.SingletonMetaClass import SingletonMetaClass
+from core.Simulation import *
 
 api = Blueprint( "DataServer", __name__ )
 
@@ -126,21 +128,36 @@ class DataServer( metaclass = SingletonMetaClass ):
 
 		response = None
 
-		if current_simulation:
+		if ( not current_simulation ) or ( current_simulation and current_simulation.is_simulation_running( ) ):
 
-			is_simulation_running = current_simulation.is_simulation_running( )
-
-			if is_simulation_running:
-
-				response = Response( 'NOK', status = 500 )
-
-			else:
-
-				simulator.on_start( )
-				response = Response( 'OK', status = 200 )
+			simulator.on_start( )
+			response = Response( 'OK', status = 200 )
 
 		else:
 
 			response = Response( 'NOK', status = 500 )
 			
 		return response
+
+	@api.route( '/get_sim_data_by_id/<int:simulation_id>' )
+	def get_sim_by_id( simulation_id ):
+		simulator = DataServer.__simulator
+
+		current_simulation = simulator.get_current_simulation( )
+
+		response = None
+
+		if current_simulation and current_simulation.get_id( ) == simulation_id and current_simulation.is_simulation_running( ):
+
+			response = Response( 'NOK', status = 500 )
+
+		else:
+
+			simulation_data = Simulation.get_data_by_id( simulation_id )
+			response = Response( json.dumps( simulation_data ), mimetype = 'application/json', status = 200 )
+			
+		return response
+
+	@api.errorhandler( Exception )
+	def on_error( ex ):
+		sys.excepthook( *sys.exc_info( ) )

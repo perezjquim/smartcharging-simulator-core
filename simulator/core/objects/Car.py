@@ -20,7 +20,7 @@ class Car( SimulationObject ):
 	_plug = None
 
 	def __init__( self, simulation = None, model_instance = None ):
-		super( ).__init__( 'model.objects.CarModel', 'CarModel', model_instance, simulation )
+		super( ).__init__( 'model.objects.CarModel', 'CarModel', simulation, model_instance )
 		
 		self._lock = threading.Lock( )
 
@@ -82,14 +82,16 @@ class Car( SimulationObject ):
 			model.set_plug( new_plug_model )	
 
 	def lock( self ):
-		caller = DebugHelper.get_caller( )
-		self.log_debug( 'LOCKING... (by {})'.format( caller ) )
-		self._lock.acquire( )
+		if not self.is_read_only( ):
+			caller = DebugHelper.get_caller( )
+			self.log_debug( 'LOCKING... (by {})'.format( caller ) )
+			self._lock.acquire( )
 
 	def unlock( self ):
-		caller = DebugHelper.get_caller( )
-		self.log_debug( 'UNLOCKING... (by {})'.format( caller ) )
-		self._lock.release( )
+		if not self.is_read_only( ):		
+			caller = DebugHelper.get_caller( )
+			self.log_debug( 'UNLOCKING... (by {})'.format( caller ) )
+			self._lock.release( )
 
 	def is_busy( self ):
 		is_busy = self.get_status( ) != CarConstants.STATUS_READY

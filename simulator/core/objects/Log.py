@@ -5,7 +5,7 @@ from model.objects.LogModel import *
 class Log( SimulationObject ):
 
 	def __init__( self, simulation = None, message = '', model_instance = None ):
-		super( ).__init__( 'model.objects.LogModel', 'LogModel', model_instance, simulation )
+		super( ).__init__( 'model.objects.LogModel', 'LogModel', simulation, model_instance )
 
 		if message:
 			self.set_message( message )

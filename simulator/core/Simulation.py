@@ -495,7 +495,8 @@ class Simulation( BaseModelProxy ):
 			'logs': logs_sim_data
 		}		
 
-		self.update_simulation_stats( simulation_data )
+		if not self.is_read_only( ):
+			self.update_simulation_stats( simulation_data )
 
 		simulation_stats = self.get_simulation_stats( )
 		simulation_data.update( simulation_stats )	
@@ -512,7 +513,7 @@ class Simulation( BaseModelProxy ):
 		self._logs.append( log )
 
 	def get_by_id( simulation_id ):
-		simulation_model = SimulationModel.select( simulation_id )
+		simulation_model = SimulationModel.get( simulation_id )
 		simulation = Simulation( model_instance = simulation_model )
 
 		car_models = simulation_model.get_cars( )
@@ -525,12 +526,14 @@ class Simulation( BaseModelProxy ):
 			
 			travel_models = cm.get_travels( )
 			for tm in travel_models:
-				travel = Travel( model_instance = tm )
+				travel = Travel( model_instance = tm, car = car )
 				car.add_travel( travel )
 
 			charging_period_models = cm.get_charging_periods( )
 			for cpm in charging_period_models:
-				charging_period = ChargingPeriod( model_instance = cpm )
+				plug_model_of_cpm = cpm.get_plug( )
+				plug_of_cpm = Plug( model_instance = plug_model_of_cpm )
+				charging_period = ChargingPeriod( model_instance = cpm, car = car, plug = plug_of_cpm )
 				car.add_charging_period( charging_period )
 
 			simulation.add_car( car )
@@ -545,7 +548,7 @@ class Simulation( BaseModelProxy ):
 
 			charging_period_models = pm.get_charging_periods( )
 			for cpm in charging_period_models:
-				charging_period = ChargingPeriod( model_instance = cpm )
+				charging_period = ChargingPeriod( model_instance = cpm, plug = plug )
 				plug.add_charging_period( charging_period )			
 
 			simulation.add_charging_plug( plug )	
@@ -560,7 +563,7 @@ class Simulation( BaseModelProxy ):
 
 	def get_data_by_id( simulation_id ):
 		simulation = Simulation.get_by_id( simulation_id )
-		return simulation.get_data( )
+		return simulation.get_simulation_data( )
 
 	def get_sim_list( ):
 		simulations = SimulationModel.select( )

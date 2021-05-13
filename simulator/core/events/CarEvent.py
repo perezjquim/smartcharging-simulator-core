@@ -31,8 +31,10 @@ class CarEvent( BaseModelProxy ):
 		self._car = car
 
 		if not self.is_read_only( ):
-			car_model = car.get_model( )
 			model = self.get_model( )
+			car_model = None
+			if car:
+				car_model = car.get_model( )
 			model.set_car( car_model )
 
 	def get_start_datetime( self ):
@@ -63,8 +65,11 @@ class CarEvent( BaseModelProxy ):
 	def get_data( self ):
 		data = super( ).get_data( )
 
+		car_id = ''
+		
 		car = self.get_car( )
-		car_id = car.get_id( )
+		if car:
+			car_id = car.get_id( )
 
 		start_datetime_str = ''
 		end_datetime_str = ''

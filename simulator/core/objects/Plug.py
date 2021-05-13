@@ -18,7 +18,7 @@ class Plug( SimulationObject ):
 	_charging_periods = [ ]
 
 	def __init__( self, simulation = None, model_instance = None ):
-		super( ).__init__( 'model.objects.PlugModel', 'PlugModel', model_instance, simulation )
+		super( ).__init__( 'model.objects.PlugModel', 'PlugModel', simulation, model_instance )
 
 		self._lock = threading.Lock( )
 
@@ -100,14 +100,16 @@ class Plug( SimulationObject ):
 		return self._charging_periods
 
 	def lock( self ):
-		caller = DebugHelper.get_caller( )
-		self.log_debug( 'LOCKING... (by {})'.format( caller ) )
-		self._lock.acquire( )
+		if not self.is_read_only( ):		
+			caller = DebugHelper.get_caller( )
+			self.log_debug( 'LOCKING... (by {})'.format( caller ) )
+			self._lock.acquire( )
 
 	def unlock( self ):
-		caller = DebugHelper.get_caller( )
-		self.log_debug( 'UNLOCKING... (by {})'.format( caller ) )
-		self._lock.release( )		
+		if not self.is_read_only( ):		
+			caller = DebugHelper.get_caller( )
+			self.log_debug( 'UNLOCKING... (by {})'.format( caller ) )
+			self._lock.release( )		
 
 	def log( self, message ):
 		message_formatted = Plug.LOG_TEMPLATE.format( self.get_id( ), message )

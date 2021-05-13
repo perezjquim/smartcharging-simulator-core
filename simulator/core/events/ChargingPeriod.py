@@ -11,10 +11,10 @@ class ChargingPeriod( CarEvent ):
 
 	_plug = None
 
-	def __init__( self, car = None, model_instance = None ):
-		super( ).__init__( 'model.events.ChargingPeriodModel', 'ChargingPeriodModel', model_instance, car )		
+	def __init__( self, car = None, plug = None, model_instance = None ):
+		super( ).__init__( 'model.events.ChargingPeriodModel', 'ChargingPeriodModel', car, model_instance )		
 
-		self._plug = None
+		self.set_plug( plug )
 
 	def run( self ):
 		car = self.get_car( )
@@ -148,8 +148,10 @@ class ChargingPeriod( CarEvent ):
 		self._plug = plug
 
 		if not self.is_read_only( ):
-			plug_model = plug.get_model( )		
-			model = self.get_model( )
+			model = self.get_model( )		
+			plug_model = None	
+			if plug:
+				plug_model = plug.get_model( )		
 			model.set_plug( plug_model )
 
 	def get_data( self ):

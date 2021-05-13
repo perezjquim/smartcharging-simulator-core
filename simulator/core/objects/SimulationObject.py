@@ -7,7 +7,8 @@ class SimulationObject( BaseModelProxy ):
 	def __init__( self, model_class_path = '', model_class_name = '', simulation = None, model_instance = None ):
 		super( ).__init__( model_class_path, model_class_name, model_instance )
 
-		self.set_simulation( simulation )
+		if simulation:
+			self.set_simulation( simulation )
 
 	def get_simulation( self ):
 		return self._simulation

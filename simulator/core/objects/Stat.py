@@ -5,7 +5,7 @@ from model.objects.StatModel import *
 class Stat( SimulationObject ):
 
 	def __init__( self, simulation = None, stat_type = '', model_instance = None ):
-		super( ).__init__( 'model.objects.StatModel', 'StatModel', model_instance, simulation )
+		super( ).__init__( 'model.objects.StatModel', 'StatModel', simulation, model_instance )
 
 		if stat_type:
 			self.set_type( stat_type )

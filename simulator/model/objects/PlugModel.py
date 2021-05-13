@@ -10,7 +10,7 @@ class PlugModel( SimulationObjectModel ):
 	_status = StringCol( default = PlugConstants.STATUS_ENABLED, dbName = 'status', title = 'status' )	
 	_plugged_car = ForeignKey( 'CarModel', default = None, dbName = 'car_id', title = 'car_id' )
 	_energy_consumption = FloatCol( default = 0, dbName = 'energy_consumption', title = 'energy_consumption' )
-	_charging_periods = MultipleJoin( 'ChargingPeriodModel' )
+	_charging_periods = MultipleJoin( 'ChargingPeriodModel', joinColumn = 'plug_id' )
 
 	def get_status( self ):
 		return self._status

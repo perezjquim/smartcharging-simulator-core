@@ -7,9 +7,9 @@ class SimulationModel( BaseModel ):
 		table = 'Simulations'	
 
 	_description = StringCol( default = '', dbName = 'description', title = 'description' )
-	_cars = MultipleJoin( 'CarModel' )
-	_charging_plugs = MultipleJoin( 'PlugModel' )
-	_logs = MultipleJoin( 'LogModel' )
+	_cars = MultipleJoin( 'CarModel', joinColumn = 'simulation_id' )
+	_charging_plugs = MultipleJoin( 'PlugModel', joinColumn = 'simulation_id' )
+	_logs = MultipleJoin( 'LogModel', joinColumn = 'simulation_id' )
 
 	def get_description( self ):
 		return self._description

@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 
 from data.WebhookHelper import WebhookHelper
 from model.DBHelper import DBHelper
@@ -17,4 +18,5 @@ simulator.on_init( )
 data_server = DataServer( simulator )
 
 app = Flask( __name__ )
+CORS( app )
 app.register_blueprint( data_server.get_blueprint( ) )

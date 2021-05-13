@@ -8,8 +8,8 @@ class CarModel( SimulationObjectModel ):
 		table = 'Cars'
 
 	_status = StringCol( default = CarConstants.STATUS_READY, dbName = 'status', title = 'status' )
-	_travels = MultipleJoin( 'TravelModel' )
-	_charging_periods = MultipleJoin( 'ChargingPeriodModel' )
+	_travels = MultipleJoin( 'TravelModel', joinColumn = 'car_id' )
+	_charging_periods = MultipleJoin( 'ChargingPeriodModel', joinColumn = 'car_id' )
 	_battery_level = FloatCol( default = CarConstants.DEFAULT_BATTERY_LEVEL, dbName = 'battery_level', title = 'battery_level' )
 	_plug = ForeignKey( 'PlugModel', default = None, dbName = 'plug_id', title = 'plug_id' )
 
