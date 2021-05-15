@@ -512,6 +512,9 @@ class Simulation( BaseModelProxy ):
 	def add_log( self, log ):
 		self._logs.append( log )
 
+	def set_stat( self, stat_type, stat ):
+		self._stats_helper.set_stat( stat_type, stat )
+
 	def get_by_id( simulation_id ):
 		simulation_model = SimulationModel.get( simulation_id )
 		simulation = Simulation( model_instance = simulation_model )
@@ -558,6 +561,13 @@ class Simulation( BaseModelProxy ):
 			log = Log( model_instance = lm )
 
 			simulation.add_log( log )
+
+		stat_models = simulation_model.get_stats( )
+		for sm in stat_models:
+			stat = Stat( model_instance = sm )
+
+			stat_type = stat.get_type( )
+			simulation.set_stat( stat_type, stat )
 
 		return simulation
 

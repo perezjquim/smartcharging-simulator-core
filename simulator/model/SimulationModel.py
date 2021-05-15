@@ -10,6 +10,7 @@ class SimulationModel( BaseModel ):
 	_cars = MultipleJoin( 'CarModel', joinColumn = 'simulation_id' )
 	_charging_plugs = MultipleJoin( 'PlugModel', joinColumn = 'simulation_id' )
 	_logs = MultipleJoin( 'LogModel', joinColumn = 'simulation_id' )
+	_stats = MultipleJoin( 'StatModel', joinColumn = 'simulation_id' )
 
 	def get_description( self ):
 		return self._description
@@ -31,3 +32,6 @@ class SimulationModel( BaseModel ):
 
 	def get_logs( self ):
 		return self._logs
+
+	def get_stats( self ):
+		return self._stats

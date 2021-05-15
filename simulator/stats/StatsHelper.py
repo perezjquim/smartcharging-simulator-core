@@ -19,25 +19,32 @@ class StatsHelper( ):
 
 		self._last_datetime_str = ''
 
-		self._car_stats = Stat( simulation, 'car-stats' )
-		self._car_stats.set_data({
-	                'labels' : [ ],
-	                'datasets' : [ ]
-            	})
-
-		self._travel_stats = Stat( simulation, 'travel-stats' )
-		self._travel_stats.set_data({
-	                'labels' : [ ],
-	                'datasets' : [ ]
-            	})
-
-		self._plug_stats = Stat( simulation, 'plug-stats' )
-		self._plug_stats.set_data({
-	                'labels' : [ ],
-	                'datasets' : [ ]
-            	})
+		self._car_stats = None
+		self._travel_stats = None
+		self._plug_stats = None
 
 	def update_stats( self, sim_data ):
+		if not self._car_stats:
+			self._car_stats = Stat( self._simulation, 'car_stats' )
+			self._car_stats.set_data({
+		                'labels' : [ ],
+		                'datasets' : [ ]
+	            	})
+
+		if not self._travel_stats:
+			self._travel_stats = Stat( self._simulation, 'travel_stats' )
+			self._travel_stats.set_data({
+		                'labels' : [ ],
+		                'datasets' : [ ]
+	            	})
+
+		if not self._plug_stats:
+			self._plug_stats = Stat( self._simulation, 'plug_stats' )
+			self._plug_stats.set_data({
+		                'labels' : [ ],
+		                'datasets' : [ ]
+	            	})
+
 		cars = sim_data[ 'cars' ]
 		plugs = sim_data[ 'plugs' ]		
 
@@ -76,6 +83,9 @@ class StatsHelper( ):
 			travel_stats_data = travel_stats_datasets[ 0 ][ 'data' ]
 			travel_stats_data.append( number_of_traveling_cars )	
 			self._travel_stats.set_data( travel_stats )
+
+	def set_stat( self, stat_type, stat ):
+		setattr( self, '_' + stat_type, stat )
 
 	def get_data( self ):
 		return {
