@@ -128,15 +128,15 @@ class DataServer( metaclass = SingletonMetaClass ):
 
 		response = None
 
-		if ( not current_simulation ) or ( current_simulation and current_simulation.is_simulation_running( ) ):
+		if current_simulation and current_simulation.is_simulation_running( ):
+
+			response = Response( 'NOK', status = 500 )
+
+		else:
 
 			simulator.on_start( )
 			response = Response( 'OK', status = 200 )
 
-		else:
-
-			response = Response( 'NOK', status = 500 )
-			
 		return response
 
 	@api.route( '/get_sim_data_by_id/<int:simulation_id>' )
