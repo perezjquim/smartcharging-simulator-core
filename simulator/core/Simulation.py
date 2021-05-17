@@ -577,13 +577,15 @@ class Simulation( BaseModelProxy ):
 		simulation = Simulation.get_by_id( simulation_id )
 		return simulation.get_simulation_data( )
 
-	def get_sim_list( ):
+	def get_sim_list( current_simulation ):
 		simulations = SimulationModel.select( )
 		sim_list = [ ]
 
 		for s in simulations:
+			is_running = ( current_simulation and current_simulation.get_id( ) == s.get_id( ) and current_simulation.is_simulation_running( ) )
 			sim_list.append({
 				'id': s.get_id( ),
+				'is_running': is_running,
 				'description': s.get_description( )
 			})
 

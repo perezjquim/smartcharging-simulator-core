@@ -150,7 +150,7 @@ class Simulator( metaclass = SingletonMetaClass ):
 	def send_sim_list_to_clients( self, client = None ):
 		self.log_debug( '////// SENDING SIM LIST... //////' )		
 
-		sim_list = Simulation.get_sim_list( )
+		sim_list = Simulation.get_sim_list( self._current_simulation )
 		self._socket_helper.send_message_to_clients( 'sim_list', sim_list, client )		
 
 		self.log_debug( '////// SENDING SIM LIST... done! //////' )					
