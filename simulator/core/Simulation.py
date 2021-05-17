@@ -521,11 +521,12 @@ class Simulation( BaseModelProxy ):
 
 		car_models = simulation_model.get_cars( )
 		for cm in car_models:
-			car = Car( model_instance = cm )
+			car = Car( model_instance = cm, simulation = simulation )
 
 			plug_model = cm.get_plug( )
-			plug = Plug( model_instance = plug_model )
-			car.set_plug( plug )			
+			if plug_model:
+				plug = Plug( model_instance = plug_model )
+				car.set_plug( plug )			
 			
 			travel_models = cm.get_travels( )
 			for tm in travel_models:
@@ -543,11 +544,12 @@ class Simulation( BaseModelProxy ):
 
 		charging_plug_models = simulation_model.get_charging_plugs( )
 		for pm in charging_plug_models:
-			plug = Plug( model_instance = pm )
+			plug = Plug( model_instance = pm, simulation = simulation )
 
 			plugged_car_model = pm.get_plugged_car( )
-			plugged_car = Car( model_instance = plugged_car_model )			
-			plug.set_plugged_car( plugged_car )			
+			if plugged_car_model:
+				plugged_car = Car( model_instance = plugged_car_model )			
+				plug.set_plugged_car( plugged_car )			
 
 			charging_period_models = pm.get_charging_periods( )
 			for cpm in charging_period_models:
@@ -558,13 +560,13 @@ class Simulation( BaseModelProxy ):
 
 		log_models = simulation_model.get_logs( )
 		for lm in log_models:
-			log = Log( model_instance = lm )
+			log = Log( model_instance = lm, simulation = simulation )
 
 			simulation.add_log( log )
 
 		stat_models = simulation_model.get_stats( )
 		for sm in stat_models:
-			stat = Stat( model_instance = sm )
+			stat = Stat( model_instance = sm, simulation = simulation )
 
 			stat_type = stat.get_type( )
 			simulation.set_stat( stat_type, stat )
