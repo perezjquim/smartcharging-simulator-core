@@ -18,17 +18,17 @@ class Travel( CarEvent ):
 
 		travel_distance_url = "travel/distance"
 		travel_distance_res = simulation.fetch_gateway( travel_distance_url )
-		distance = float( travel_distance_res[ 'travel_distance' ] )
+		distance = float( travel_distance_res.get( 'travel_distance', 0 ) )
 		self.set_distance( distance )
 
 		travel_duration_url = "travel/duration"
 		travel_duration_res = simulation.fetch_gateway( travel_duration_url )
-		travel_duration = float( travel_duration_res[ 'travel_duration' ] )		
+		travel_duration = float( travel_duration_res.get( 'travel_duration', 0 ) )
 
 		initial_battery_level = car.get_battery_level( )	
 		final_battery_level_url = "travel/final_battery_level/{}/{}".format( initial_battery_level, distance )
 		final_battery_level_res = simulation.fetch_gateway( final_battery_level_url )
-		final_battery_level = float( final_battery_level_res[ 'final_battery_level' ] )
+		final_battery_level = float( final_battery_level_res.get( 'final_battery_level', 0 ) )
 
 		battery_consumption = initial_battery_level - final_battery_level
 		self.set_battery_consumption( battery_consumption )

@@ -80,8 +80,9 @@ class WebhookHelper:
 		try:
 			req = requests.post( webhook_url, json = webhook_data, timeout = WebhookHelper.__TIMEOUT )
 		except:
-            		print( 'WH EXCEPTION!' )
+            		print( '> WH EXCEPTION!' )
             		tb.print_exc( )
+            		print( '< WH EXCEPTION!' )
 
 	def _get_color( message_type = 'INFO' ):
 		message_color = WebhookHelper.__COLORS[ message_type ]

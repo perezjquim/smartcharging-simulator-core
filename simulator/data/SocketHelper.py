@@ -4,6 +4,7 @@ import os
 import threading
 import json
 import traceback
+import sys
 
 from base.SingletonMetaClass import SingletonMetaClass
     
@@ -26,6 +27,9 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         ws_host = env_variables[ 'SIMULATOR_HOST' ]
         ws_port = env_variables[ 'SIMULATOR_WS_PORT' ]      
 
+        self.serve( )
+
+    def serve( self ):
         print( '``````````Serving WS...``````````' )      
         init_ws_task = websockets.serve( self.on_connect_ws_client, ws_host, ws_port )        
         self._event_loop.run_until_complete( init_ws_task )
@@ -46,6 +50,9 @@ class SocketHelper( metaclass = SingletonMetaClass ):
                 asyncio.sleep( SocketHelper.__SLEEP )  
         except websockets.exceptions.ConnectionClosed:
             self.unregister_ws_client( client )
+        except:
+            self.unregister_ws_client( client )            
+            sys.excepthook( *sys.exc_info( ) )
 
     async def _receive_message( self, client ):
         message_str = await client.recv( )
@@ -96,8 +103,11 @@ class SocketHelper( metaclass = SingletonMetaClass ):
 
             try:
                 await asyncio.wait_for( client.send( message_str ), timeout = SocketHelper.__TIMEOUT )
-            except websockets.exceptions.ConnectionClosed:                   
+            except websockets.exceptions.ConnectionClosed:
                 self.unregister_ws_client( client )
+            except:
+                self.unregister_ws_client( client )                
+                sys.excepthook( *sys.exc_info( ) )
 
             asyncio.sleep( SocketHelper.__SLEEP )                
 
@@ -106,7 +116,10 @@ class SocketHelper( metaclass = SingletonMetaClass ):
             for c in self._ws_clients:
                 try:    
                     await asyncio.wait_for( c.send( message_str ), timeout = SocketHelper.__TIMEOUT )
-                except websockets.exceptions.ConnectionClosed:                    
-                    self.unregister_ws_client( c )
+                except websockets.exceptions.ConnectionClosed:
+                    self.unregister_ws_client( client )
+                except:
+                    self.unregister_ws_client( client )                    
+                    sys.excepthook( *sys.exc_info( ) )
 
             asyncio.sleep( SocketHelper.__SLEEP )
