@@ -211,6 +211,8 @@ class Simulation( BaseModelProxy ):
 
 		if self.can_simulate_new_actions( ):
 
+			simulator = self._simulator
+
 			current_datetime_str = current_datetime.strftime( '%Y%m%d%H' )
 
 			if current_datetime_str in self._affluence_counts:
@@ -224,14 +226,12 @@ class Simulation( BaseModelProxy ):
 				affluence_res = self.fetch_gateway( affluence_url )
 				affluence = int( affluence_res[ 'affluence' ] )
 
-				affluence_multiplier = self.get_config_by_key( 'travel_affluence_multiplier' )
-				affluence *= affluence_multiplier
+				affluence_multiplier = simulator.get_config_by_key( 'travel_affluence_multiplier' )
+				affluence = int( affluence * affluence_multiplier )
 								
 				self._affluence_counts[ current_datetime_str ] = affluence			
 
 			if self._affluence_counts[ current_datetime_str ] > 0:		
-
-				simulator = self._simulator
 
 				for c in self._cars:
 
