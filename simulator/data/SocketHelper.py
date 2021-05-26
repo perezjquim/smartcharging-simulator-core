@@ -26,9 +26,6 @@ class SocketHelper( metaclass = SingletonMetaClass ):
         ws_host = env_variables[ 'SIMULATOR_HOST' ]
         ws_port = env_variables[ 'SIMULATOR_WS_PORT' ]      
 
-        self.serve( )
-
-    def serve( self ):
         print( '``````````Serving WS...``````````' )      
         init_ws_task = websockets.serve( self.on_connect_ws_client, ws_host, ws_port )        
         self._event_loop.run_until_complete( init_ws_task )
@@ -112,17 +109,17 @@ class SocketHelper( metaclass = SingletonMetaClass ):
                     sys.excepthook( *sys.exc_info( ) )      
                     print( '< SOCKET - SEND ERROR!' )                  
 
-            else:                
-                
-                for c in self._ws_clients:
-                    try:
-                        await asyncio.wait_for( c.send( message_str ), timeout = SocketHelper.__TIMEOUT )
-                    except websockets.exceptions.ConnectionClosedOK:
-                        self.unregister_ws_client( client )
-                    except:
-                        print( '> SOCKET - SEND ERROR!' )
-                        self.unregister_ws_client( client )                
-                        sys.excepthook( *sys.exc_info( ) )      
-                        print( '< SOCKET - SEND ERROR!' )             
+        else:                
+            
+            for c in self._ws_clients:
+                try:
+                    await asyncio.wait_for( c.send( message_str ), timeout = SocketHelper.__TIMEOUT )
+                except websockets.exceptions.ConnectionClosedOK:
+                    self.unregister_ws_client( client )
+                except:
+                    print( '> SOCKET - SEND ERROR!' )
+                    self.unregister_ws_client( client )                
+                    sys.excepthook( *sys.exc_info( ) )      
+                    print( '< SOCKET - SEND ERROR!' )             
                  
         asyncio.sleep( SocketHelper.__SLEEP )
