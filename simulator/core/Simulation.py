@@ -223,6 +223,10 @@ class Simulation( BaseModelProxy ):
 				affluence_url = "travel/affluence/{}".format( current_hour_of_day )
 				affluence_res = self.fetch_gateway( affluence_url )
 				affluence = int( affluence_res[ 'affluence' ] )
+
+				affluence_multiplier = self.get_config_by_key( 'travel_affluence_multiplier' )
+				affluence *= affluence_multiplier
+								
 				self._affluence_counts[ current_datetime_str ] = affluence			
 
 			if self._affluence_counts[ current_datetime_str ] > 0:		
