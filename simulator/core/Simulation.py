@@ -225,7 +225,7 @@ class Simulation( BaseModelProxy ):
 				current_hour_of_day = current_datetime.hour
 				affluence_url = "travel/affluence/{}".format( current_hour_of_day )
 				affluence_res = self.fetch_gateway( affluence_url )
-				affluence = int( affluence_res.get( 'affluence', 0 ) )
+				affluence = int( affluence_res[ 'affluence' ] )
 				self._affluence_counts[ current_datetime_str ] = affluence			
 
 			if self._affluence_counts[ current_datetime_str ] > 0:		
@@ -375,17 +375,9 @@ class Simulation( BaseModelProxy ):
 		url = base_url.format( endpoint )
 		self.log_debug( '\\\\\\ GATEWAY \\\\\\ URL: {}'.format( url )	 )	
 
-		response_json = { }	
-
-		try:
-			response = requests.get( url, timeout = Simulation.__GATEWAY_TIMEOUT )
-			response_json = response.json( )
-			self.log_debug( '\\\\\\ GATEWAY \\\\\\ RESPONSE: {}'.format( response_json ) )			
-		except:
-			self.log( '> GATEWAY Error!' )
-			response_json = { }
-            		tb.print_exc( )
-            		self.log( '< GATEWAY Error!' )
+		response = requests.get( url, timeout = Simulation.__GATEWAY_TIMEOUT )
+		response_json = response.json( )
+		self.log_debug( '\\\\\\ GATEWAY \\\\\\ RESPONSE: {}'.format( response_json ) )			
 
 		return response_json		
 

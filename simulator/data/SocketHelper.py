@@ -3,7 +3,6 @@ import websockets
 import os
 import threading
 import json
-import traceback
 import sys
 
 from base.SingletonMetaClass import SingletonMetaClass
@@ -48,11 +47,13 @@ class SocketHelper( metaclass = SingletonMetaClass ):
                 message = await self._receive_message( client )
                 self.on_client_message_received( message )           
                 asyncio.sleep( SocketHelper.__SLEEP )  
-        except websockets.exceptions.ConnectionClosed:
+        except websockets.exceptions.ConnectionClosedOK:
             self.unregister_ws_client( client )
         except:
+            print( '> SOCKET - RECV ERROR!' )            
             self.unregister_ws_client( client )            
             sys.excepthook( *sys.exc_info( ) )
+            print( '< SOCKET - RECV ERROR!' )            
 
     async def _receive_message( self, client ):
         message_str = await client.recv( )
@@ -101,25 +102,27 @@ class SocketHelper( metaclass = SingletonMetaClass ):
 
         if client:
 
-            try:
-                await asyncio.wait_for( client.send( message_str ), timeout = SocketHelper.__TIMEOUT )
-            except websockets.exceptions.ConnectionClosed:
-                self.unregister_ws_client( client )
-            except:
-                self.unregister_ws_client( client )                
-                sys.excepthook( *sys.exc_info( ) )
-
-            asyncio.sleep( SocketHelper.__SLEEP )                
-
-        else:                
-            
-            for c in self._ws_clients:
-                try:    
-                    await asyncio.wait_for( c.send( message_str ), timeout = SocketHelper.__TIMEOUT )
-                except websockets.exceptions.ConnectionClosed:
+                try:
+                    await asyncio.wait_for( client.send( message_str ), timeout = SocketHelper.__TIMEOUT ) 
+                except websockets.exceptions.ConnectionClosedOK:
                     self.unregister_ws_client( client )
                 except:
-                    self.unregister_ws_client( client )                    
-                    sys.excepthook( *sys.exc_info( ) )
+                    print( '> SOCKET - SEND ERROR!' )
+                    self.unregister_ws_client( client )                
+                    sys.excepthook( *sys.exc_info( ) )      
+                    print( '< SOCKET - SEND ERROR!' )                  
 
-            asyncio.sleep( SocketHelper.__SLEEP )
+            else:                
+                
+                for c in self._ws_clients:
+                    try:
+                        await asyncio.wait_for( c.send( message_str ), timeout = SocketHelper.__TIMEOUT )
+                    except websockets.exceptions.ConnectionClosedOK:
+                        self.unregister_ws_client( client )
+                    except:
+                        print( '> SOCKET - SEND ERROR!' )
+                        self.unregister_ws_client( client )                
+                        sys.excepthook( *sys.exc_info( ) )      
+                        print( '< SOCKET - SEND ERROR!' )             
+                 
+        asyncio.sleep( SocketHelper.__SLEEP )

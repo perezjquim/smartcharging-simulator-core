@@ -61,7 +61,7 @@ class ChargingPeriod( CarEvent ):
 
 			charging_period_duration_url = "charging_period/duration"
 			charging_period_duration_res = simulation.fetch_gateway( charging_period_duration_url )
-			charging_period_duration = float( charging_period_duration_res.get( 'charging_period_duration', 0 ) )
+			charging_period_duration = float( charging_period_duration_res[ 'charging_period_duration' ] )
 
 			simulation.lock_current_datetime( )
 
@@ -99,7 +99,7 @@ class ChargingPeriod( CarEvent ):
 						elapsed_time = elapsed_time + minutes_per_sim_step
 						charging_period_energy_spent_url = "charging_period/energy_spent/{}".format( progress_perc )
 						charging_period_energy_spent_res = simulation.fetch_gateway( charging_period_energy_spent_url )
-						charging_period_energy_spent = float( charging_period_energy_spent_res.get( 'charging_period_energy_spent', 0 ) )	
+						charging_period_energy_spent = float( charging_period_energy_spent_res[ 'charging_period_energy_spent' ] )	
 
 						plug.set_energy_consumption( charging_period_energy_spent )
 						car.log_debug( 'Charging... ({} KW - {}% of {}%)'.format( charging_period_energy_spent, progress_perc_formatted, 100 ) )			

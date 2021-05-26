@@ -8,7 +8,7 @@ from config.ConfigurationHelper import ConfigurationHelper
 
 class WebhookHelper:
 
-	__TIMEOUT = 3
+	__TIMEOUT = 5
 
 	__COLORS = {
 		'SUCCESS': '#00ff00',
