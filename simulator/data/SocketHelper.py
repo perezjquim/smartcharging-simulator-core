@@ -20,7 +20,6 @@ class SocketHelper( metaclass = SingletonMetaClass ):
 
     def on_init( self ):
         self._event_loop = asyncio.get_event_loop( )
-        self._messages_to_be_sent_queue = asyncio.Queue( )
 
         env_variables = os.environ
         ws_host = env_variables[ 'SIMULATOR_HOST' ]
