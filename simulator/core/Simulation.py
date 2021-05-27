@@ -2,6 +2,7 @@ import threading
 import time
 import requests
 from datetime import date, datetime, timedelta
+import traceback as tb
 
 from base.BaseModelProxy import *
 
@@ -19,6 +20,8 @@ from data.WebhookHelper import *
 class Simulation( BaseModelProxy ):
 
 	MAIN_LOG_PREFIX = '============================'
+
+	__GATEWAY_TIMEOUT = 3
 
 	_cars = [ ]
 	_charging_plugs = [ ]
@@ -374,10 +377,11 @@ class Simulation( BaseModelProxy ):
 
 		base_url = simulator.get_config_by_key( 'gateway_request_base_url' )
 		url = base_url.format( endpoint )
-		response = requests.get( url )
+		self.log_debug( '\\\\\\ GATEWAY \\\\\\ URL: {}'.format( url )	 )	
+
+		response = requests.get( url, timeout = Simulation.__GATEWAY_TIMEOUT )
 		response_json = response.json( )
-		self.log_debug( '\\\\\\ GATEWAY \\\\\\ URL: {}'.format( url )	 )
-		self.log_debug( '\\\\\\ GATEWAY \\\\\\ RESPONSE: {}'.format( response_json ) )
+		self.log_debug( '\\\\\\ GATEWAY \\\\\\ RESPONSE: {}'.format( response_json ) )			
 
 		return response_json		
 

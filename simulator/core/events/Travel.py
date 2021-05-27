@@ -23,7 +23,7 @@ class Travel( CarEvent ):
 
 		travel_duration_url = "travel/duration"
 		travel_duration_res = simulation.fetch_gateway( travel_duration_url )
-		travel_duration = float( travel_duration_res[ 'travel_duration' ] )		
+		travel_duration = float( travel_duration_res[ 'travel_duration' ] )
 
 		initial_battery_level = car.get_battery_level( )	
 		final_battery_level_url = "travel/final_battery_level/{}/{}".format( initial_battery_level, distance )

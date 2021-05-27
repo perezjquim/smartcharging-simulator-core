@@ -8,7 +8,7 @@ from config.ConfigurationHelper import ConfigurationHelper
 
 class WebhookHelper:
 
-	__TIMEOUT = 3
+	__TIMEOUT = 5
 
 	__COLORS = {
 		'SUCCESS': '#00ff00',
@@ -27,10 +27,13 @@ class WebhookHelper:
 		sys_excepthook_orig = sys.excepthook
 
 		def on_sys_exception( exctype, value, traceback ):
-			traceback_details = ( '* Type: {}\n'.format( exctype ) + 
-				'* Value: {}\n'.format( value ) + 
-				'* Traceback: {}\n'.format( '\n'.join( tb.extract_tb( traceback ).format( ) ) ) )
-			WebhookHelper.send_message( 'Error:\n{}'.format( traceback_details ), 'ERROR' )
+			try:
+				traceback_details = ( '* Type: {}\n'.format( exctype ) + 
+					'* Value: {}\n'.format( value ) + 
+					'* Traceback: {}\n'.format( '\n'.join( tb.extract_tb( traceback ).format( ) ) ) )
+				WebhookHelper.send_message( 'Error:\n{}'.format( traceback_details ), 'ERROR' )       		
+			except:
+				pass
 			sys_excepthook_orig( exctype, value, traceback )
 
 		sys.excepthook = on_sys_exception	
@@ -52,36 +55,40 @@ class WebhookHelper:
 		atexit.register( on_exit )
 
 	def send_message( message_text, message_type = 'INFO' ):
-		message_color = WebhookHelper._get_color( message_type )
+		try:		
+			message_color = WebhookHelper._get_color( message_type )
 
-		config_helper = ConfigurationHelper( )
-		webhook_url = config_helper.get_config_by_key( 'webhook_url' )
+			config_helper = ConfigurationHelper( )
+			webhook_url = config_helper.get_config_by_key( 'webhook_url' )
 
-		webhook_data = {
-			"attachments": 
-			[
-				{
-					"color": message_color,
-					"blocks": 
-					[
-						{
-							"type": "section",
-							"text": 
+			webhook_data = {
+				"attachments": 
+				[
+					{
+						"color": message_color,
+						"blocks": 
+						[
 							{
-								"type": "mrkdwn",
-								"text": WebhookHelper.__MESSAGE_TEMPLATE.format( message_text )
+								"type": "section",
+								"text": 
+								{
+									"type": "mrkdwn",
+									"text": WebhookHelper.__MESSAGE_TEMPLATE.format( message_text )
+								}
 							}
-						}
-					]
-				}
-			]
-		}
+						]
+					}
+				]
+			}
 
-		try:
 			req = requests.post( webhook_url, json = webhook_data, timeout = WebhookHelper.__TIMEOUT )
+
 		except:
-            		print( 'WH EXCEPTION!' )
-            		tb.print_exc( )
+	    		print( '!!!!!!!!!!!!!!!! WH EXCEPTION !!!!!!!!!!!!!!!!' )
+	    		print( '!!!!!!!!!!!!!!!! WH EXCEPTION !!!!!!!!!!!!!!!!' )	            		
+	    		print( '!!!!!!!!!!!!!!!! WH EXCEPTION !!!!!!!!!!!!!!!!' )
+	    		print( '!!! Original message: {}\n !!!'.format( message_text ) )
+	    		tb.print_exc( )  
 
 	def _get_color( message_type = 'INFO' ):
 		message_color = WebhookHelper.__COLORS[ message_type ]
