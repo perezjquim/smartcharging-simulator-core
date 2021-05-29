@@ -4,7 +4,7 @@
 	"sim_sampling_rate": 900000,
 	"travel_affluence_multiplier": 1,
 	"minutes_per_sim_step": 15,
-	"number_of_steps": 5700,
+	"number_of_steps": 96,
 	"gateway_request_base_url": "http://cont_energysim_gateway:8000/{}",
 	"enable_debug_mode": false,
 	"webhook_url": "https://hooks.slack.com/services/XXXXXXXXXX"

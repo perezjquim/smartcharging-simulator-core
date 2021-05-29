@@ -56,6 +56,8 @@ class StatsHelper( ):
 		if ( not self._last_datetime_str ) or ( self._last_datetime_str != sim_datetime_str ):
 								
 			self._update_labels( sim_datetime_str )
+
+			self._last_datetime_str = sim_datetime_str
 			
 			for i in range( len( cars ) ):
 				car = cars[ i ]

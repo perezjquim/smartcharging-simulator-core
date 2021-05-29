@@ -129,13 +129,11 @@ class DataServer( metaclass = SingletonMetaClass ):
 		response = None
 
 		if current_simulation and current_simulation.is_simulation_running( ):
+			current_simulation.end_simulation( False )
+			WebhookHelper.send_message( 'Simulation forcefully stopped (via API)!', 'INFO' )
 
-			response = Response( 'NOK', status = 500 )
-
-		else:
-
-			simulator.on_start( )
-			response = Response( 'OK', status = 200 )
+		simulator.on_start( )
+		response = Response( 'OK', status = 200 )
 
 		return response
 

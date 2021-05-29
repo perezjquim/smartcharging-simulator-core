@@ -135,7 +135,7 @@ class Simulation( BaseModelProxy ):
 		self.log( 'Initializing plugs... done!' )									
 
 	def on_stop( self ):			
-		self._end_simulation( True )	
+		self.end_simulation( True )	
 
 		WebhookHelper.send_message( 'Simulation stopped!', 'INFO' )
 
@@ -200,7 +200,7 @@ class Simulation( BaseModelProxy ):
 
 			else:
 
-				self._end_simulation( False )		
+				self.end_simulation( False )		
 
 				WebhookHelper.send_message( 'Simulation ended!', 'INFO' )					
 
@@ -294,7 +294,7 @@ class Simulation( BaseModelProxy ):
 		if not self.is_read_only( ):		
 			self._current_step = new_step				
 
-	def _end_simulation( self, wait_for_thread ):	
+	def end_simulation( self, wait_for_thread ):	
 		self.set_simulation_state( False )
 
 		for c in self._cars:
