@@ -21,7 +21,7 @@ class Simulation( BaseModelProxy ):
 
 	MAIN_LOG_PREFIX = '============================'
 
-	__GATEWAY_TIMEOUT = 3
+	__GATEWAY_TIMEOUT = 120
 
 	_cars = [ ]
 	_charging_plugs = [ ]

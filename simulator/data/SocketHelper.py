@@ -10,7 +10,7 @@ from base.SingletonMetaClass import SingletonMetaClass
 class SocketHelper( metaclass = SingletonMetaClass ):
 
     __SLEEP = 1
-    __TIMEOUT = 5
+    __TIMEOUT = 120
 
     _ws_clients = [ ]
     _ws_client_connection_listeners = [ ]

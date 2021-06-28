@@ -9,7 +9,7 @@ class DBHelper( metaclass = SingletonMetaClass ):
 
 	__PROVIDER = 'sqlite'
 	__FILE_PATH = 'vol/energysim.db'
-	__OPTIONS = '?timeout=15'
+	__OPTIONS = '?timeout=60'
 
 	__MODELS_INFO = [
 		{

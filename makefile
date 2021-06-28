@@ -24,6 +24,8 @@ SIMULATOR_VOLUME_BACKUP=$(SIMULATOR_VOLUME_NAME)_BACKUP
 SIMULATOR_VOLUME_BACKUP_FILENAME=$(SIMULATOR_VOLUME_BACKUP).tar
 
 UNIX_SUPRESS_OUTPUT=> /dev/null 2>&1
+
+DOCKER_TIMEOUT=120
 # < CONSTANTS
 
 main: check-dependencies stop-docker-simulator run-docker-simulator
@@ -70,6 +72,9 @@ build-docker-simulator:
 
 start-docker-simulator:
 	@echo '$(PATTERN_BEGIN) STARTING SIMULATOR PACK...'
+
+	@export DOCKER_CLIENT_TIMEOUT=$(DOCKER_TIMEOUT)
+	@export COMPOSE_HTTP_TIMEOUT=$(DOCKER_TIMEOUT)
 
 	@docker run -d \
 	--rm \
