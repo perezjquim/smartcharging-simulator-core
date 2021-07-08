@@ -183,7 +183,7 @@ class Car( SimulationObject ):
 		alias = 0
 
 		for idx, c in enumerate( simulation_cars ):
-			if c == self:
+			if c.get_id( ) == self.get_id( ):
 				alias = idx + 1
 				break
 

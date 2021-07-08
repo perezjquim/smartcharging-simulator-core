@@ -131,7 +131,7 @@ class Plug( SimulationObject ):
 		alias = 0
 
 		for idx, p in enumerate( simulation_plugs ):
-			if p == self:
+			if p.get_id( ) == self.get_id( ):
 				alias = idx + 1
 				break
 
