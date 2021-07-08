@@ -137,24 +137,21 @@ class DataServer( metaclass = SingletonMetaClass ):
 
 		return response
 
+	@api.route( '/get_sim_data_by_id' )
 	@api.route( '/get_sim_data_by_id/<int:simulation_id>' )
-	def get_sim_by_id( simulation_id ):
+	def get_sim_by_id( simulation_id = None ):
 		simulator = DataServer.__simulator
 
-		current_simulation = simulator.get_current_simulation( )
+		if not simulation_id:
+			current_simulation = simulator.get_current_simulation( )
 
-		response = None
+			if current_simulation:
+				simulation_id = current_simulation.get_id( )
+			else:
+				return Response( 'No simulation available!', status = 404 )		
 
-		if current_simulation and current_simulation.get_id( ) == simulation_id and current_simulation.is_simulation_running( ):
-
-			response = Response( 'NOK', status = 500 )
-
-		else:
-
-			simulation_data = Simulation.get_data_by_id( simulation_id )
-			response = Response( json.dumps( simulation_data ), mimetype = 'application/json', status = 200 )
-			
-		return response
+		simulation_data = Simulation.get_data_by_id( simulation_id )
+		return Response( json.dumps( simulation_data ), mimetype = 'application/json', status = 200 )
 
 	@api.errorhandler( Exception )
 	def on_error( ex ):

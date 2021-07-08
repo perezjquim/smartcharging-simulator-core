@@ -533,7 +533,7 @@ class Simulation( BaseModelProxy ):
 
 			plug_model = cm.get_plug( )
 			if plug_model:
-				plug = Plug( model_instance = plug_model )
+				plug = Plug( model_instance = plug_model, simulation = simulation )
 				car.set_plug( plug )			
 			
 			travel_models = cm.get_travels( )
@@ -544,7 +544,7 @@ class Simulation( BaseModelProxy ):
 			charging_period_models = cm.get_charging_periods( )
 			for cpm in charging_period_models:
 				plug_model_of_cpm = cpm.get_plug( )
-				plug_of_cpm = Plug( model_instance = plug_model_of_cpm )
+				plug_of_cpm = Plug( model_instance = plug_model_of_cpm, simulation = simulation )
 				charging_period = ChargingPeriod( model_instance = cpm, car = car, plug = plug_of_cpm )
 				car.add_charging_period( charging_period )
 
@@ -556,7 +556,7 @@ class Simulation( BaseModelProxy ):
 
 			plugged_car_model = pm.get_plugged_car( )
 			if plugged_car_model:
-				plugged_car = Car( model_instance = plugged_car_model )			
+				plugged_car = Car( model_instance = plugged_car_model, simulation = simulation )			
 				plug.set_plugged_car( plugged_car )			
 
 			charging_period_models = pm.get_charging_periods( )
