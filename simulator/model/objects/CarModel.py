@@ -32,10 +32,10 @@ class CarModel( SimulationObjectModel ):
 		self._charging_periods.append( new_charging_period )
 
 	def get_battery_level( self ):
-		return self._battery_level
+		return round( self._battery_level, 2 )
 
 	def set_battery_level( self, battery_level ):
-		self._battery_level = battery_level
+		self._battery_level = round( battery_level, 2 )
 
 	def get_plug( self ):
 		return self._plug			

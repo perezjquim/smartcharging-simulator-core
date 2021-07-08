@@ -25,10 +25,10 @@ class PlugModel( SimulationObjectModel ):
 		self._plugged_car = car
 
 	def get_energy_consumption( self ):
-		return self._energy_consumption
+		return round( self._energy_consumption, 2 )
 
 	def set_energy_consumption( self, new_energy_consumption ):
-		self._energy_consumption = new_energy_consumption	
+		self._energy_consumption = round( new_energy_consumption, 2 )
 
 	def get_charging_periods( self ):
 		return self._charging_periods			

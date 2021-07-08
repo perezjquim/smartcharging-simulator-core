@@ -77,7 +77,6 @@ start-docker-simulator:
 	@export COMPOSE_HTTP_TIMEOUT=$(DOCKER_TIMEOUT)
 
 	@docker run -d \
-	--rm \
 	--name $(SIMULATOR_CONTAINER_NAME) \
 	--network $(SIMULATOR_NETWORK_NAME) \
 	--volume $(SIMULATOR_VOLUME) \
@@ -93,7 +92,7 @@ start-docker-simulator:
 stop-docker-simulator:
 	@echo '$(PATTERN_BEGIN) STOPPING SIMULATOR PACK...'
 
-	@( docker stop $(SIMULATOR_CONTAINER_NAME) ) || true
+	@( docker rm -f $(SIMULATOR_CONTAINER_NAME) ) || true
 
 	@echo '$(PATTERN_END) SIMULATOR PACK STOPPED!'	
 # < DOCKER-SIMULATOR

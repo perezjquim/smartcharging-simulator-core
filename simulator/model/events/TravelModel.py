@@ -10,13 +10,13 @@ class TravelModel( CarEventModel ):
 	_battery_consumption = FloatCol( default = 0, dbName = 'battery_consumption', title = 'battery_consumption' )	
 
 	def get_distance( self ):
-		return self._distance
+		return round( self._distance, 2 )
 
 	def get_battery_consumption( self ):
-		return self._battery_consumption
+		return round( self._battery_consumption, 2 )
 
 	def set_distance( self, distance ):
-		self._distance = distance
+		self._distance = round( distance, 2 )
 
 	def set_battery_consumption( self, battery_consumption ):
-		self._battery_consumption = battery_consumption
+		self._battery_consumption = round( battery_consumption, 2 )
