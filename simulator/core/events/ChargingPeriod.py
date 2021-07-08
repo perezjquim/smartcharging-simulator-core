@@ -158,12 +158,15 @@ class ChargingPeriod( CarEvent ):
 		data = super( ).get_data( )
 		
 		plug_id = ''
+		plug_alias = ''
 
 		plug = self.get_plug( )
 		if plug:
 			plug_id = plug.get_id( )
+			plug_alias = plug.get_alias( )
 
 		data.update({
-			'plug_id' : plug_id
+			'plug_id' : plug_id,
+			'plug_alias': plug_alias
 		})	
 		return data		

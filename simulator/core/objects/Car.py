@@ -177,24 +177,40 @@ class Car( SimulationObject ):
 		for c in self._charging_periods:
 			c.destroy( )
 
+	def get_alias( self ):
+		simulation = self.get_simulation( )
+		simulation_cars = simulation.get_cars( )
+		alias = 0
+
+		for idx, c in enumerate( simulation_cars ):
+			if c == self:
+				alias = idx + 1
+				break
+
+		return alias			
+
 	def get_data( self ):
 		data = super( ).get_data( )
 
 		plug_id = ''
 		plug_consumption = 0
+		plug_alias = ''
 
 		plug = self.get_plug( )		
 		
 		if plug:
 			plug_id = plug.get_id( )
 			plug_consumption = plug.get_energy_consumption( )
+			plug_alias = plug.get_alias( )
 
 		data.update({
+			'alias': self.get_alias( ),
 			"status" : self.get_status( ),
 			"travels" : [ t.get_data( ) for t in self._travels ],
 			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ],
 			"battery_level" : self.get_battery_level( ),
 			"plug_id": plug_id,
+			"plug_alias": plug_alias,
 			"plug_consumption" : plug_consumption
 		})
 

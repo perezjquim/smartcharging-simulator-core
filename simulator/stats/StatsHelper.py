@@ -102,7 +102,7 @@ class StatsHelper( ):
 		if len( car_stats_datasets ) == 0:
 
 			for c in cars:
-				label = 'Car #{}'.format( c[ 'id' ] )
+				label = 'Car #{}'.format( c[ 'alias' ] )
 				color = self._generate_color( )
 				car_stats_datasets.append( {
 					'label': label,
@@ -119,7 +119,7 @@ class StatsHelper( ):
 		if len( plug_stats_datasets ) == 0:
 
 			for p in plugs:
-				label = 'Plug #{}'.format( p[ 'id' ] )
+				label = 'Plug #{}'.format( p[ 'alias' ] )
 				color = self._generate_color( )
 				plug_stats_datasets.append( {
 					'label': label,

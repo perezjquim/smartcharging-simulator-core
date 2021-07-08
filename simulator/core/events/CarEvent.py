@@ -66,10 +66,12 @@ class CarEvent( BaseModelProxy ):
 		data = super( ).get_data( )
 
 		car_id = ''
+		car_alias = ''
 		
 		car = self.get_car( )
 		if car:
 			car_id = car.get_id( )
+			car_alias = car.get_alias( )
 
 		start_datetime_str = ''
 		end_datetime_str = ''
@@ -84,6 +86,7 @@ class CarEvent( BaseModelProxy ):
 
 		data.update({
 			'car_id' : car_id,
+			'car_alias': car_alias,
 			'start_datetime' : start_datetime_str,
 			'end_datetime' : end_datetime_str
 		})

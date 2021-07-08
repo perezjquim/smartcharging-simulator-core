@@ -125,19 +125,35 @@ class Plug( SimulationObject ):
 		#NOP
 		pass
 
+	def get_alias( self ):
+		simulation = self.get_simulation( )
+		simulation_plugs = simulation.get_charging_plugs( )
+		alias = 0
+
+		for idx, p in enumerate( simulation_plugs ):
+			if p == self:
+				alias = idx + 1
+				break
+
+		return alias
+
 	def get_data( self ):
 		data = super( ).get_data( )
 
 		plugged_car = self.get_plugged_car( )
 		plugged_car_id = ''
+		plugged_car_alias = ''
 		if plugged_car:
 			plugged_car.lock( )
 			plugged_car_id = plugged_car.get_id( )
+			plugged_car_alias = plugged_car.get_alias( )
 			plugged_car.unlock( )
 
 		data.update({
+			'alias': self.get_alias( ),
 			'status' : self.get_status( ),
 			'plugged_car_id' : plugged_car_id,
+			'plugged_car_alias': plugged_car_alias,
 			'energy_consumption' : self.get_energy_consumption( ),
 			"charging_periods" : [ p.get_data( ) for p in self._charging_periods ]
 		})
