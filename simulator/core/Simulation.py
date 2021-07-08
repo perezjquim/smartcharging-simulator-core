@@ -561,7 +561,9 @@ class Simulation( BaseModelProxy ):
 
 			charging_period_models = pm.get_charging_periods( )
 			for cpm in charging_period_models:
-				charging_period = ChargingPeriod( model_instance = cpm, plug = plug )
+				car_model_of_cpm = cpm.get_car( )
+				car_of_cpm = Car( model_instance = car_model_of_cpm, simulation = simulation )		
+				charging_period = ChargingPeriod( model_instance = cpm, car = car_of_cpm, plug = plug )
 				plug.add_charging_period( charging_period )			
 
 			simulation.add_charging_plug( plug )	
