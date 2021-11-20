@@ -57,6 +57,10 @@ build-docker-simulator:
 	@echo '$(PATTERN_BEGIN) BUILDING SIMULATOR PACK...'
 
 	@pipreqs --force --savepath requirements.txt.tmp
+	#> MARTELO
+	@sed -i 's/websockets==.*/websockets==9.1/g' requirements.txt.tmp
+	#< MARTELO
+
 	@sort -r requirements.txt.tmp > requirements.txt.tmp.sorted
 	@if cmp -s requirements.txt.tmp.sorted requirements.txt; then :;\
 	else cp -f requirements.txt.tmp.sorted requirements.txt; fi
